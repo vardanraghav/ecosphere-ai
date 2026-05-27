@@ -31,7 +31,32 @@ let currentState = {
     foodWaste: 2, // Frequent
     dailyCo2: 0,
     dailyWater: 0,
-    ecoScore: 0
+    ecoScore: 0,
+
+    // New Gamification & Simulation Properties
+    xp: 40,
+    avatarLevel: 1,
+    pledgedPoints: 0,
+    claimedQuests: [],
+    inSimulationMode: false,
+    simPollution: 0,
+    simDeforestation: 0,
+    simPlastic: 0,
+    simFossil: 0,
+
+    // Onboarding & Personalized Profile Properties
+    name: "",
+    age: "",
+    phone: "",
+    department: "ECE",
+    city: "",
+    sustainabilityGoal: "Carbon Neutral",
+    transportPreference: "EV",
+    photoURL: "",
+    sustainabilityStreak: 1,
+    lastActiveDate: "",
+    achievements: ["first_uplink"],
+    profileComplete: false
 };
 
 // Rates & Constants
@@ -93,6 +118,12 @@ window.addEventListener('load', () => {
     
     // Generate background atmosphere particles
     initBackgroundAtmosphere();
+
+    // Initialize Gamification Widgets & Avatar states
+    if (window.updateAvatarXPWidget) window.updateAvatarXPWidget();
+    if (window.evaluateQuests) window.evaluateQuests();
+    if (window.updateBattleLeaderboard) window.updateBattleLeaderboard();
+    if (window.initHistoryMiniChart) window.initHistoryMiniChart();
     
     // Run cinematic startup loader timeline
     runLoaderSequence();
@@ -163,6 +194,7 @@ function initSliders() {
                 document.getElementById(input.bubbleId).textContent = val;
                 currentState[input.stateKey] = val;
                 updateCalculations(true);
+                triggerAutoSave();
             });
         } else if (input.type === 'food') {
             el.addEventListener('input', (e) => {
@@ -171,11 +203,13 @@ function initSliders() {
                 document.getElementById(input.bubbleId).textContent = label;
                 currentState[input.stateKey] = val;
                 updateCalculations(true);
+                triggerAutoSave();
             });
         } else if (input.type === 'checkbox') {
             el.addEventListener('change', (e) => {
                 currentState[input.stateKey] = e.target.checked;
                 updateCalculations(true);
+                triggerAutoSave();
             });
         }
     });
@@ -198,7 +232,44 @@ function initSliders() {
                 document.getElementById('val-transport-mode-text').textContent = labelText;
                 
                 updateCalculations(true);
+                triggerAutoSave();
             }
+        });
+    });
+
+    // Futuristic Environmental Simulator range slider attachments
+    const simInputs = [
+        { id: 'input-sim-pollution', bubbleId: 'val-sim-pollution', stateKey: 'simPollution', labelId: 'val-sim-pollution-label', thresholds: ['STABLE', 'MODERATE', 'HIGH CHOKE', 'SEVERE ALERT!'] },
+        { id: 'input-sim-deforestation', bubbleId: 'val-sim-deforestation', stateKey: 'simDeforestation', labelId: 'val-sim-deforestation-label', thresholds: ['HEALTHY Canopy', 'MINOR LOSS', 'DEFORESTATION', 'DEAD ECOSYSTEM!'] },
+        { id: 'input-sim-plastic', bubbleId: 'val-sim-plastic', stateKey: 'simPlastic', labelId: 'val-sim-plastic-label', thresholds: ['CLEAR Oceans', 'PLASTIC RESIDUE', 'GARBAGE PATCH', 'TOXIC WASTE OCEAN'] },
+        { id: 'input-sim-fossil', bubbleId: 'val-sim-fossil', stateKey: 'simFossil', labelId: 'val-sim-fossil-label', thresholds: ['RENEWABLE Base', 'CARBON EXHAUST', 'HEAVY SOOT SMOG', 'PLANETARY SUFFOCATION!'] }
+    ];
+
+    simInputs.forEach(sim => {
+        const el = document.getElementById(sim.id);
+        if (!el) return;
+
+        el.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById(sim.bubbleId).textContent = val;
+            currentState[sim.stateKey] = val;
+            
+            // Update semantic descriptions
+            let status = sim.thresholds[0];
+            let color = 'var(--color-friendly)';
+            if (val >= 75) { status = sim.thresholds[3]; color = 'var(--color-danger)'; }
+            else if (val >= 45) { status = sim.thresholds[2]; color = 'var(--color-unsustainable)'; }
+            else if (val >= 15) { status = sim.thresholds[1]; color = 'var(--color-moderate)'; }
+            
+            const lbl = document.getElementById(sim.labelId);
+            if (lbl) {
+                lbl.textContent = status;
+                lbl.style.color = color;
+                lbl.style.borderColor = color;
+            }
+            
+            // Force redraw centerpiece simulation
+            updateCalculations(true);
         });
     });
 }
@@ -371,9 +442,40 @@ function updateCalculations(instant = false) {
     let totalScore = 100 - (acDeduction + applianceDeduction + transportDeduction + waterDeduction + plasticDeduction + foodDeduction);
     currentState.ecoScore = Math.max(12, Math.min(100, Math.round(totalScore)));
 
+    // Smart Utility Bill Predictor calculations
+    const AC_KWH = 1.45;
+    const APP_KWH = 0.95;
+    const energyUnits = (currentState.acHours * AC_KWH) + (currentState.appliances * APP_KWH);
+    const estimatedBill = Math.round(energyUnits * 30 * 8.5);
+    const baselineBill = Math.round(((8 * AC_KWH) + (6 * APP_KWH)) * 30 * 8.5);
+    const billSavings = Math.max(0, baselineBill - estimatedBill);
+
+    const billEstimateEl = document.getElementById('bill-estimate');
+    if (billEstimateEl) billEstimateEl.textContent = estimatedBill.toLocaleString();
+    const billSavingsEl = document.getElementById('bill-savings');
+    if (billSavingsEl) billSavingsEl.textContent = billSavings.toLocaleString();
+    
+    const progressFill = document.getElementById('bill-progress');
+    if (progressFill) {
+        const progressPct = Math.min(100, Math.max(0, (billSavings / baselineBill) * 100));
+        progressFill.style.width = progressPct + '%';
+    }
+
     // 4.3 Update UI Widgets
     updateUI(elecCo2, transportCo2, waterCo2, plasticCo2, foodCo2);
     
+    // Check achievements unlock conditions
+    checkAchievements();
+    
+    // Sync Agent dashboard UI
+    updateProfileDashboardUI();
+    
+    // Evaluate daily challenges
+    if (window.evaluateQuests) window.evaluateQuests();
+    
+    // Update Campus Battle scoring Standings
+    if (window.updateBattleLeaderboard) window.updateBattleLeaderboard();
+
     // 4.4 Live Charts Update
     updateCharts(elecCo2, transportCo2, waterCo2, plasticCo2, foodCo2, instant);
 }
@@ -981,6 +1083,48 @@ function initEarthCanvas() {
         interpolatedEcoScore += (currentState.ecoScore - interpolatedEcoScore) * 0.05 * delta;
         
         const state = getInterpolatedState(interpolatedEcoScore);
+        
+        // FUTURE EARTH SIMULATION OVERRIDES
+        let simPollution = parseFloat(document.getElementById('input-sim-pollution')?.value || 0);
+        let simDeforestation = parseFloat(document.getElementById('input-sim-deforestation')?.value || 0);
+        let simPlastic = parseFloat(document.getElementById('input-sim-plastic')?.value || 0);
+        let simFossil = parseFloat(document.getElementById('input-sim-fossil')?.value || 0);
+        
+        let maxThreat = Math.max(simPollution, simDeforestation, simPlastic, simFossil) / 100;
+        
+        if (maxThreat > 0.05) {
+            // Darken oceans to stagnant grey/brown
+            const toxicO1 = [35, 45, 55];
+            const toxicO2 = [20, 25, 30];
+            const toxicO3 = [10, 10, 12];
+            
+            state.ocean = [
+                state.ocean[0].map((v, i) => v + (toxicO1[i] - v) * maxThreat),
+                state.ocean[1].map((v, i) => v + (toxicO2[i] - v) * maxThreat),
+                state.ocean[2].map((v, i) => v + (toxicO3[i] - v) * maxThreat)
+            ];
+            
+            // Deforest terrain to dead ashen grey
+            const toxicLand = [90, 80, 80];
+            state.land = state.land.map((v, i) => v + (toxicLand[i] - v) * maxThreat);
+            
+            // Warnings orange-red atmosphere rim glows
+            const toxicRim = [239, 68, 68, 0.45];
+            state.rim = state.rim.map((v, i) => v + (toxicRim[i] - v) * maxThreat);
+            
+            const toxicHud = [239, 68, 68, 0.1, 0.22];
+            state.hud = state.hud.map((v, i) => v + (toxicHud[i] - v) * maxThreat);
+            
+            // Surface cracks multiply
+            state.cracksOpacity = Math.max(state.cracksOpacity, maxThreat * 0.95);
+            
+            // Atmospheric clouds disintegrate
+            state.cloudAlpha = Math.max(0.0, state.cloudAlpha - maxThreat * 0.5);
+            
+            // Accelerate rotation speed in thermal warning mode
+            state.rotationSpeed = state.rotationSpeed * (1 + maxThreat * 1.5);
+        }
+
         const width = canvas.width;  // 340
         const height = canvas.height; // 340
         const radius = 115;            // Earth Sphere Radius scaled up
@@ -1228,6 +1372,10 @@ function showThinkingIndicator() {
     // Check if indicator already exists
     if (document.getElementById('chat-thinking')) return;
 
+    // Trigger glowing voice wave visualizer header
+    const wave = document.getElementById('voice-wave-container');
+    if (wave) wave.classList.add('voice-wave-active');
+
     const thinkingDiv = document.createElement('div');
     thinkingDiv.id = 'chat-thinking';
     thinkingDiv.className = 'chat-msg ai-msg';
@@ -1322,6 +1470,10 @@ function addBotMessage(text) {
             } else {
                 setTimeout(typeChar, 8); // Snappy 8ms key delay
             }
+        } else {
+            // Stop voice-wave animations when typewriter is done
+            const wave = document.getElementById('voice-wave-container');
+            if (wave) wave.classList.remove('voice-wave-active');
         }
     }
     
@@ -1543,14 +1695,32 @@ function spawnCanvasParticles(center, radius, score) {
     spawnCanvasParticles.lastSpawnTime = now;
     
     let type = 'sparkle';
-    if (score >= 80) {
-        type = Math.random() > 0.4 ? 'leaf' : 'sparkle';
-    } else if (score >= 60) {
-        type = 'sparkle';
-    } else if (score >= 40) {
-        type = 'dust';
+    
+    // Find future simulation threat level
+    let simPollution = parseFloat(document.getElementById('input-sim-pollution')?.value || 0);
+    let simDeforestation = parseFloat(document.getElementById('input-sim-deforestation')?.value || 0);
+    let simPlastic = parseFloat(document.getElementById('input-sim-plastic')?.value || 0);
+    let simFossil = parseFloat(document.getElementById('input-sim-fossil')?.value || 0);
+    let maxThreat = Math.max(simPollution, simDeforestation, simPlastic, simFossil) / 100;
+    
+    if (maxThreat > 0.1) {
+        // Toxic future simulation particles
+        if (Math.random() < maxThreat) {
+            type = Math.random() > 0.4 ? 'smoke' : 'ash';
+        } else {
+            type = 'dust';
+        }
     } else {
-        type = Math.random() > 0.35 ? 'smoke' : 'ash';
+        // Standard score-based particles
+        if (score >= 80) {
+            type = Math.random() > 0.4 ? 'leaf' : 'sparkle';
+        } else if (score >= 60) {
+            type = 'sparkle';
+        } else if (score >= 40) {
+            type = 'dust';
+        } else {
+            type = Math.random() > 0.35 ? 'smoke' : 'ash';
+        }
     }
     
     // Spawn bottom area with vertical drift velocity
@@ -1703,3 +1873,746 @@ function initBackgroundAtmosphere() {
         bgContainer.appendChild(particle);
     }
 }
+
+// ==========================================================================
+// ECOSPHERE AI - AUTHENTICATION & PERSISTENT DATABASE STORAGE HOOKS
+// ==========================================================================
+
+// Throttled database auto-save trigger to prevent API rate limits
+let autoSaveTimeout = null;
+function triggerAutoSave() {
+    if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+        if (window.saveUserDataToCloud) {
+            window.saveUserDataToCloud(currentState);
+        }
+    }, 1500); // 1.5 seconds of user input inactivity before triggering Firestore update
+}
+
+// Auth integration hook: Restore settings from Firestore / Local Storage Sandbox
+function restoreUserSettings(data) {
+    if (!data) return;
+    
+    // Merge loaded data to currentState
+    currentState = { ...currentState, ...data };
+
+    // Update range elements in the DOM
+    const mappings = [
+        { id: 'input-ac-hours', bubbleId: 'val-ac-hours', val: currentState.acHours },
+        { id: 'input-appliances', bubbleId: 'val-appliances', val: currentState.appliances },
+        { id: 'input-distance', bubbleId: 'val-distance', val: currentState.distance },
+        { id: 'input-water', bubbleId: 'val-water', val: currentState.waterLiters },
+        { id: 'input-plastic', bubbleId: 'val-plastic', val: currentState.plasticBottles }
+    ];
+
+    mappings.forEach(m => {
+        const el = document.getElementById(m.id);
+        const bubble = document.getElementById(m.bubbleId);
+        if (el) el.value = m.val;
+        if (bubble) bubble.textContent = m.val;
+    });
+
+    const foodEl = document.getElementById('input-food-waste');
+    if (foodEl) {
+        foodEl.value = currentState.foodWaste;
+        const foodLbl = document.getElementById('lbl-food-waste');
+        if (foodLbl) foodLbl.textContent = FOOD_WASTE_DATA[currentState.foodWaste].label;
+    }
+
+    const waterWastageEl = document.getElementById('input-water-wastage');
+    if (waterWastageEl) waterWastageEl.checked = currentState.waterWastage;
+
+    const plasticBagsEl = document.getElementById('input-plastic-bags');
+    if (plasticBagsEl) plasticBagsEl.checked = currentState.plasticBags;
+
+    const radioEl = document.getElementById(`mode-${currentState.travelMode}`);
+    if (radioEl) radioEl.checked = true;
+
+    const transportLabel = document.getElementById('val-transport-mode-text');
+    if (transportLabel) {
+        const labelText = {
+            walk: 'Walk/Cycle',
+            ev: 'Electric Veh',
+            transit: 'Public Transit',
+            bike: 'Motorcycle',
+            petrol: 'Petrol Car'
+        }[currentState.travelMode];
+        transportLabel.textContent = labelText;
+    }
+
+    // Recalculate carbon footprints, scores, and re-draw Canvas/Charts instantly
+    updateCalculations(true);
+}
+
+/* ==========================================================================
+   FUTURISTIC COMMAND CENTER INTERACTIVE MODULE CONTROLLERS
+   ========================================================================== */
+
+// 1. Interactive Column Tabs Switching
+function switchColTab(colId, panelId) {
+    console.log("🖥️ ECOSPHERE // Tab switch: " + colId + " -> panel-" + panelId);
+    
+    // Find all tabs inside this col container and clear active state
+    const tabsContainer = document.getElementById(colId + '-tabs');
+    if (tabsContainer) {
+        tabsContainer.querySelectorAll('.col-tab').forEach(tab => tab.classList.remove('active'));
+    }
+    
+    // Set clicked tab active by matching search pattern or children index
+    const clickedTab = Array.from(tabsContainer?.querySelectorAll('.col-tab') || []).find(tab => 
+        tab.getAttribute('onclick').includes(`'${panelId}'`)
+    );
+    if (clickedTab) clickedTab.classList.add('active');
+
+    // Find and hide all panels inside this column scroll area
+    const colCol = document.querySelector('.' + (colId === 'col1' ? 'optimizer' : 'analytics') + '-column');
+    if (colCol) {
+        colCol.querySelectorAll('.col-tab-panel').forEach(panel => panel.classList.add('hidden'));
+        
+        // Show target panel
+        const targetPanel = colCol.querySelector('#panel-' + panelId);
+        if (targetPanel) targetPanel.classList.remove('hidden');
+    }
+    
+    // Force recalculations and visual adjustments instantly
+    if (panelId === 'analytics' && historyChart) {
+        setTimeout(() => historyChart.resize(), 100);
+    }
+}
+
+// 2. Daily Challenges Quest System Evaluator
+function evaluateQuests() {
+    if (!document.getElementById('quest-card-ac')) return;
+    
+    // Challenge 1: AC hours < 4
+    const acOk = currentState.acHours < 4;
+    const acCard = document.getElementById('quest-card-ac');
+    const acBar = document.getElementById('quest-progress-bar-ac');
+    const acStatus = document.getElementById('quest-status-ac');
+    const acBtn = document.getElementById('btn-claim-ac');
+    
+    if (acStatus) acStatus.textContent = currentState.acHours + '/4 hrs';
+    if (acBar) {
+        const acPct = Math.min(100, Math.max(0, (4 / currentState.acHours) * 100));
+        acBar.style.width = (acOk ? 100 : acPct) + '%';
+    }
+    updateQuestCardState('ac', acOk, acCard, acBtn, 30);
+
+    // Challenge 2: Water wastage unchecked
+    const waterOk = !currentState.waterWastage;
+    const waterCard = document.getElementById('quest-card-water');
+    const waterBar = document.getElementById('quest-progress-bar-water');
+    const waterStatus = document.getElementById('quest-status-water');
+    const waterBtn = document.getElementById('btn-claim-water');
+    
+    if (waterStatus) waterStatus.textContent = waterOk ? "EFFICIENT" : "WASTING";
+    if (waterBar) waterBar.style.width = (waterOk ? 100 : 0) + '%';
+    updateQuestCardState('water', waterOk, waterCard, waterBtn, 25);
+
+    // Challenge 3: Transit walk, ev or transit
+    const transitOk = ['walk', 'ev', 'transit'].includes(currentState.travelMode);
+    const transitCard = document.getElementById('quest-card-transit');
+    const transitBar = document.getElementById('quest-progress-bar-transit');
+    const transitStatus = document.getElementById('quest-status-transit');
+    const transitBtn = document.getElementById('btn-claim-transit');
+    
+    const transitModeNames = { walk: 'WALK', ev: 'EV', transit: 'TRANSIT', bike: 'BIKE', petrol: 'CAR' };
+    if (transitStatus) transitStatus.textContent = transitModeNames[currentState.travelMode];
+    if (transitBar) transitBar.style.width = (transitOk ? 100 : 0) + '%';
+    updateQuestCardState('transit', transitOk, transitCard, transitBtn, 40);
+
+    // Challenge 4: Plastic bottles == 0
+    const plasticOk = currentState.plasticBottles === 0;
+    const plasticCard = document.getElementById('quest-card-plastic');
+    const plasticBar = document.getElementById('quest-progress-bar-plastic');
+    const plasticStatus = document.getElementById('quest-status-plastic');
+    const plasticBtn = document.getElementById('btn-claim-plastic');
+    
+    if (plasticStatus) plasticStatus.textContent = plasticOk ? "ZERO PLASTIC" : currentState.plasticBottles + " left";
+    if (plasticBar) {
+        const plasticPct = currentState.plasticBottles === 0 ? 100 : Math.min(100, Math.max(0, (1 - (currentState.plasticBottles / 12)) * 100));
+        plasticBar.style.width = plasticPct + '%';
+    }
+    updateQuestCardState('plastic', plasticOk, plasticCard, plasticBtn, 35);
+    
+    // Update claimed quests counter
+    const claimedCount = currentState.claimedQuests.length;
+    const claimedCounter = document.getElementById('challenges-claimed-count');
+    if (claimedCounter) claimedCounter.textContent = claimedCount + '/4 DONE';
+}
+
+function updateQuestCardState(id, isMet, card, btn, xpGained) {
+    if (!card || !btn) return;
+    const isClaimed = currentState.claimedQuests.includes(id);
+    
+    if (isClaimed) {
+        card.className = "quest-card glass-card quest-claimed";
+        btn.className = "btn-quest-claim claimed";
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> QUEST_COMPLETED`;
+    } else if (isMet) {
+        card.className = "quest-card glass-card quest-unlocked";
+        btn.className = "btn-quest-claim active";
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-gift font-cyan animate-pulse"></i> CLAIM +${xpGained} XP`;
+    } else {
+        card.className = "quest-card glass-card";
+        btn.className = "btn-quest-claim";
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-lock"></i> LOCK_ACTIVE`;
+    }
+}
+
+// 3. Experience Points Quest XP Claims
+function claimQuestXP(id, xpGained) {
+    if (currentState.claimedQuests.includes(id)) return;
+    
+    console.log("🏅 QUEST COMPLETED // Claimed: " + id + " (+" + xpGained + " XP)");
+    
+    // Add to claimed lists
+    currentState.claimedQuests.push(id);
+    
+    // Increment total XP
+    currentState.xp += xpGained;
+    
+    // Update XP displays
+    updateAvatarXPWidget(true);
+    
+    // Check rank promo level thresholds
+    checkAvatarLevelUp();
+    
+    // Refresh quests cards states
+    evaluateQuests();
+    triggerAutoSave();
+    
+    // Celebrate visuals (quest particle explosion sparks!)
+    triggerQuestParticles(id);
+}
+
+function triggerQuestParticles(id) {
+    // Spawn 15 colorful green-cyan sparkles orbiting Earth centerpiece cards!
+    const center = 170;
+    for (let i = 0; i < 15; i++) {
+        activeParticles.push({
+            x: center + (Math.random() - 0.5) * 80,
+            y: 170 + (Math.random() - 0.5) * 80,
+            vx: (Math.random() - 0.5) * 4.5,
+            vy: (Math.random() - 0.5) * 4.5 - 2, // Slight upward drift
+            size: Math.random() * 4 + 3,
+            alpha: 1.0,
+            life: 1.0,
+            decay: 0.012 + Math.random() * 0.008,
+            angle: Math.random() * Math.PI * 2,
+            spin: (Math.random() - 0.5) * 0.05,
+            type: Math.random() > 0.4 ? 'sparkle' : 'leaf'
+        });
+    }
+}
+
+// 4. Bio-Avatar HUD displays synchronization
+function updateAvatarXPWidget(animate = false) {
+    const xp = currentState.xp;
+    if (!document.getElementById('avatar-level-num')) return;
+
+    // Thresholds: L1: 0-100 XP, L2: 100-300 XP, L3: 300-600 XP, L4: 600+ XP
+    let level = 1;
+    let xpCurrent = xp;
+    let xpNeeded = 100;
+    let title = "CARBON SURVIVOR";
+    let badgeIcon = '<i class="fa-solid fa-shield-halved badge-level-1 text-shadow-glow"></i>';
+    
+    if (xp >= 600) {
+        level = 4;
+        xpCurrent = xp - 600;
+        xpNeeded = 10000;
+        title = "GREEN GUARDIAN";
+        badgeIcon = '<i class="fa-solid fa-crown badge-level-4 text-shadow-glow animate-pulse-slow"></i>';
+    } else if (xp >= 300) {
+        level = 3;
+        xpCurrent = xp - 300;
+        xpNeeded = 300;
+        title = "PLANET PROTECTOR";
+        badgeIcon = '<i class="fa-solid fa-leaf badge-level-3 text-shadow-glow"></i>';
+    } else if (xp >= 100) {
+        level = 2;
+        xpCurrent = xp - 100;
+        xpNeeded = 200;
+        title = "ECO WARRIOR";
+        badgeIcon = '<i class="fa-solid fa-seedling badge-level-2 text-shadow-glow"></i>';
+    }
+    
+    currentState.avatarLevel = level;
+    
+    document.getElementById('avatar-level-num').textContent = level;
+    document.getElementById('avatar-title').textContent = title;
+    document.getElementById('avatar-badge-icon').innerHTML = badgeIcon;
+    document.getElementById('avatar-xp-current').textContent = xpCurrent;
+    document.getElementById('avatar-xp-next').textContent = xpNeeded === 10000 ? "MAX" : xpNeeded;
+    
+    // Update XP Bar width progress
+    const xpPct = xpNeeded === 10000 ? 100 : Math.min(100, Math.max(0, (xpCurrent / xpNeeded) * 100));
+    document.getElementById('avatar-xp-bar').style.width = xpPct + '%';
+    
+    // Update pledge panel buttons disabled state
+    const btn10 = document.getElementById('btn-pledge-10');
+    const btnAll = document.getElementById('btn-pledge-all');
+    if (btn10) btn10.disabled = xp < 10;
+    if (btnAll) btnAll.disabled = xp <= 0;
+}
+
+function checkAvatarLevelUp() {
+    const xp = currentState.xp;
+    let targetLevel = 1;
+    if (xp >= 600) targetLevel = 4;
+    else if (xp >= 300) targetLevel = 3;
+    else if (xp >= 100) targetLevel = 2;
+    
+    if (!checkAvatarLevelUp.lastLevel) checkAvatarLevelUp.lastLevel = 1;
+    
+    if (targetLevel > checkAvatarLevelUp.lastLevel) {
+        console.log("🏆 LEVEL UP! Promoted to Bio-Avatar Level " + targetLevel);
+        
+        // Visual congratulate flash screen overlay
+        const flash = document.getElementById('level-up-flash');
+        if (flash) {
+            flash.classList.remove('hidden');
+            setTimeout(() => {
+                flash.classList.add('hidden');
+            }, 1800);
+        }
+        
+        // Dynamic centerpiece sparkle bursts
+        for (let i = 0; i < 25; i++) {
+            activeParticles.push({
+                x: 170 + (Math.random() - 0.5) * 120,
+                y: 170 + (Math.random() - 0.5) * 120,
+                vx: (Math.random() - 0.5) * 6,
+                vy: (Math.random() - 0.5) * 6,
+                size: Math.random() * 5 + 3,
+                alpha: 1.0,
+                life: 1.0,
+                decay: 0.015,
+                angle: Math.random() * Math.PI * 2,
+                spin: 0.06,
+                type: Math.random() > 0.3 ? 'sparkle' : 'leaf'
+            });
+        }
+    }
+    
+    checkAvatarLevelUp.lastLevel = targetLevel;
+}
+
+// 5. Smart Campus Department Points Pledges
+function pledgeXPToDept(amount) {
+    let toPledge = 0;
+    if (amount === 'all') {
+        toPledge = currentState.xp;
+    } else {
+        toPledge = parseInt(amount);
+    }
+    
+    if (toPledge <= 0 || currentState.xp < toPledge) return;
+    
+    console.log("⚡ ECE LEDGER UPLINK // Pledged: " + toPledge + " XP to department standings");
+    
+    // Decrement user XP
+    currentState.xp -= toPledge;
+    
+    // Add to user cumulative pledges
+    currentState.pledgedPoints += toPledge;
+    
+    // Sync Avatar XP elements
+    updateAvatarXPWidget(true);
+    
+    // Update Pledges display
+    const userTotalPledge = document.getElementById('pledge-user-total');
+    if (userTotalPledge) userTotalPledge.textContent = currentState.pledgedPoints + ' XP';
+    
+    const eceBonus = document.getElementById('pledge-ece-bonus');
+    if (eceBonus) {
+        const bonusPts = (currentState.pledgedPoints * 0.1).toFixed(1);
+        eceBonus.textContent = '+' + bonusPts + ' pts';
+    }
+    
+    // Alert feedback bubble
+    const feedback = document.getElementById('pledge-feedback-text');
+    if (feedback) {
+        feedback.classList.remove('hidden');
+        setTimeout(() => feedback.classList.add('hidden'), 2200);
+    }
+    
+    // Recalculate standings and rankings
+    updateBattleLeaderboard();
+    triggerAutoSave();
+    
+    // Cyber glitch shake department row ECE
+    const eceRow = document.querySelector('.user-dept-row');
+    if (eceRow) {
+        eceRow.classList.add('glitch-shake');
+        setTimeout(() => eceRow.classList.remove('glitch-shake'), 450);
+    }
+}
+
+function updateBattleLeaderboard() {
+    if (!document.getElementById('battle-departments-list')) return;
+
+    const eceScore = Math.min(100, Math.round(currentState.ecoScore + (currentState.pledgedPoints * 0.1)));
+    const departments = [
+        { name: "COMP_SCIENCE_DEPT", score: 82, id: "cse", isUser: false },
+        { name: "ECE_DEPARTMENT (YOU)", score: eceScore, id: "ece", isUser: true },
+        { name: "MECHANICAL_DEPT", score: 61, id: "mech", isUser: false },
+        { name: "CIVIL_DEPARTMENT", score: 48, id: "civil", isUser: false }
+    ];
+    
+    // Sort scores descending
+    departments.sort((a, b) => b.score - a.score);
+    
+    const battleList = document.getElementById('battle-departments-list');
+    if (!battleList) return;
+    
+    battleList.innerHTML = '';
+    
+    departments.forEach((dept, index) => {
+        const row = document.createElement('div');
+        row.className = `battle-row ${dept.isUser ? 'user-dept-row' : ''}`;
+        
+        let rankMedal = `#${index + 1}`;
+        if (index === 0) rankMedal = '🥇 #1';
+        else if (index === 1) rankMedal = `🥈 #2`;
+        else if (index === 2) rankMedal = `🥉 #3`;
+        else rankMedal = ` #4`;
+        
+        row.innerHTML = `
+            <div class="battle-dept-meta">
+                <span class="battle-rank ${dept.isUser ? 'font-cyan' : ''}">${rankMedal}</span>
+                <span class="battle-name ${dept.isUser ? 'font-cyan' : ''}">${dept.name}</span>
+            </div>
+            <div class="battle-progress-wrapper">
+                <div class="battle-progress-fill ${dept.isUser ? 'bg-cyan shadow-cyan animate-pulse-slow' : ''}" style="width: ${dept.score}%;"></div>
+            </div>
+            <span class="battle-score ${dept.isUser ? 'font-cyan' : ''}">${dept.score} pts</span>
+        `;
+        battleList.appendChild(row);
+    });
+    
+    // Update ECE specific trackers in Console Card
+    const eceScoreEl = document.getElementById('battle-score-ece');
+    if (eceScoreEl) eceScoreEl.textContent = eceScore + ' pts';
+    const eceProgressEl = document.getElementById('battle-progress-ece');
+    if (eceProgressEl) eceProgressEl.style.width = eceScore + '%';
+    
+    // Dynamic alerts text based on standings
+    const eceIndex = departments.findIndex(d => d.isUser);
+    const alertCard = document.querySelector('.battle-alert-card p');
+    if (alertCard) {
+        if (eceIndex === 0) {
+            alertCard.innerHTML = `🏆 **VICTORY SECURED!** ECE Department is currently at **🥇 Rank #1**! We lead the campus environmental standing matrix. Keep pledging points!`;
+        } else if (eceIndex === 1) {
+            alertCard.innerHTML = `ECE Department is currently at **🥈 Rank #2**. Contribute your earned XP points to ECE standings to boost ECE average score and overtake CS Department!`;
+        } else {
+            alertCard.innerHTML = `ECE Department is currently at **Rank #${eceIndex + 1}**. Contribute your earned XP points to support ECE standings and boost department rankings!`;
+        }
+    }
+}
+
+// 6. Mini Historical Carbon Trend Graph Line Chart
+let historyChart = null;
+function initHistoryMiniChart() {
+    const ctx = document.getElementById('chart-history-mini');
+    if (!ctx) return;
+    
+    if (typeof Chart === 'undefined') return;
+    
+    // Gradient background
+    const fillGrad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 80);
+    fillGrad.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
+    fillGrad.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+    
+    historyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'],
+            datasets: [{
+                label: 'Eco Index Trend',
+                data: [34, 45, 54, 72, 80, 92],
+                borderColor: '#10b981',
+                borderWidth: 2,
+                backgroundColor: fillGrad,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2,
+                pointBackgroundColor: '#10b981',
+                pointHoverRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(7, 10, 19, 0.95)',
+                    titleFont: { family: 'Outfit', size: 9 },
+                    bodyFont: { family: 'Outfit', size: 9 },
+                    borderColor: 'rgba(16, 185, 129, 0.3)',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#9ca3af', font: { family: 'Share Tech Mono', size: 8 } }
+                },
+                y: {
+                    min: 0,
+                    max: 100,
+                    grid: { color: 'rgba(255, 255, 255, 0.02)' },
+                    ticks: { color: '#9ca3af', font: { family: 'Share Tech Mono', size: 8 }, stepSize: 25 }
+                }
+            }
+        },
+        plugins: [chartShadowPlugin]
+    });
+}
+
+// Onboarding submit interceptor
+function handleProfileSetupSubmit(event) {
+    event.preventDefault();
+    console.log("💾 ECOSPHERE // Intercepting profile linking protocol...");
+
+    const name = document.getElementById('setup-name').value.trim();
+    const age = parseInt(document.getElementById('setup-age').value);
+    const phone = document.getElementById('setup-phone').value.trim();
+    const dept = document.getElementById('setup-dept').value;
+    const city = document.getElementById('setup-city').value.trim();
+    const goal = document.getElementById('setup-goal').value;
+    const transport = document.getElementById('setup-transport').value;
+    const errorBox = document.getElementById('profile-setup-error-box');
+
+    if (!name || isNaN(age) || !phone || !dept || !city || !goal || !transport) {
+        if (errorBox) {
+            errorBox.classList.remove('hidden');
+            document.getElementById('profile-setup-error-text').textContent = "ERROR: ALL PROTOCOL FIELDS MANDATORY";
+        }
+        return;
+    }
+
+    if (errorBox) errorBox.classList.add('hidden');
+
+    // Seed state details
+    currentState.name = name;
+    currentState.age = age;
+    currentState.phone = phone;
+    currentState.department = dept;
+    currentState.city = city;
+    currentState.sustainabilityGoal = goal;
+    currentState.transportPreference = transport;
+    currentState.profileComplete = true;
+
+    // Save avatar preview URL if Google or fallback seed
+    const avatarImg = document.getElementById('setup-avatar-img');
+    if (avatarImg) {
+        currentState.photoURL = avatarImg.src;
+    }
+
+    // Auto-award First Uplink achievement
+    if (currentState.achievements && !currentState.achievements.includes("first_uplink")) {
+        currentState.achievements.push("first_uplink");
+    }
+
+    // Synchronize to memory profile session
+    if (typeof currentUserProfile !== 'undefined' && currentUserProfile) {
+        currentUserProfile.profileComplete = true;
+        currentUserProfile.name = name;
+        currentUserProfile.photoURL = currentState.photoURL;
+        currentUserProfile.age = age;
+        currentUserProfile.phone = phone;
+        currentUserProfile.department = dept;
+        currentUserProfile.city = city;
+        currentUserProfile.sustainabilityGoal = goal;
+        currentUserProfile.transportPreference = transport;
+        currentUserProfile.achievements = currentState.achievements;
+    }
+
+    // Force synchronize to cloud database or local sandbox fallback
+    if (window.saveUserDataToCloud) {
+        window.saveUserDataToCloud(currentState);
+    }
+
+    // Celebratory micro-animations
+    createAchievementParticles();
+
+    // Smooth transition
+    const overlay = document.getElementById('profile-setup-overlay');
+    if (overlay) {
+        overlay.style.transition = 'opacity 0.4s ease-out';
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            // Show main dashboard
+            document.querySelector('.app-container').classList.remove('hidden');
+            // Force recalculations
+            updateCalculations(true);
+        }, 400);
+    }
+}
+
+// Achievements Check logic
+function checkAchievements() {
+    let unlocked = currentState.achievements || ["first_uplink"];
+    let newlyUnlocked = false;
+
+    // 1. FIRST UPLINK (onboarding setup completed)
+    if (currentState.profileComplete && !unlocked.includes("first_uplink")) {
+        unlocked.push("first_uplink");
+        newlyUnlocked = true;
+    }
+
+    // 2. POWER SAVER: AC runtime <= 4 hours
+    if (currentState.acHours <= 4 && !unlocked.includes("power_saver")) {
+        unlocked.push("power_saver");
+        newlyUnlocked = true;
+        createAchievementParticles();
+    }
+
+    // 3. HYDRATION GUARD: Water wastage checked off/false AND water use <= 150 liters
+    if (!currentState.waterWastage && currentState.waterLiters <= 150 && !unlocked.includes("hydration_guard")) {
+        unlocked.push("hydration_guard");
+        newlyUnlocked = true;
+        createAchievementParticles();
+    }
+
+    // 4. PLASTIC WARRIOR: Plastic bottles <= 2 daily
+    if (currentState.plasticBottles <= 2 && !unlocked.includes("zero_plastic")) {
+        unlocked.push("zero_plastic");
+        newlyUnlocked = true;
+        createAchievementParticles();
+    }
+
+    if (newlyUnlocked) {
+        currentState.achievements = unlocked;
+        if (window.saveUserDataToCloud) {
+            window.saveUserDataToCloud(currentState);
+        }
+    }
+}
+
+// Generate premium leaf/sparkle particle bursts
+function createAchievementParticles() {
+    console.log("⭐ ACHIEVEMENT UNLOCKED! Generating celebratory particle streams...");
+    for (let i = 0; i < 30; i++) {
+        activeParticles.push({
+            x: 170 + (Math.random() - 0.5) * 150,
+            y: 170 + (Math.random() - 0.5) * 150,
+            vx: (Math.random() - 0.5) * 8,
+            vy: (Math.random() - 0.5) * 8,
+            size: Math.random() * 6 + 3,
+            alpha: 1.0,
+            life: 1.0,
+            decay: 0.012,
+            angle: Math.random() * Math.PI * 2,
+            spin: 0.08,
+            type: Math.random() > 0.4 ? 'sparkle' : 'leaf'
+        });
+    }
+}
+
+// Sync Agent Dashboard UI
+function updateProfileDashboardUI() {
+    if (!currentState.profileComplete) return;
+
+    // Sync Name
+    const agentNameEl = document.getElementById('dashboard-agent-name');
+    if (agentNameEl) agentNameEl.textContent = currentState.name || "AGENT_NAME";
+
+    // Sync Avatar
+    const dashAvatar = document.getElementById('dashboard-avatar-img');
+    if (dashAvatar) {
+        dashAvatar.src = currentState.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentState.name || 'EcoAgent')}`;
+    }
+
+    // Sync Rank based on score
+    const rankBadge = document.getElementById('dashboard-agent-rank');
+    if (rankBadge) {
+        rankBadge.className = 'badge-role font-mono';
+        let score = currentState.ecoScore || 72;
+        if (score >= 90) {
+            rankBadge.textContent = 'EMERALD COMMANDER';
+            rankBadge.classList.add('rank-emerald');
+        } else if (score >= 80) {
+            rankBadge.textContent = 'GOLD SENTINEL';
+            rankBadge.classList.add('rank-gold');
+        } else if (score >= 60) {
+            rankBadge.textContent = 'SILVER GUARDIAN';
+            rankBadge.classList.add('rank-silver');
+        } else if (score >= 40) {
+            rankBadge.textContent = 'BRONZE RANGER';
+            rankBadge.classList.add('rank-bronze');
+        } else {
+            rankBadge.textContent = 'CARBON NOVICE';
+            rankBadge.classList.add('rank-carbon');
+        }
+    }
+
+    // Sync Streak
+    const streakEl = document.getElementById('dashboard-streak-count');
+    if (streakEl) streakEl.textContent = currentState.sustainabilityStreak || 1;
+
+    // Sync Completion Percentage
+    let pct = 100; // Complete since onboarding complete
+    const pctText = document.getElementById('profile-completion-val');
+    if (pctText) pctText.textContent = pct + '%';
+    const fillCircle = document.getElementById('completion-fill-circle');
+    if (fillCircle) {
+        const offset = 251.2 - (251.2 * pct) / 100;
+        fillCircle.style.strokeDashoffset = offset;
+    }
+
+    // Sync Details List
+    const deptEl = document.getElementById('profile-dept-val');
+    if (deptEl) deptEl.textContent = currentState.department || '-';
+    
+    const cityEl = document.getElementById('profile-city-val');
+    if (cityEl) cityEl.textContent = currentState.city || '-';
+    
+    const goalEl = document.getElementById('profile-goal-val');
+    if (goalEl) goalEl.textContent = currentState.sustainabilityGoal || '-';
+    
+    const commuteEl = document.getElementById('profile-commute-val');
+    if (commuteEl) commuteEl.textContent = currentState.transportPreference || '-';
+
+    // Sync Achievements locking grids
+    const achs = ["first-uplink", "power-saver", "hydration-guard", "zero-plastic"];
+    const achKeys = {
+        "first-uplink": "first_uplink",
+        "power-saver": "power_saver",
+        "hydration-guard": "hydration_guard",
+        "zero-plastic": "zero_plastic"
+    };
+    let unlockedCount = 0;
+    achs.forEach(a => {
+        const el = document.getElementById(`achievement-${a}`);
+        if (el) {
+            const isUnlocked = currentState.achievements && currentState.achievements.includes(achKeys[a]);
+            if (isUnlocked) {
+                el.classList.remove('locked');
+                el.classList.add('unlocked');
+                unlockedCount++;
+            } else {
+                el.classList.remove('unlocked');
+                el.classList.add('locked');
+            }
+        }
+    });
+
+    const ratioText = document.getElementById('achievements-unlocked-ratio');
+    if (ratioText) {
+        ratioText.textContent = `${unlockedCount}/4 UNLOCKED`;
+    }
+}
+
+// Expose functions to window for global access
+window.handleProfileSetupSubmit = handleProfileSetupSubmit;
+window.checkAchievements = checkAchievements;
+window.updateProfileDashboardUI = updateProfileDashboardUI;
+
