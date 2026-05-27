@@ -101,7 +101,7 @@
                     <img id="setup-avatar-img" class="setup-avatar-preview" src="https://api.dicebear.com/7.x/bottts/svg?seed=EcoAgent" alt="Agent Avatar">
                     <div class="avatar-holo-ring"></div>
                 </div>
-                <h2>AGENT PROFILE <span class="accent-text">SETUP</span></h2>
+                <h2>CHRONO PROFILE <span class="accent-text">SETUP</span></h2>
                 <p class="profile-setup-subtitle font-mono">SECURE_LINK // PROFILE_INITIALIZATION</p>
             </div>
             
@@ -140,25 +140,25 @@
                     </div>
 
                     <div class="auth-input-group">
-                        <label for="setup-goal" class="font-mono"><i class="fa-solid fa-bullseye"></i> SUSTAINABILITY GOAL</label>
+                        <label for="setup-goal" class="font-mono"><i class="fa-solid fa-bullseye"></i> FUTURE LIFE FOCUS</label>
                         <select id="setup-goal" class="auth-input select-cyber" required>
-                            <option value="" disabled selected>SELECT PRIMARY GOAL</option>
-                            <option value="Carbon Neutral">ZERO CARBON EMISSIONS</option>
-                            <option value="Waste Reduction">ZERO WASTE CHAMPION</option>
-                            <option value="Water Conservation">WATER GUARDIAN</option>
-                            <option value="Renewable Energy">CLEAN ENERGY ADVOCATE</option>
+                            <option value="" disabled selected>SELECT FUTURE GOAL</option>
+                            <option value="Entrepreneurial Success">ENTREPRENEURIAL SUCCESS</option>
+                            <option value="Balanced Zen Life">BALANCED ZEN LIFE</option>
+                            <option value="Digital Detox">DIGITAL DETOX</option>
+                            <option value="Career Acceleration">CAREER ACCELERATION</option>
+                            <option value="Wealth Generation">WEALTH GENERATION</option>
                         </select>
                     </div>
 
                     <div class="auth-input-group full-width-field">
-                        <label for="setup-transport" class="font-mono"><i class="fa-solid fa-bus"></i> TRANSPORT PREFERENCE</label>
-                        <select id="setup-transport" class="auth-input select-cyber" required>
-                            <option value="" disabled selected>SELECT DAILY COMMUTE MODE</option>
-                            <option value="EV">ELECTRIC VEHICLE (EV)</option>
-                            <option value="Public Transport">PUBLIC TRANSIT (BUS/METRO)</option>
-                            <option value="Bicycle">BICYCLE / CYCLING</option>
-                            <option value="Walking">WALKING / PEDESTRIAN</option>
-                            <option value="Petrol/Diesel">PETROL / DIESEL VEHICLE</option>
+                        <label for="setup-gender" class="font-mono"><i class="fa-solid fa-user-astronaut"></i> BIOMETRIC AVATAR SEED</label>
+                        <select id="setup-gender" class="auth-input select-cyber" required>
+                            <option value="" disabled selected>SELECT AVATAR SEED</option>
+                            <option value="astronaut">ASTRONAUT AVATAR</option>
+                            <option value="male">CYBERNETIC MALE</option>
+                            <option value="female">CYBERNETIC FEMALE</option>
+                            <option value="identicon">HOLOGRAPHIC MATRIX</option>
                         </select>
                     </div>
                 </div>
@@ -171,7 +171,7 @@
 
                 <!-- Submit Button -->
                 <button type="submit" id="btn-setup-submit" class="btn-auth-submit">
-                    <span>COMPLETE ECO-LINK PROTOCOL</span>
+                    <span>COMPLETE CHRONO-LINK PROTOCOL</span>
                     <i class="fa-solid fa-circle-check submit-icon"></i>
                 </button>
             </form>
@@ -303,310 +303,241 @@
         </section>
 
         <!-- MAIN DASHBOARD CONTENT GRID -->
-        <main class="dashboard-grid">
-
-            <!-- COLUMN 1: LIFESTYLE OPTIMIZER -->
+                   <!-- COLUMN 1: HABITS & CHRONO CALIBRATOR -->
             <section class="grid-col optimizer-column glass-card">
                 <div class="column-header">
                     <span class="telemetry-tag font-mono">SYS_LOC // 01.A</span>
-                    <h2><i class="fa-solid fa-gears icon-accent"></i> LIFESTYLE OPTIMIZER</h2>
-                    <p>Slide & toggle your daily activities to simulate immediate environmental changes.</p>
+                    <h2><i class="fa-solid fa-sliders icon-accent"></i> HABITS CALIBRATOR</h2>
+                    <p>Adjust your daily behavior telemetry to simulate your future self projection.</p>
                 </div>
 
                 <!-- Interactive Dynamic Column Tabs -->
                 <div class="col-tabs font-mono" id="col1-tabs">
-                    <button class="col-tab active" onclick="switchColTab('col1', 'optimizer')"><i class="fa-solid fa-gears"></i> OPTIMIZER</button>
-                    <button class="col-tab" onclick="switchColTab('col1', 'simulator')"><i class="fa-solid fa-triangle-exclamation"></i> FUTURE SIMULATOR</button>
+                    <button class="col-tab active" onclick="switchColTab('col1', 'optimizer')"><i class="fa-solid fa-gears"></i> HABITS TUNING</button>
+                    <button class="col-tab" onclick="switchColTab('col1', 'simulator')"><i class="fa-solid fa-clock-rotate-left"></i> CHRONO SIMULATOR</button>
                 </div>
 
                 <div class="optimizer-scroll-area">
-                    <!-- Tab Panel 1: Lifestyle Optimizer -->
+                    <!-- Tab Panel 1: Habits Tuning -->
                     <div id="panel-optimizer" class="col-tab-panel">
-                        <!-- Electricity Card with Smart Bill Predictor -->
+                        
+                        <!-- Screen Load Card -->
                         <div class="optimizer-card">
                             <div class="opt-card-header font-amber">
-                                <span><i class="fa-solid fa-bolt"></i> Electricity Usage</span>
-                                <span id="val-electricity-cost" class="opt-badge font-mono font-amber">₹0/mo</span>
+                                <span><i class="fa-solid fa-display"></i> Digital Load & Screen Time</span>
+                                <span id="val-screen-level" class="opt-badge font-mono font-amber">HEAVY LOAD</span>
                             </div>
                             <div class="opt-input-group">
                                 <div class="slider-label-row">
-                                    <label for="input-ac-hours">AC Usage Hours</label>
-                                    <span class="slider-val-bubble font-amber"><span id="val-ac-hours" class="font-mono">8</span> hrs/day</span>
+                                    <label for="input-screen-time">Daily Active Screen Time</label>
+                                    <span class="slider-val-bubble font-amber"><span id="val-screen-time" class="font-mono">5</span> hrs</span>
                                 </div>
-                                <input type="range" id="input-ac-hours" min="0" max="24" step="0.5" value="8" class="eco-slider slider-amber">
+                                <input type="range" id="input-screen-time" min="1" max="16" step="0.5" value="5" class="eco-slider slider-amber">
                                 <div class="slider-ticks font-mono">
-                                    <span>0h</span>
-                                    <span>6h</span>
+                                    <span>1h</span>
+                                    <span>4h</span>
+                                    <span>8h</span>
                                     <span>12h</span>
-                                    <span>18h</span>
-                                    <span>24h</span>
+                                    <span>16h</span>
                                 </div>
                             </div>
                             <div class="opt-input-group">
                                 <div class="slider-label-row">
-                                    <label for="input-appliances">Other Appliances <small>(Fans, Lights, PC)</small></label>
-                                    <span class="slider-val-bubble font-amber"><span id="val-appliances" class="font-mono">6</span> units/day</span>
+                                    <label for="input-social-media">Social Media Doomscrolling</label>
+                                    <span class="slider-val-bubble font-amber"><span id="val-social-media" class="font-mono">2</span> hrs</span>
                                 </div>
-                                <input type="range" id="input-appliances" min="0" max="15" step="1" value="6" class="eco-slider slider-amber">
-                            </div>
-
-                            <!-- Smart Utility Bill Predictor -->
-                            <div class="smart-bill-container glass-card font-mono">
-                                <div class="bill-header">
-                                    <span><i class="fa-solid fa-calculator font-amber"></i> SMART BILL PREDICTOR</span>
-                                    <span class="lbl-live font-green font-mono"><span class="live-dot"></span> LIVE</span>
-                                </div>
-                                <div class="bill-metrics-grid">
-                                    <div class="bill-metric">
-                                        <span class="label">EST. BILL/MO</span>
-                                        <span class="value font-amber">₹<span id="bill-estimate">0</span></span>
-                                    </div>
-                                    <div class="bill-metric">
-                                        <span class="label">SAVINGS/MO</span>
-                                        <span class="value font-green">₹<span id="bill-savings">0</span></span>
-                                    </div>
-                                </div>
-                                <div class="bill-progress-wrapper">
-                                    <div class="bill-progress-bar" id="bill-progress" style="width: 50%;"></div>
-                                </div>
-                                <div class="bill-footer-note font-cyan text-xxs">PREDICTING UTILITY LEDGER VALUES BASED ON ENERGY EXHAUST.</div>
+                                <input type="range" id="input-social-media" min="0" max="8" step="0.5" value="2" class="eco-slider slider-amber">
                             </div>
                         </div>
 
-                        <!-- Transportation Card -->
-                        <div class="optimizer-card">
-                            <div class="opt-card-header font-cyan">
-                                <span><i class="fa-solid fa-car-side"></i> Transportation</span>
-                                <span id="val-transport-mode-text" class="opt-badge font-mono font-cyan">Petrol Car</span>
-                            </div>
-                            <div class="opt-input-group">
-                                <label class="section-sublabel">Primary Travel Mode</label>
-                                <div class="custom-toggle-group">
-                                    <input type="radio" name="travelMode" id="mode-walk" value="walk" class="hidden-radio">
-                                    <label for="mode-walk" class="toggle-btn" title="Walk / Cycle">
-                                        <i class="fa-solid fa-person-walking"></i>
-                                        <span>Walk</span>
-                                    </label>
-
-                                    <input type="radio" name="travelMode" id="mode-ev" value="ev" class="hidden-radio">
-                                    <label for="mode-ev" class="toggle-btn" title="Electric Vehicle">
-                                        <i class="fa-solid fa-bolt-lightning"></i>
-                                        <span>EV</span>
-                                    </label>
-
-                                    <input type="radio" name="travelMode" id="mode-transit" value="transit" class="hidden-radio">
-                                    <label for="mode-transit" class="toggle-btn" title="Public Transport">
-                                        <i class="fa-solid fa-bus"></i>
-                                        <span>Transit</span>
-                                    </label>
-
-                                    <input type="radio" name="travelMode" id="mode-bike" value="bike" class="hidden-radio">
-                                    <label for="mode-bike" class="toggle-btn" title="Motorcycle / Scooter">
-                                        <i class="fa-solid fa-motorcycle"></i>
-                                        <span>Bike</span>
-                                    </label>
-
-                                    <input type="radio" name="travelMode" id="mode-petrol" value="petrol" class="hidden-radio" checked>
-                                    <label for="mode-petrol" class="toggle-btn" title="Petrol Car">
-                                        <i class="fa-solid fa-car"></i>
-                                        <span>Car</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="opt-input-group">
-                                <div class="slider-label-row">
-                                    <label for="input-distance">Daily Travel Distance</label>
-                                    <span class="slider-val-bubble font-cyan"><span id="val-distance" class="font-mono">30</span> km</span>
-                                </div>
-                                <input type="range" id="input-distance" min="0" max="100" step="2" value="30" class="eco-slider slider-cyan">
-                                <div class="slider-ticks font-mono">
-                                    <span>0 km</span>
-                                    <span>25 km</span>
-                                    <span>50 km</span>
-                                    <span>75 km</span>
-                                    <span>100 km</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Water Card -->
+                        <!-- Vitality & Sleep Card -->
                         <div class="optimizer-card">
                             <div class="opt-card-header font-blue">
-                                <span><i class="fa-solid fa-droplet"></i> Water Usage</span>
-                                <span id="val-water-efficiency" class="opt-badge font-mono font-blue">Standard</span>
+                                <span><i class="fa-solid fa-bed"></i> Biometric Sleep & Vitality</span>
+                                <span id="val-sleep-quality" class="opt-badge font-mono font-blue">DEPRIVED</span>
                             </div>
                             <div class="opt-input-group">
                                 <div class="slider-label-row">
-                                    <label for="input-water">Daily Water Consumption</label>
-                                    <span class="slider-val-bubble font-blue"><span id="val-water" class="font-mono">200</span> Liters</span>
+                                    <label for="input-sleep-hours">Sleep Duration</label>
+                                    <span class="slider-val-bubble font-blue"><span id="val-sleep-hours" class="font-mono">7</span> hrs/day</span>
                                 </div>
-                                <input type="range" id="input-water" min="50" max="500" step="10" value="200" class="eco-slider slider-blue">
+                                <input type="range" id="input-sleep-hours" min="3" max="10" step="0.5" value="7" class="eco-slider slider-blue">
                                 <div class="slider-ticks font-mono">
-                                    <span>50L</span>
-                                    <span>150L</span>
-                                    <span>250L</span>
-                                    <span>350L</span>
-                                    <span>500L</span>
+                                    <span>3h</span>
+                                    <span>5h</span>
+                                    <span>7h</span>
+                                    <span>9h</span>
+                                    <span>10h</span>
                                 </div>
-                            </div>
-                            <div class="checkbox-wrapper">
-                                <input type="checkbox" id="input-water-wastage" class="cyber-checkbox">
-                                <label for="input-water-wastage" class="checkbox-label">
-                                    <span class="custom-checkbox"></span>
-                                    <span>Water wastage habits <small>(Running tap, leaks, long showers)</small></span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Plastic Consumption Card -->
-                        <div class="optimizer-card">
-                            <div class="opt-card-header font-pink">
-                                <span><i class="fa-solid fa-recycle"></i> Plastic & Waste</span>
-                                <span id="val-plastic-level" class="opt-badge font-mono font-pink">Moderate</span>
                             </div>
                             <div class="opt-input-group">
                                 <div class="slider-label-row">
-                                    <label for="input-plastic">Single-use Plastic Bottles / week</label>
-                                    <span class="slider-val-bubble font-pink"><span id="val-plastic" class="font-mono">12</span> bottles</span>
+                                    <label for="input-exercise-days">Physical Exercise Frequency</label>
+                                    <span class="slider-val-bubble font-blue"><span id="val-exercise-days" class="font-mono">3</span> days/wk</span>
                                 </div>
-                                <input type="range" id="input-plastic" min="0" max="50" step="1" value="12" class="eco-slider slider-pink">
-                            </div>
-                            <div class="checkbox-wrapper">
-                                <input type="checkbox" id="input-plastic-bags" class="cyber-checkbox" checked>
-                                <label for="input-plastic-bags" class="checkbox-label">
-                                    <span class="custom-checkbox"></span>
-                                    <span>Use disposable plastic carry bags & containers</span>
-                                </label>
+                                <input type="range" id="input-exercise-days" min="0" max="7" step="1" value="3" class="eco-slider slider-blue">
                             </div>
                         </div>
 
-                        <!-- Food Waste Card -->
+                        <!-- Focus & Wealth Card -->
+                        <div class="optimizer-card">
+                            <div class="opt-card-header font-cyan">
+                                <span><i class="fa-solid fa-graduation-cap"></i> Focus Labor & Financials</span>
+                                <span id="val-focus-level" class="opt-badge font-mono font-cyan">HIGH FOCUS</span>
+                            </div>
+                            <div class="opt-input-group">
+                                <div class="slider-label-row">
+                                    <label for="input-study-hours">Productive Study/Work Hours</label>
+                                    <span class="slider-val-bubble font-cyan"><span id="val-study-hours" class="font-mono">4</span> hrs</span>
+                                </div>
+                                <input type="range" id="input-study-hours" min="0" max="14" step="0.5" value="4" class="eco-slider slider-cyan">
+                                <div class="slider-ticks font-mono">
+                                    <span>0h</span>
+                                    <span>3h</span>
+                                    <span>6h</span>
+                                    <span>10h</span>
+                                    <span>14h</span>
+                                </div>
+                            </div>
+                            <div class="opt-input-group">
+                                <div class="slider-label-row">
+                                    <label for="input-savings-rate">Financial Savings Rate</label>
+                                    <span class="slider-val-bubble font-cyan"><span id="val-savings-rate" class="font-mono">20</span> %</span>
+                                </div>
+                                <input type="range" id="input-savings-rate" min="0" max="100" step="5" value="20" class="eco-slider slider-cyan">
+                            </div>
+                        </div>
+
+                        <!-- Diet & Stress Card -->
                         <div class="optimizer-card">
                             <div class="opt-card-header font-emerald">
-                                <span><i class="fa-solid fa-utensils"></i> Food Waste Frequency</span>
-                                <span id="val-food-impact" class="opt-badge font-mono font-emerald">Frequent leftovers</span>
+                                <span><i class="fa-solid fa-heart-pulse"></i> Stress & Dietary Intake</span>
+                                <span id="val-diet-status" class="opt-badge font-mono font-emerald">MED_QUALITY</span>
                             </div>
                             <div class="opt-input-group">
+                                <label class="section-sublabel font-mono text-xs" style="color: var(--color-text-sub); display: block; margin-bottom: 0.25rem;">Eating Habits Index</label>
+                                <select id="input-eating-habit" class="auth-input select-cyber" style="width: 100%; background: rgba(0,0,0,0.3); border-color: rgba(16,185,129,0.2);" onchange="updateCalculations(true)">
+                                    <option value="0">Poor (Fast Food, Heavy Sugar)</option>
+                                    <option value="1">Average (Mixed diet, occasional junk)</option>
+                                    <option value="2" selected>Good (Balanced, whole foods)</option>
+                                    <option value="3">Clean (Nutrient-dense organic, superfoods)</option>
+                                </select>
+                            </div>
+                            <div class="opt-input-group" style="margin-top: 1rem;">
                                 <div class="slider-label-row">
-                                    <label for="input-food-waste">Leftover Food Frequency</label>
-                                    <span class="slider-val-bubble font-emerald" id="lbl-food-waste">Frequent</span>
+                                    <label for="input-stress-level">Daily Neurological Stress</label>
+                                    <span class="slider-val-bubble font-emerald"><span id="val-stress-level" class="font-mono">30</span> %</span>
                                 </div>
-                                <input type="range" id="input-food-waste" min="0" max="3" step="1" value="2" class="eco-slider slider-emerald">
-                                <div class="slider-ticks font-mono">
-                                    <span>Never</span>
-                                    <span>Rare</span>
-                                    <span>Frequent</span>
-                                    <span>Extreme</span>
-                                </div>
+                                <input type="range" id="input-stress-level" min="0" max="100" step="1" value="30" class="eco-slider slider-emerald">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Tab Panel 2: Futuristic Environmental Simulator -->
+                    <!-- Tab Panel 2: Futuristic Chrono Simulator -->
                     <div id="panel-simulator" class="col-tab-panel hidden">
                         <!-- Red alert system card -->
-                        <div class="simulation-alert-card glass-card">
+                        <div class="simulation-alert-card glass-card" style="border-color: rgba(239, 68, 68, 0.4) !important;">
                             <div class="alert-header font-red font-mono">
-                                <i class="fa-solid fa-triangle-exclamation animate-flash"></i> CRITICAL_SIMULATION_ACTIVE
+                                <i class="fa-solid fa-triangle-exclamation animate-flash"></i> CHRONO_TEMPORAL_LINK_ACTIVE
                             </div>
-                            <p class="font-mono text-xs">Warning: Simulating rapid planetary decay factors. Adjust threat sliders to watch the centerpiece Earth morph in real-time.</p>
+                            <p class="font-mono text-xs">Warning: Simulating biological and neurological changes over time. Slide simulated years to dynamically age the future avatar.</p>
                         </div>
 
-                        <!-- Climate Year Projection Slider (2026 - 2050) -->
+                        <!-- Climate Year Projection Slider (2025 - 2040) -->
                         <div class="optimizer-card simulator-card year-simulation-card" style="border-color: rgba(239, 68, 68, 0.25) !important;">
                             <div class="opt-card-header font-red">
                                 <span><i class="fa-solid fa-clock"></i> FUTURE YEAR ESTIMATION</span>
-                                <span class="opt-badge font-mono font-red" id="val-sim-year-label">PRESENT (2026)</span>
+                                <span class="opt-badge font-mono font-red" id="val-sim-year-label">PRESENT (2025)</span>
                             </div>
                             <div class="opt-input-group">
                                 <div class="slider-label-row">
                                     <label for="input-sim-year">Projected Simulation Year</label>
-                                    <span class="slider-val-bubble font-red"><span id="val-sim-year" class="font-mono">2026</span></span>
+                                    <span class="slider-val-bubble font-red"><span id="val-sim-year" class="font-mono">2025</span></span>
                                 </div>
-                                <input type="range" id="input-sim-year" min="2026" max="2050" value="2026" class="eco-slider slider-red" oninput="updateFutureSimulationYear(this.value)">
+                                <input type="range" id="input-sim-year" min="2025" max="2040" value="2025" class="eco-slider slider-red" oninput="updateFutureSimulationYear(this.value)">
                             </div>
                         </div>
 
                         <!-- Holographic 2050 Projections Metrics Card -->
                         <div class="optimizer-card simulator-card simulation-metrics-card" style="border-color: rgba(239, 68, 68, 0.4) !important; background: rgba(239, 68, 68, 0.02) !important;">
                             <div class="opt-card-header font-red">
-                                <span><i class="fa-solid fa-chart-line"></i> 2050 CLIMATE PROJECTIONS</span>
-                                <span class="opt-badge font-mono font-red animate-pulse">MODELLED FORECAST</span>
+                                <span><i class="fa-solid fa-chart-line"></i> BIOMETRIC FUTURES</span>
+                                <span class="opt-badge font-mono font-red animate-pulse">CHRONO FORECAST</span>
                             </div>
                             <div class="metrics-grid">
                                 <div class="metric-item glass-card">
-                                    <div class="metric-title font-mono">TEMP RISE</div>
-                                    <div class="metric-value font-mono font-red" id="proj-temp">1.10 °C</div>
+                                    <div class="metric-title font-mono">COGNITIVE DECLINE</div>
+                                    <div class="metric-value font-mono font-red" id="proj-temp">0.0 %</div>
                                 </div>
                                 <div class="metric-item glass-card">
-                                    <div class="metric-title font-mono">SPECIES LOSS</div>
-                                    <div class="metric-value font-mono font-red" id="proj-species">0.00 %</div>
+                                    <div class="metric-title font-mono">CELLULAR AGING</div>
+                                    <div class="metric-value font-mono font-red" id="proj-species">+0.0 yrs</div>
                                 </div>
                                 <div class="metric-item glass-card">
-                                    <div class="metric-title font-mono">OCEAN pH ACIDITY</div>
-                                    <div class="metric-value font-mono font-red" id="proj-acid">8.100</div>
+                                    <div class="metric-title font-mono">NEURAL DEPLETION</div>
+                                    <div class="metric-value font-mono font-red" id="proj-acid">0.0 %</div>
                                 </div>
                                 <div class="metric-item glass-card">
-                                    <div class="metric-title font-mono">CANOPY COVER</div>
+                                    <div class="metric-title font-mono">DOPAMINE DENSITY</div>
                                     <div class="metric-value font-mono font-red" id="proj-canopy">100 %</div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Pollution Increase Slider -->
+                        <!-- Cognitive Decline Rate Slider -->
                         <div class="optimizer-card simulator-card">
                             <div class="opt-card-header font-red">
-                                <span><i class="fa-solid fa-smog"></i> Carbon Pollution Rate</span>
+                                <span><i class="fa-solid fa-brain"></i> Neural Fatigue Factor</span>
                                 <span id="val-sim-pollution-label" class="opt-badge font-mono font-red">STABLE</span>
                             </div>
                             <div class="opt-input-group">
                                 <div class="slider-label-row">
-                                    <label for="input-sim-pollution">Emissions Surge Index</label>
+                                    <label for="input-sim-pollution">Dopamine Depletion Rate</label>
                                     <span class="slider-val-bubble font-red"><span id="val-sim-pollution" class="font-mono">0</span>%</span>
                                 </div>
                                 <input type="range" id="input-sim-pollution" min="0" max="100" value="0" class="eco-slider slider-red">
                             </div>
                         </div>
 
-                        <!-- Deforestation Slider -->
+                        <!-- Biological Aging Slider -->
                         <div class="optimizer-card simulator-card">
                             <div class="opt-card-header font-red">
-                                <span><i class="fa-solid fa-tree-slash"></i> Global Deforestation</span>
-                                <span id="val-sim-deforestation-label" class="opt-badge font-mono font-red">HEALTHY Canopy</span>
+                                <span><i class="fa-solid fa-child-reaching"></i> Physical Deceleration</span>
+                                <span id="val-sim-deforestation-label" class="opt-badge font-mono font-red">HEALTHY Tissues</span>
                             </div>
                             <div class="opt-input-group">
                                 <div class="slider-label-row">
-                                    <label for="input-sim-deforestation">Tree Cover Loss</label>
+                                    <label for="input-sim-deforestation">Cellular Decay Surge</label>
                                     <span class="slider-val-bubble font-red"><span id="val-sim-deforestation" class="font-mono">0</span>%</span>
                                 </div>
                                 <input type="range" id="input-sim-deforestation" min="0" max="100" value="0" class="eco-slider slider-red">
                             </div>
                         </div>
 
-                        <!-- Plastic Waste Slider -->
+                        <!-- Plastic Waste -> Dopamine Slider -->
                         <div class="optimizer-card simulator-card">
                             <div class="opt-card-header font-red">
-                                <span><i class="fa-solid fa-dumpster-fire"></i> Ocean Plastic Haze</span>
-                                <span id="val-sim-plastic-label" class="opt-badge font-mono font-red">CLEAR Oceans</span>
+                                <span><i class="fa-solid fa-eye-slash"></i> Social Media Isolation</span>
+                                <span id="val-sim-plastic-label" class="opt-badge font-mono font-red">CONNECTED</span>
                             </div>
                             <div class="opt-input-group">
                                 <div class="slider-label-row">
-                                    <label for="input-sim-plastic">Ocean Microplastics Density</label>
+                                    <label for="input-sim-plastic">Dopamine Receptor Burnout</label>
                                     <span class="slider-val-bubble font-red"><span id="val-sim-plastic" class="font-mono">0</span>%</span>
                                 </div>
                                 <input type="range" id="input-sim-plastic" min="0" max="100" value="0" class="eco-slider slider-red">
                             </div>
                         </div>
 
-                        <!-- Fossil Fuels Slider -->
+                        <!-- Fossil Fuels -> Stress Slider -->
                         <div class="optimizer-card simulator-card">
                             <div class="opt-card-header font-red">
-                                <span><i class="fa-solid fa-industry"></i> Fossil Fuel Overuse</span>
-                                <span id="val-sim-fossil-label" class="opt-badge font-mono font-red">RENEWABLE Base</span>
+                                <span><i class="fa-solid fa-industry"></i> Chrono Acceleration</span>
+                                <span id="val-sim-fossil-label" class="opt-badge font-mono font-red">NORMAL Rate</span>
                             </div>
                             <div class="opt-input-group">
                                 <div class="slider-label-row">
-                                    <label for="input-sim-fossil">Coal/Petrol Exhaust Density</label>
+                                    <label for="input-sim-fossil">Chronological Compression</label>
                                     <span class="slider-val-bubble font-red"><span id="val-sim-fossil" class="font-mono">0</span>%</span>
                                 </div>
                                 <input type="range" id="input-sim-fossil" min="0" max="100" value="0" class="eco-slider slider-red">
@@ -616,17 +547,17 @@
                 </div>
             </section>
 
-            <!-- COLUMN 2: CYBER-ECO SPHERE (HERO SECTION) -->
+            <!-- COLUMN 2: CYBERNETIC CHRONO NEXUS (HERO SECTION) -->
             <section class="grid-col hero-column">
-                <!-- Eco Score Status Card -->
+                <!-- Future Self Vitality Status Card -->
                 <div class="score-status-card glass-card">
                     <div class="score-indicator-top">
-                        <span class="live-tag"><span class="live-dot"></span> LIVE ENGINE</span>
-                        <span class="status-lbl">SUSTAINABILITY INDEX</span>
+                        <span class="live-tag"><span class="live-dot"></span> CHRONO ENGINE</span>
+                        <span class="status-lbl">FUTURE SELF VITALITY INDEX</span>
                     </div>
 
                     <div class="score-circle-container">
-                        <!-- Outer Planetary Score HUD Ring -->
+                        <!-- Outer Holographic Vitality HUD Ring -->
                         <div class="score-gauge">
                             <svg class="score-ring-svg" viewBox="0 0 200 200">
                                 <circle class="score-ring-bg" cx="100" cy="100" r="92"></circle>
@@ -634,10 +565,10 @@
                             </svg>
                         </div>
 
-                        <!-- Dynamic Earth Rotating Area -->
+                        <!-- Dynamic Human Cyber-Avatar Rendering Area -->
                         <div class="earth-visualization-container">
                             <div id="earth-halo" class="earth-halo-glow status-moderately"></div>
-                            <!-- Earth Core Canvas -->
+                            <!-- Core Avatar Canvas -->
                             <div class="earth-sphere-wrapper">
                                 <canvas id="earth-canvas" width="340" height="340"></canvas>
                                 <div id="earth-cracks" class="earth-cracked-overlay"></div>
@@ -648,18 +579,18 @@
                     <!-- Sleek HUD Score & Status Display underneath -->
                     <div class="score-hud-panel glass-card">
                         <div class="score-hud-value">
-                            <span class="hud-label">ECO SCORE</span>
+                            <span class="hud-label">VITALITY SCORE</span>
                             <span id="score-num" class="hud-number font-mono">72</span><span class="hud-max">/100</span>
                         </div>
                         <div id="status-badge" class="status-badge status-moderately">
-                            <i class="fa-solid fa-circle-check"></i> <span id="status-text">Moderately Sustainable</span>
+                            <i class="fa-solid fa-circle-check"></i> <span id="status-text">Optimized Health Profile</span>
                         </div>
                     </div>
 
-                    <!-- DYNAMIC ECO AVATAR SYSTEM -->
+                    <!-- DYNAMIC BIO-AVATAR SYSTEM -->
                     <div class="eco-avatar-card glass-card">
                         <div class="avatar-header font-mono">
-                            <span><i class="fa-solid fa-id-card font-green"></i> AGENT BIO-AVATAR</span>
+                            <span><i class="fa-solid fa-id-card font-green"></i> CHRONO-AVATAR CONSOLE</span>
                             <span class="avatar-level-label">LEVEL <span id="avatar-level-num" class="font-mono">1</span></span>
                         </div>
                         <div class="avatar-body">
@@ -667,7 +598,7 @@
                                 <i class="fa-solid fa-shield-halved badge-level-1 text-shadow-glow"></i>
                             </div>
                             <div class="avatar-info">
-                                <h4 id="avatar-title" class="font-mono">CARBON SURVIVOR</h4>
+                                <h4 id="avatar-title" class="font-mono">CHRONO SURVIVOR</h4>
                                 <div class="xp-bar-container">
                                     <div class="xp-bar-fill animate-pulse-fast" id="avatar-xp-bar" style="width: 40%;"></div>
                                 </div>
@@ -678,155 +609,149 @@
                             </div>
                         </div>
                         <div id="level-up-flash" class="level-up-flash font-mono hidden">
-                            <i class="fa-solid fa-award font-gold animate-bounce"></i> LEVEL UP! AGENT RANK PROMOTED
+                            <i class="fa-solid fa-award font-gold animate-bounce"></i> LEVEL UP! FUTURE TIMELINE ACCELERATED
                         </div>
                     </div>
                 </div>
 
-                <!-- Impact Comparison Card -->
+                <!-- Biometric Comparison Card -->
                 <div class="comparison-card glass-card">
                     <div class="comp-title">
-                        <h3><i class="fa-solid fa-scale-unbalanced icon-accent"></i> IMPACT DYNAMIC COMPARISON</h3>
-                        <span class="sub-label font-mono">SYS_STAT // SYS_OK</span>
+                        <h3><i class="fa-solid fa-scale-unbalanced icon-accent"></i> BIOMETRIC COMPARATIVE MATRIX</h3>
+                        <span class="sub-label font-mono">SYS_STAT // SIM_OK</span>
                     </div>
 
                     <div class="comparison-table">
                         <div class="comp-header-row font-mono">
                             <div class="comp-cell">METRIC</div>
-                            <div class="comp-cell">BASELINE</div>
+                            <div class="comp-cell">BASELINE (POOR)</div>
                             <div class="comp-cell font-green">OPTIMIZED</div>
-                            <div class="comp-cell">REDUCTION</div>
+                            <div class="comp-cell">IMPROVEMENT</div>
                         </div>
 
                         <div class="comp-row">
-                            <div class="comp-cell font-label">Eco Score</div>
-                            <div class="comp-cell font-mono" id="comp-base-score">34</div>
+                            <div class="comp-cell font-label">Vitality Index</div>
+                            <div class="comp-cell font-mono" id="comp-base-score">24</div>
                             <div class="comp-cell font-mono font-green" id="comp-opt-score">72</div>
-                            <div class="comp-cell font-mono font-green" id="comp-diff-score">+38 pts</div>
+                            <div class="comp-cell font-mono font-green" id="comp-diff-score">+48 pts</div>
                         </div>
 
                         <div class="comp-row">
-                            <div class="comp-cell font-label">Carbon/mo</div>
-                            <div class="comp-cell font-mono" id="comp-base-co2">420 kg</div>
-                            <div class="comp-cell font-mono font-cyan" id="comp-opt-co2">180 kg</div>
-                            <div class="comp-cell font-mono font-green" id="comp-diff-co2">-57%</div>
+                            <div class="comp-cell font-label">Burnout Risk</div>
+                            <div class="comp-cell font-mono" id="comp-base-co2">75 %</div>
+                            <div class="comp-cell font-mono font-cyan" id="comp-opt-co2">15 %</div>
+                            <div class="comp-cell font-mono font-green" id="comp-diff-co2">-60%</div>
                         </div>
 
                         <div class="comp-row">
-                            <div class="comp-cell font-label">Water/mo</div>
-                            <div class="comp-cell font-mono" id="comp-base-water">12.2k L</div>
-                            <div class="comp-cell font-mono font-blue" id="comp-opt-water">6.0k L</div>
-                            <div class="comp-cell font-mono font-green" id="comp-diff-water">-51%</div>
+                            <div class="comp-cell font-label">Productive Focus</div>
+                            <div class="comp-cell font-mono" id="comp-base-water">1.0 hr</div>
+                            <div class="comp-cell font-mono font-blue" id="comp-opt-water">6.0 hr</div>
+                            <div class="comp-cell font-mono font-green" id="comp-diff-water">+500%</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- AI Recommendations Carousel / Panel -->
                 <div class="recommendations-box glass-card">
-                    <h3><i class="fa-solid fa-lightbulb font-amber"></i> AI SUSTAINABILITY INSIGHTS</h3>
+                    <h3><i class="fa-solid fa-lightbulb font-amber"></i> AI BIO-TELEMETRY RECOMMENDATIONS</h3>
                     <div id="insights-container" class="insights-grid">
                         <!-- Filled by JavaScript dynamically -->
                         <div class="insight-card">
-                            <i class="fa-solid fa-route icon"></i>
+                            <i class="fa-solid fa-circle-info icon"></i>
                             <div class="insight-details">
-                                <h4>Transportation emissions high</h4>
-                                <p>Switching travel to EV or public transit could increase your score by 14 points!</p>
+                                <h4>Calibrating Lifestyle Chronology...</h4>
+                                <p>Adjust sliders on the left console to generate dynamic lifestyle telemetry suggestions.</p>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- COLUMN 3: ANALYTICS & FORECASTING -->
-            <section class="grid-col analytics-column glass-card">
+<section class="grid-col analytics-column glass-card">
                 <div class="column-header">
                     <span class="telemetry-tag font-mono">TELEMETRY // FEED_09</span>
                     <h2><i class="fa-solid fa-chart-line icon-accent"></i> INTEL & PROJECTIONS</h2>
-                    <p>Real-time analytics and predictive modeling forecasting your lifestyle habits to 2030.</p>
+                    <p>Real-time analytics and predictive modeling forecasting your lifestyle habits to 2040.</p>
                 </div>
 
                 <!-- Interactive Dynamic Column Tabs -->
                 <div class="col-tabs font-mono" id="col3-tabs">
-                    <button class="col-tab active" onclick="switchColTab('col3', 'analytics')"><i class="fa-solid fa-chart-line"></i> ANALYTICS</button>
-                    <button class="col-tab" onclick="switchColTab('col3', 'challenges')"><i class="fa-solid fa-list-check"></i> QUESTS</button>
-                    <button class="col-tab" onclick="switchColTab('col3', 'battle')"><i class="fa-solid fa-fire-flame-curved"></i> BATTLE</button>
-                    <button class="col-tab" onclick="switchColTab('col3', 'leaderboard')"><i class="fa-solid fa-users-viewfinder"></i> COMMUNITY</button>
-                    <button class="col-tab" onclick="switchColTab('col3', 'news')"><i class="fa-solid fa-newspaper"></i> NEWS</button>
+                    <button class="col-tab active" onclick="switchColTab('col3', 'analytics')"><i class="fa-solid fa-chart-line"></i> FUTURES</button>
+                    <button class="col-tab" onclick="switchColTab('col3', 'challenges')"><i class="fa-solid fa-list-check"></i> MISSIONS</button>
+                    <button class="col-tab" onclick="switchColTab('col3', 'battle')"><i class="fa-solid fa-brain"></i> TRAITS</button>
+                    <button class="col-tab" onclick="switchColTab('col3', 'leaderboard')"><i class="fa-solid fa-users-viewfinder"></i> STANDINGS</button>
+                    <button class="col-tab" onclick="switchColTab('col3', 'news')"><i class="fa-solid fa-newspaper"></i> HUB</button>
                     <button class="col-tab" onclick="switchColTab('col3', 'profile')"><i class="fa-solid fa-user-astronaut"></i> PROFILE</button>
                 </div>
 
                 <div class="analytics-scroll-area">
-                    <!-- Tab Panel 1: Analytics & Projections -->
+                    <!-- Tab Panel 1: Futures & Telemetry -->
                     <div id="panel-analytics" class="col-tab-panel">
                         <!-- Futuristic Branded PDF Export Card -->
                         <div class="pdf-export-card glass-card font-mono">
                             <div class="pdf-header font-cyan">
-                                <span><i class="fa-solid fa-file-pdf"></i> INTEL REPORT GENERATOR</span>
+                                <span><i class="fa-solid fa-file-pdf"></i> TELEMETRY REPORT GENERATOR</span>
                                 <span class="font-cyan animate-pulse">SYS_OK</span>
                             </div>
                             <div class="pdf-body">
-                                <p class="text-xs">Compile and download a comprehensive sustainability report containing carbon footprints, utility savings, 2030 predictions, and automated carbon-reduction advice.</p>
+                                <p class="text-xs">Compile and download a comprehensive cybernetic life assessment report containing lifestyle score timelines, biometric fatigue risks, and customized chronological lifestyle recommendations.</p>
                                 <button class="btn-pdf-export" onclick="generatePdfReport()">
                                     <i class="fa-solid fa-download"></i> EXPORT SECURE PDF
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Weekly Carbon Savings Target Card -->
+                        <!-- Weekly Habit Optimization Target Card -->
                         <div class="weekly-goal-card glass-card font-mono">
                             <div class="weekly-header">
-                                <span><i class="fa-solid fa-calendar-check font-green"></i> WEEKLY SUSTAINABILITY TARGET</span>
-                                <span class="lbl-small font-green" id="weekly-goal-target-lbl">SAVE 50 KG CO₂</span>
+                                <span><i class="fa-solid fa-calendar-check font-green"></i> WEEKLY VITALITY TARGET</span>
+                                <span class="lbl-small font-green" id="weekly-goal-target-lbl">TARGET: OPTIMIZE LIFE</span>
                             </div>
                             <div class="weekly-progress-section">
                                 <div class="weekly-progress-labels">
-                                    <span class="text-xxs">WEEKLY PROGRESS</span>
+                                    <span class="text-xxs">GOAL TARGET ACHIEVED</span>
                                     <span class="weekly-progress-value font-green" id="weekly-goal-pct">0%</span>
                                 </div>
                                 <div class="weekly-bar-bg">
                                     <div id="weekly-bar-fill" class="weekly-bar-fill" style="width: 0%;"></div>
                                 </div>
                                 <div class="weekly-saved-stats text-xxs text-sub">
-                                    <span>CO₂ SAVED: <strong class="font-green" id="weekly-goal-saved-val">0.0 kg</strong></span>
+                                    <span>VITALITY GAINED: <strong class="font-green" id="weekly-goal-saved-val">0.0 pts</strong></span>
                                     <span>REWARD: <strong class="font-gold">+200 XP</strong></span>
                                 </div>
                             </div>
                             <button id="btn-claim-weekly" class="btn-claim-weekly font-mono" disabled onclick="claimWeeklyTargetReward()">
-                                CLAIM WEEKLY REWARD
+                                CLAIM CHRONO REWARD
                             </button>
                         </div>
 
-                        <!-- Chart 1: Carbon Breakdown -->
+                        <!-- Chart 1: Habits Breakdown -->
                         <div class="chart-container-card">
                             <div class="chart-header">
-                                <h4><i class="fa-solid fa-chart-pie font-pink"></i> Carbon Footprint Breakdown</h4>
-                                <span class="lbl-small font-mono">Daily CO₂ Output</span>
+                                <h4><i class="fa-solid fa-chart-pie font-pink"></i> Lifestyle Habit Load Distribution</h4>
+                                <span class="lbl-small font-mono">Daily Behavior Impact</span>
                             </div>
                             <div class="canvas-wrapper doughnut-wrapper">
                                 <canvas id="chart-breakdown"></canvas>
                             </div>
                         </div>
 
-                        <!-- Chart 2: Future Prediction (2026 - 2030) -->
+                        <!-- Chart 2: Future Projections (2025 - 2040) -->
                         <div class="chart-container-card">
                             <div class="chart-header">
-                                <h4><i class="fa-solid fa-chart-area font-cyan"></i> Future Carbon Projections</h4>
-                                <span class="lbl-small font-mono">Cumulative (Tons CO₂)</span>
+                                <h4><i class="fa-solid fa-chart-area font-cyan"></i> Chronological Projections</h4>
+                                <span class="lbl-small font-mono">Future Self Index Timeline</span>
                             </div>
                             <div class="canvas-wrapper line-wrapper">
                                 <canvas id="chart-prediction"></canvas>
                             </div>
                             <div class="chart-footer-note font-mono">
-                                <span class="dot dot-red"></span> Baseline: BAU
-                                <span class="dot dot-green" style="margin-left: 10px;"></span> Optimized Path
+                                <span class="dot dot-red"></span> Baseline: Doomscrolling BAU
+                                <span class="dot dot-green" style="margin-left: 10px;"></span> Optimized Self Path
                             </div>
                         </div>
 
-                        <!-- CARBON HISTORY TIMELINE TRACKER -->
+                        <!-- CHRONO HISTORY TIMELINE TRACKER -->
                         <div class="chart-container-card carbon-history-card">
                             <div class="chart-header">
-                                <h4><i class="fa-solid fa-clock-rotate-left font-emerald"></i> Carbon History & Milestones</h4>
-                                <span class="lbl-small font-mono">Weekly Timeline Tracker</span>
+                                <h4><i class="fa-solid fa-clock-rotate-left font-emerald"></i> Timeline Milestones & Streak</h4>
+                                <span class="lbl-small font-mono">Weekly Progression Tracker</span>
                             </div>
                             
                             <!-- Timeline scroll view -->
@@ -834,28 +759,28 @@
                                 <div class="timeline-step done">
                                     <span class="step-dot"><i class="fa-solid fa-check"></i></span>
                                     <div class="timeline-text">
-                                        <span class="step-title">WEEK 1: ESTABLISH LINK</span>
-                                        <span class="step-desc">Score: 34 (BAU) // Joined</span>
+                                        <span class="step-title">WEEK 1: INITIAL UPLINK</span>
+                                        <span class="step-desc">Score: 24 (BAU) // Setup Complete</span>
                                     </div>
                                 </div>
                                 <div class="timeline-step done">
                                     <span class="step-dot"><i class="fa-solid fa-check"></i></span>
                                     <div class="timeline-text">
-                                        <span class="step-title">WEEK 2: TRANSIT SHIFT</span>
-                                        <span class="step-desc">Saved 40kg CO₂ // Lvl up</span>
+                                        <span class="step-title">WEEK 2: SLEEP REGULATION</span>
+                                        <span class="step-desc">Restored 7h sleep // Vitality up</span>
                                     </div>
                                 </div>
                                 <div class="timeline-step active" id="history-step-active">
                                     <span class="step-dot"><span class="step-pulse"></span></span>
                                     <div class="timeline-text">
-                                        <span class="step-title">WEEK 3: POWER DECREASE</span>
-                                        <span class="step-desc">AC usage down // Level 1</span>
+                                        <span class="step-title">WEEK 3: DIGITAL BALANCE</span>
+                                        <span class="step-desc">Screen time < 5h // Active doomscrolling down</span>
                                     </div>
                                 </div>
                                 <div class="timeline-step locked">
                                     <span class="step-dot"><i class="fa-solid fa-lock"></i></span>
                                     <div class="timeline-text">
-                                        <span class="step-title">WEEK 4: GREEN WARRIOR</span>
+                                        <span class="step-title">WEEK 4: CHRONO COMMANDER</span>
                                         <span class="step-desc">Target Index: 90 pts</span>
                                     </div>
                                 </div>
@@ -867,11 +792,11 @@
                             </div>
                         </div>
 
-                        <!-- Campus Leaderboard Module -->
+                        <!-- Campus Standings Module -->
                         <div class="leaderboard-card">
                             <div class="leaderboard-header">
-                                <h4><i class="fa-solid fa-trophy font-amber"></i> CAMPUS ECO LEADERBOARD</h4>
-                                <span class="lbl-small font-mono">Monthly Standings</span>
+                                <h4><i class="fa-solid fa-trophy font-amber"></i> GLOBAL SURVIVOR STANDINGS</h4>
+                                <span class="lbl-small font-mono">Cybernetic Rankings</span>
                             </div>
                             <div class="leaderboard-list" id="leaderboard-list">
                                 <!-- Filled dynamically by JavaScript -->
@@ -891,87 +816,87 @@
                                     <div class="item-score font-mono">61</div>
                                 </div>
                             </div>
-                            <p class="leaderboard-note">Improving your habits boosts the ECE department rank in real-time!</p>
+                            <p class="leaderboard-note">Optimizing your daily habits elevates your department's Standing average in real-time!</p>
                         </div>
                     </div>
 
-                    <!-- Tab Panel 2: Daily Eco Challenges System -->
+                    <!-- Tab Panel 2: Chrono Missions -->
                     <div id="panel-challenges" class="col-tab-panel hidden">
-                        <!-- Quests overview -->
+                        <!-- Missions overview -->
                         <div class="simulation-alert-card glass-card quest-stats-card font-mono">
                             <div class="quest-summary-header font-green">
-                                <span><i class="fa-solid fa-medal"></i> SUSTAINABILITY ACTIVE QUESTS</span>
+                                <span><i class="fa-solid fa-medal"></i> CHRONO ACTIVE QUESTS</span>
                                 <span id="challenges-claimed-count" class="font-mono">0/4 DONE</span>
                             </div>
-                            <p class="font-mono text-xs">Complete eco-tasks to unlock dynamic Experience Points (XP) and level up your Bio-Avatar rank instantly.</p>
+                            <p class="font-mono text-xs">Execute life-improving habit tasks to secure dynamic Experience Points (XP) and trigger immediate bio-avatar level promotions.</p>
                         </div>
 
-                        <!-- Challenge 1: Power Saver -->
+                        <!-- Challenge 1: Screen Reduction -->
                         <div class="quest-card glass-card" id="quest-card-ac">
                             <div class="quest-header font-mono">
-                                <span class="quest-title"><i class="fa-solid fa-plug"></i> QUEST 1: POWER SAVER</span>
+                                <span class="quest-title"><i class="fa-solid fa-display"></i> MISSION 1: SCREEN REDUCTION</span>
                                 <span class="quest-xp font-amber font-mono">+30 XP</span>
                             </div>
-                            <p class="quest-desc">Adjust lifestyle slider to reduce AC Usage below 4 hours/day.</p>
+                            <p class="quest-desc">Adjust behavior to limit daily screen time below 5 hours.</p>
                             <div class="quest-progress-row">
                                 <div class="quest-bar-container">
                                     <div class="quest-bar-fill" id="quest-progress-bar-ac" style="width: 50%;"></div>
                                 </div>
-                                <span class="quest-status-lbl font-mono" id="quest-status-ac">8/4 hrs</span>
+                                <span class="quest-status-lbl font-mono" id="quest-status-ac">5/5 hrs</span>
                             </div>
                             <button id="btn-claim-ac" class="btn-quest-claim font-mono" disabled onclick="claimQuestXP('ac', 30)">
                                 <i class="fa-solid fa-lock"></i> LOCK_ACTIVE
                             </button>
                         </div>
 
-                        <!-- Challenge 2: Hydration Guardian -->
+                        <!-- Challenge 2: Stress Management -->
                         <div class="quest-card glass-card" id="quest-card-water">
                             <div class="quest-header font-mono">
-                                <span class="quest-title"><i class="fa-solid fa-droplet"></i> QUEST 2: HYDRATION GUARD</span>
+                                <span class="quest-title"><i class="fa-solid fa-heart-pulse"></i> MISSION 2: NEURAL CALM</span>
                                 <span class="quest-xp font-amber font-mono">+25 XP</span>
                             </div>
-                            <p class="quest-desc">Correct water wastage habits (uncheck wastage checkbox in Optimizer).</p>
+                            <p class="quest-desc">Modulate daily neurological stress below 30%.</p>
                             <div class="quest-progress-row">
                                 <div class="quest-bar-container">
                                     <div class="quest-bar-fill" id="quest-progress-bar-water" style="width: 0%;"></div>
                                 </div>
-                                <span class="quest-status-lbl font-mono" id="quest-status-water">WASTING</span>
+                                <span class="quest-status-lbl font-mono" id="quest-status-water">30/30 %</span>
                             </div>
                             <button id="btn-claim-water" class="btn-quest-claim font-mono" disabled onclick="claimQuestXP('water', 25)">
                                 <i class="fa-solid fa-lock"></i> LOCK_ACTIVE
                             </button>
                         </div>
 
-                        <!-- Challenge 3: Carbon-Neutral Commuter -->
+                        <!-- Challenge 3: Deep Sleep -->
                         <div class="quest-card glass-card" id="quest-card-transit">
                             <div class="quest-header font-mono">
-                                <span class="quest-title"><i class="fa-solid fa-tree"></i> QUEST 3: GREEN TRAVEL</span>
+                                <span class="quest-title"><i class="fa-solid fa-bed"></i> MISSION 3: DEEP REST</span>
                                 <span class="quest-xp font-amber font-mono">+40 XP</span>
                             </div>
-                            <p class="quest-desc">Commute sustainably (toggle travel mode to Walk, EV, or Public Transit).</p>
+                            <p class="quest-desc">Maintain sleep duration above 7 hours daily.</p>
                             <div class="quest-progress-row">
                                 <div class="quest-bar-container">
                                     <div class="quest-bar-fill" id="quest-progress-bar-transit" style="width: 0%;"></div>
                                 </div>
-                                <span class="quest-status-lbl font-mono" id="quest-status-transit">CAR</span>
+                                <span class="quest-status-lbl font-mono" id="quest-status-transit">7/7 hrs</span>
                             </div>
                             <button id="btn-claim-transit" class="btn-quest-claim font-mono" disabled onclick="claimQuestXP('transit', 40)">
                                 <i class="fa-solid fa-lock"></i> LOCK_ACTIVE
                             </button>
                         </div>
 
-                        <!-- Challenge 4: Zero Waste Flask -->
+                        <!-- Challenge 4: Saving discipline -->
                         <div class="quest-card glass-card" id="quest-card-plastic">
                             <div class="quest-header font-mono">
-                                <span class="quest-title"><i class="fa-solid fa-recycle"></i> QUEST 4: ZERO PLASTIC</span>
+                                <span class="quest-title"><i class="fa-solid fa-indian-rupee-sign"></i> MISSION 4: WEALTH INCEPTION</span>
                                 <span class="quest-xp font-amber font-mono">+35 XP</span>
                             </div>
-                            <p class="quest-desc">Minimize single-use plastic bottles to 0 weekly.</p>
+                            <p class="quest-desc">Optimize savings rate above 30% of income.</p>
                             <div class="quest-progress-row">
                                 <div class="quest-bar-container">
                                     <div class="quest-bar-fill" id="quest-progress-bar-plastic" style="width: 30%;"></div>
                                 </div>
-                                <span class="quest-status-lbl font-mono" id="quest-status-plastic">12 left</span>
+                                <span class="quest-status-lbl font-mono" id="quest-status-plastic">20/30 %</span>
                             </div>
                             <button id="btn-claim-plastic" class="btn-quest-claim font-mono" disabled onclick="claimQuestXP('plastic', 35)">
                                 <i class="fa-solid fa-lock"></i> LOCK_ACTIVE
@@ -979,26 +904,11 @@
                         </div>
                     </div>
 
-                    <!-- Tab Panel 3: Campus Department Battle Mode -->
+                    <!-- Tab Panel 3: AI Personality Traits -->
                     <div id="panel-battle" class="col-tab-panel hidden">
-                        <!-- Department rankings overview -->
-                        <div class="simulation-alert-card glass-card battle-alert-card font-mono">
+                        <!-- AI Personality Analysis Overview -->
+                        <div class="simulation-alert-card glass-card battle-alert-card font-mono" style="border-color: rgba(6, 182, 212, 0.3) !important;">
                             <div class="quest-summary-header font-cyan">
-                                <span><i class="fa-solid fa-fire"></i> DEPARTMENT BATTLE ACTIVE</span>
-                                <span class="font-mono">LIVE CLASH</span>
-                            </div>
-                            <p class="font-mono text-xs">ECE Department is currently at **Rank #2**. Contribute your earned points to support the ECE ledger and claim Rank #1!</p>
-                        </div>
-
-                        <!-- Campus Battle Arena Standings -->
-                        <div class="battle-arena-card glass-card">
-                            <h4 class="font-mono font-green"><i class="fa-solid fa-ranking-star"></i> DEPT STANDINGS LEADERBOARD</h4>
-                            
-                            <div class="battle-list font-mono" id="battle-departments-list">
-                                <!-- CSE -->
-                                <div class="battle-row">
-                                    <div class="battle-dept-meta">
-                                        <span class="battle-rank">🥇 #1</span>
                                         <span class="battle-name">COMP_SCIENCE_DEPT</span>
                                     </div>
                                     <div class="battle-progress-wrapper">
@@ -1607,10 +1517,10 @@
             <!-- Prompt suggestion chips -->
             <div class="chat-chips-scroll">
                 <div class="chat-chips">
-                    <button class="chat-chip" onclick="askPresetQuestion('boost')">⚡ Boost my Eco Score</button>
-                    <button class="chat-chip" onclick="askPresetQuestion('transport')">🚗 Analyze my Transport</button>
-                    <button class="chat-chip" onclick="askPresetQuestion('forecast')">🔮 Explain my 2030 predictions</button>
-                    <button class="chat-chip" onclick="askPresetQuestion('water')">💧 Water conservation tips</button>
+                    <button class="chat-chip" onclick="askPresetQuestion('boost')">⚡ Avoid 2035 Burnout</button>
+                    <button class="chat-chip" onclick="askPresetQuestion('transport')">📱 Screen Load Analysis</button>
+                    <button class="chat-chip" onclick="askPresetQuestion('forecast')">🔮 Project My Life in 2035</button>
+                    <button class="chat-chip" onclick="askPresetQuestion('water')">🧠 Dopamine Regulation Tips</button>
                 </div>
             </div>
 

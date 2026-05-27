@@ -42,15 +42,15 @@ function checkAndUpdateDailyStreak() {
     const todayStr = `${year}-${month}-${day}`;
     
     let lastActive = currentUserProfile.lastActiveDate || "";
-    let streak = currentUserProfile.sustainabilityStreak || 1;
+    let streak = currentUserProfile.streakCount || 1;
     
     if (lastActive === todayStr) {
-        console.log("🔥 ECOSPHERE // Streak verified for today: " + streak + " days active.");
+        console.log("🔥 SIMULATOR // Streak verified for today: " + streak + " days active.");
     } else if (lastActive === "") {
         streak = 1;
         currentUserProfile.lastActiveDate = todayStr;
-        currentUserProfile.sustainabilityStreak = streak;
-        console.log("🔥 ECOSPHERE // First active day! Streak initiated: 1 day.");
+        currentUserProfile.streakCount = streak;
+        console.log("🔥 SIMULATOR // First active day! Streak initiated: 1 day.");
     } else {
         const lastActiveDateObj = new Date(lastActive);
         const todayDateObj = new Date(todayStr);
@@ -59,18 +59,18 @@ function checkAndUpdateDailyStreak() {
         
         if (diffDays === 1) {
             streak += 1;
-            console.log("🔥 ECOSPHERE // Consecutive day detected! Streak incremented to: " + streak);
+            console.log("🔥 SIMULATOR // Consecutive day detected! Streak incremented to: " + streak);
         } else {
             streak = 1;
-            console.log("🔥 ECOSPHERE // Streak broken. Resetting active streak to 1 day.");
+            console.log("🔥 SIMULATOR // Streak broken. Resetting active streak to 1 day.");
         }
         
         currentUserProfile.lastActiveDate = todayStr;
-        currentUserProfile.sustainabilityStreak = streak;
+        currentUserProfile.streakCount = streak;
     }
     
     if (typeof currentState !== 'undefined') {
-        currentState.sustainabilityStreak = streak;
+        currentState.streakCount = streak;
         currentState.lastActiveDate = todayStr;
     }
 }
@@ -101,34 +101,26 @@ window.addEventListener('load', () => {
                             uid: user.uid,
                             name: user.displayName || user.email.split('@')[0],
                             email: user.email,
-                            photoURL: user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.email)}`,
+                            photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.email)}`,
                             role: user.email === 'admin@ecosphere.ai' ? 'admin' : 'user',
                             profileComplete: false,
                             age: "",
-                            phone: "",
-                            department: "ECE",
-                            city: "",
-                            sustainabilityGoal: "Carbon Neutral",
-                            transportPreference: "EV",
-                            sustainabilityStreak: 1,
-                            lastActiveDate: "",
-                            achievements: ["first_uplink"],
-                            ecoScore: 72,
-                            dailyCo2: 12.2,
+                            gender: "astronaut",
+                            unlockedMissions: ["first_uplink"],
                             sliderSettings: {
-                                acHours: 8,
-                                appliances: 6,
-                                travelMode: 'petrol',
-                                distance: 30,
-                                waterLiters: 200,
-                                waterWastage: false,
-                                plasticBottles: 12,
-                                plasticBags: true,
-                                foodWaste: 2
+                                sleepHours: 7,
+                                screenTime: 5,
+                                studyHours: 4,
+                                exerciseDays: 3,
+                                eatingHabit: 2,
+                                stressLevel: 30,
+                                socialMediaTime: 2,
+                                savingsRate: 20
                             },
                             xp: 40,
-                            claimedQuests: [],
-                            pledgedPoints: 0,
+                            level: 1,
+                            streakCount: 1,
+                            simulatedYear: 2025,
                             lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                         };
                         await db.collection('users').doc(user.uid).set(profile);
@@ -142,47 +134,32 @@ window.addEventListener('load', () => {
                         
                         try {
                             const sliderSettings = {
-                                acHours: state.acHours,
-                                appliances: state.appliances,
-                                travelMode: state.travelMode,
-                                distance: state.distance,
-                                waterLiters: state.waterLiters,
-                                waterWastage: state.waterWastage,
-                                plasticBottles: state.plasticBottles,
-                                plasticBags: state.plasticBags,
-                                foodWaste: state.foodWaste
+                                sleepHours: state.sleepHours,
+                                screenTime: state.screenTime,
+                                studyHours: state.studyHours,
+                                exerciseDays: state.exerciseDays,
+                                eatingHabit: state.eatingHabit,
+                                stressLevel: state.stressLevel,
+                                socialMediaTime: state.socialMediaTime,
+                                savingsRate: state.savingsRate
                             };
                             
                             await db.collection('users').doc(user.uid).update({
-                                ecoScore: state.ecoScore,
-                                dailyCo2: state.dailyCo2,
                                 sliderSettings: sliderSettings,
                                 xp: state.xp,
-                                claimedQuests: state.claimedQuests,
-                                pledgedPoints: state.pledgedPoints,
+                                level: state.level || currentUserProfile.level || 1,
+                                streakCount: state.streakCount || currentUserProfile.streakCount || 1,
+                                unlockedMissions: state.unlockedMissions || currentUserProfile.unlockedMissions || ["first_uplink"],
                                 name: state.name || currentUserProfile.name || "",
                                 photoURL: state.photoURL || currentUserProfile.photoURL || "",
                                 age: state.age || currentUserProfile.age || "",
-                                phone: state.phone || currentUserProfile.phone || "",
-                                department: state.department || currentUserProfile.department || "ECE",
-                                city: state.city || currentUserProfile.city || "",
-                                sustainabilityGoal: state.sustainabilityGoal || currentUserProfile.sustainabilityGoal || "Carbon Neutral",
-                                transportPreference: state.transportPreference || currentUserProfile.transportPreference || "EV",
-                                sustainabilityStreak: state.sustainabilityStreak || currentUserProfile.sustainabilityStreak || 1,
-                                lastActiveDate: state.lastActiveDate || currentUserProfile.lastActiveDate || "",
-                                achievements: state.achievements || currentUserProfile.achievements || ["first_uplink"],
+                                gender: state.gender || currentUserProfile.gender || "astronaut",
+                                simulatedYear: state.simulatedYear || currentUserProfile.simulatedYear || 2025,
                                 profileComplete: state.profileComplete !== undefined ? state.profileComplete : (currentUserProfile.profileComplete || false),
                                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                             });
                             
-                            // Log history subcollection entry
-                            await db.collection('users').doc(user.uid).collection('history').add({
-                                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                                ecoScore: state.ecoScore,
-                                dailyCo2: state.dailyCo2
-                            });
-                            
-                            console.log("💾 ECOSPHERE // Firestore auto-saved user profile settings successfully.");
+                            console.log("💾 SIMULATOR // Firestore auto-saved telemetry successfully.");
                             
                             const writesIndicator = document.getElementById('admin-db-writes');
                             if (writesIndicator) {
@@ -196,34 +173,28 @@ window.addEventListener('load', () => {
 
                     // Role-Based Redirection
                     if (profile.role === 'admin') {
-                        console.log("👑 ECOSPHERE // Admin authority detected. Redirecting to Command Console...");
+                        console.log("👑 SIMULATOR // Admin authority detected. Redirecting to Command Console...");
                         authOverlay.classList.add('hidden');
                         appContainer.classList.add('hidden');
                         adminContainer.classList.remove('hidden');
                         
-                        // Load Administrator Dashboard Data
                         loadAdminDashboardTelemetry();
                     } else {
-                        console.log("👤 ECOSPHERE // Standard Agent uplink complete.");
+                        console.log("👤 SIMULATOR // Standard Agent uplink complete.");
                         
                         // Seed properties to currentState
                         if (typeof currentState !== 'undefined') {
                             currentState.name = profile.name || "";
                             currentState.photoURL = profile.photoURL || "";
                             currentState.age = profile.age || "";
-                            currentState.phone = profile.phone || "";
-                            currentState.department = profile.department || "ECE";
-                            currentState.city = profile.city || "";
-                            currentState.sustainabilityGoal = profile.sustainabilityGoal || "Carbon Neutral";
-                            currentState.transportPreference = profile.transportPreference || "EV";
-                            currentState.sustainabilityStreak = profile.sustainabilityStreak || 1;
-                            currentState.lastActiveDate = profile.lastActiveDate || "";
-                            currentState.achievements = profile.achievements || ["first_uplink"];
+                            currentState.gender = profile.gender || "astronaut";
+                            currentState.unlockedMissions = profile.unlockedMissions || ["first_uplink"];
                             currentState.profileComplete = profile.profileComplete || false;
                             
                             currentState.xp = profile.xp !== undefined ? profile.xp : 40;
-                            currentState.claimedQuests = profile.claimedQuests || [];
-                            currentState.pledgedPoints = profile.pledgedPoints || 0;
+                            currentState.level = profile.level !== undefined ? profile.level : 1;
+                            currentState.streakCount = profile.streakCount !== undefined ? profile.streakCount : 1;
+                            currentState.simulatedYear = profile.simulatedYear || 2025;
                         }
 
                         // Calculate and update daily streak
@@ -238,12 +209,6 @@ window.addEventListener('load', () => {
                             // Restore Loaded slider values to DOM using the hook inside app.js
                             if (window.restoreUserSettings) {
                                 window.restoreUserSettings(profile.sliderSettings);
-                                
-                                // Re-evaluate bio-avatar and standings widgets
-                                if (window.updateAvatarXPWidget) window.updateAvatarXPWidget();
-                                if (window.evaluateQuests) window.evaluateQuests();
-                                if (window.updateBattleLeaderboard) window.updateBattleLeaderboard();
-                                if (window.updateProfileDashboardUI) window.updateProfileDashboardUI();
                             }
                         } else {
                             // Block dashboard & show onboarding setup!
@@ -256,11 +221,6 @@ window.addEventListener('load', () => {
                             
                             // Pre-fill setup form fields
                             document.getElementById('setup-name').value = profile.name || user.displayName || "";
-                            
-                            const avatarImg = document.getElementById('setup-avatar-img');
-                            if (avatarImg) {
-                                avatarImg.src = profile.photoURL || user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.email)}`;
-                            }
                         }
                     }
                 } catch (err) {
@@ -346,27 +306,24 @@ async function handleAuthSubmit(event) {
                 phone: "",
                 department: "ECE",
                 city: "",
-                sustainabilityGoal: "Carbon Neutral",
-                transportPreference: "EV",
-                sustainabilityStreak: 1,
+                gender: "astronaut",
+                futureGoal: "Entrepreneurial Success",
+                streakCount: 1,
                 lastActiveDate: "",
-                achievements: ["first_uplink"],
-                ecoScore: 72,
-                dailyCo2: 12.2,
-                sliderSettings: {
-                    acHours: 8,
-                    appliances: 6,
-                    travelMode: 'petrol',
-                    distance: 30,
-                    waterLiters: 200,
-                    waterWastage: false,
-                    plasticBottles: 12,
-                    plasticBags: true,
-                    foodWaste: 2
-                },
+                unlockedMissions: ["first_uplink"],
                 xp: 40,
-                claimedQuests: [],
-                pledgedPoints: 0,
+                level: 1,
+                simulatedYear: 2025,
+                sliderSettings: {
+                    sleepHours: 7,
+                    screenTime: 5,
+                    studyHours: 4,
+                    exerciseDays: 3,
+                    eatingHabit: 2,
+                    stressLevel: 30,
+                    socialMediaTime: 2,
+                    savingsRate: 20
+                },
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
             };
             await db.collection('users').doc(cred.user.uid).set(profile);
@@ -579,15 +536,14 @@ function switchToUserView() {
     // Inject mock user details or typical student presets
     if (window.restoreUserSettings) {
         window.restoreUserSettings({
-            acHours: 8,
-            appliances: 6,
-            travelMode: 'petrol',
-            distance: 30,
-            waterLiters: 200,
-            waterWastage: false,
-            plasticBottles: 12,
-            plasticBags: true,
-            foodWaste: 2
+            sleepHours: 7,
+            screenTime: 5,
+            studyHours: 4,
+            exerciseDays: 3,
+            eatingHabit: 2,
+            stressLevel: 30,
+            socialMediaTime: 2,
+            savingsRate: 20
         });
     }
 }
@@ -624,38 +580,30 @@ function initializeLocalSandboxState() {
         window.saveUserDataToCloud = (state) => {
             if (currentUserProfile.role === 'admin') return;
             
-            currentUserProfile.ecoScore = state.ecoScore;
-            currentUserProfile.dailyCo2 = state.dailyCo2;
             currentUserProfile.xp = state.xp;
-            currentUserProfile.claimedQuests = state.claimedQuests;
-            currentUserProfile.pledgedPoints = state.pledgedPoints;
+            currentUserProfile.level = state.level || currentUserProfile.level || 1;
+            currentUserProfile.streakCount = state.streakCount || currentUserProfile.streakCount || 1;
+            currentUserProfile.unlockedMissions = state.unlockedMissions || currentUserProfile.unlockedMissions || ["first_uplink"];
+            currentUserProfile.simulatedYear = state.simulatedYear || currentUserProfile.simulatedYear || 2025;
             
             currentUserProfile.name = state.name || currentUserProfile.name || "";
             currentUserProfile.photoURL = state.photoURL || currentUserProfile.photoURL || "";
             currentUserProfile.age = state.age || currentUserProfile.age || "";
-            currentUserProfile.phone = state.phone || currentUserProfile.phone || "";
-            currentUserProfile.department = state.department || currentUserProfile.department || "ECE";
-            currentUserProfile.city = state.city || currentUserProfile.city || "";
-            currentUserProfile.sustainabilityGoal = state.sustainabilityGoal || currentUserProfile.sustainabilityGoal || "Carbon Neutral";
-            currentUserProfile.transportPreference = state.transportPreference || currentUserProfile.transportPreference || "EV";
-            currentUserProfile.sustainabilityStreak = state.sustainabilityStreak || currentUserProfile.sustainabilityStreak || 1;
-            currentUserProfile.lastActiveDate = state.lastActiveDate || currentUserProfile.lastActiveDate || "";
-            currentUserProfile.achievements = state.achievements || currentUserProfile.achievements || ["first_uplink"];
+            currentUserProfile.gender = state.gender || currentUserProfile.gender || "astronaut";
             currentUserProfile.profileComplete = state.profileComplete !== undefined ? state.profileComplete : (currentUserProfile.profileComplete || false);
 
             currentUserProfile.sliderSettings = {
-                acHours: state.acHours,
-                appliances: state.appliances,
-                travelMode: state.travelMode,
-                distance: state.distance,
-                waterLiters: state.waterLiters,
-                waterWastage: state.waterWastage,
-                plasticBottles: state.plasticBottles,
-                plasticBags: state.plasticBags,
-                foodWaste: state.foodWaste
+                sleepHours: state.sleepHours,
+                screenTime: state.screenTime,
+                studyHours: state.studyHours,
+                exerciseDays: state.exerciseDays,
+                eatingHabit: state.eatingHabit,
+                stressLevel: state.stressLevel,
+                socialMediaTime: state.socialMediaTime,
+                savingsRate: state.savingsRate
             };
             localStorage.setItem('ecosphere_sandbox_user', JSON.stringify(currentUserProfile));
-            console.log("💾 ECOSPHERE // Sandbox Auto-Saved to Local Storage successfully.");
+            console.log("💾 SIMULATOR // Sandbox Auto-Saved to Local Storage successfully.");
             
             // Add custom local mock directories updates
             let sandboxDb = JSON.parse(localStorage.getItem('ecosphere_sandbox_db') || "[]");
@@ -669,19 +617,14 @@ function initializeLocalSandboxState() {
             currentState.name = u.name || "";
             currentState.photoURL = u.photoURL || "";
             currentState.age = u.age || "";
-            currentState.phone = u.phone || "";
-            currentState.department = u.department || "ECE";
-            currentState.city = u.city || "";
-            currentState.sustainabilityGoal = u.sustainabilityGoal || "Carbon Neutral";
-            currentState.transportPreference = u.transportPreference || "EV";
-            currentState.sustainabilityStreak = u.sustainabilityStreak || 1;
-            currentState.lastActiveDate = u.lastActiveDate || "";
-            currentState.achievements = u.achievements || ["first_uplink"];
+            currentState.gender = u.gender || "astronaut";
+            currentState.unlockedMissions = u.unlockedMissions || ["first_uplink"];
             currentState.profileComplete = u.profileComplete || false;
             
             currentState.xp = u.xp !== undefined ? u.xp : 40;
-            currentState.claimedQuests = u.claimedQuests || [];
-            currentState.pledgedPoints = u.pledgedPoints || 0;
+            currentState.level = u.level !== undefined ? u.level : 1;
+            currentState.streakCount = u.streakCount !== undefined ? u.streakCount : 1;
+            currentState.simulatedYear = u.simulatedYear || 2025;
         }
 
         // Calculate and update daily streak
@@ -763,34 +706,26 @@ function handleLocalSandboxAuth(email, password, name, isSignup) {
             uid: "sandbox_user_id_" + Math.floor(Math.random() * 10000),
             name: isSignup ? name : email.split('@')[0],
             email: email,
-            photoURL: email.includes("google") ? "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email)}`,
+            photoURL: email.includes("google") ? "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`,
             role: "user",
             profileComplete: false,
             age: "",
-            phone: "",
-            department: "ECE",
-            city: "",
-            sustainabilityGoal: "Carbon Neutral",
-            transportPreference: "EV",
-            sustainabilityStreak: 1,
-            lastActiveDate: "",
-            achievements: ["first_uplink"],
-            ecoScore: 72,
-            dailyCo2: 12.2,
+            gender: "astronaut",
+            unlockedMissions: ["first_uplink"],
             sliderSettings: {
-                acHours: 8,
-                appliances: 6,
-                travelMode: 'petrol',
-                distance: 30,
-                waterLiters: 200,
-                waterWastage: false,
-                plasticBottles: 12,
-                plasticBags: true,
-                foodWaste: 2
+                sleepHours: 7,
+                screenTime: 5,
+                studyHours: 4,
+                exerciseDays: 3,
+                eatingHabit: 2,
+                stressLevel: 30,
+                socialMediaTime: 2,
+                savingsRate: 20
             },
             xp: 40,
-            claimedQuests: [],
-            pledgedPoints: 0
+            level: 1,
+            streakCount: 1,
+            simulatedYear: 2025
         };
         
         // Seeding database mockup
@@ -829,12 +764,22 @@ function loadLocalSandboxAdminTelemetry() {
                 name: "JANE_DOE",
                 email: "jane.doe@ecosphere.net",
                 role: "user",
-                ecoScore: 84,
-                dailyCo2: 8.2,
+                xp: 120,
+                level: 2,
+                streakCount: 5,
+                simulatedYear: 2025,
+                gender: "female",
+                futureGoal: "Balanced Zen Life",
+                profileComplete: true,
                 sliderSettings: {
-                    acHours: 2, appliances: 3, travelMode: 'transit', distance: 15,
-                    waterLiters: 110, waterWastage: false, plasticBottles: 2,
-                    plasticBags: false, foodWaste: 1
+                    sleepHours: 8,
+                    screenTime: 3,
+                    studyHours: 6,
+                    exerciseDays: 5,
+                    eatingHabit: 3,
+                    stressLevel: 15,
+                    socialMediaTime: 1,
+                    savingsRate: 45
                 }
             },
             {
@@ -842,12 +787,22 @@ function loadLocalSandboxAdminTelemetry() {
                 name: "JOHN_SMITH",
                 email: "smith.j@ecosphere.net",
                 role: "user",
-                ecoScore: 24,
-                dailyCo2: 21.8,
+                xp: 20,
+                level: 1,
+                streakCount: 1,
+                simulatedYear: 2025,
+                gender: "male",
+                futureGoal: "Wealth Generation",
+                profileComplete: true,
                 sliderSettings: {
-                    acHours: 18, appliances: 12, travelMode: 'petrol', distance: 65,
-                    waterLiters: 360, waterWastage: true, plasticBottles: 25,
-                    plasticBags: true, foodWaste: 3
+                    sleepHours: 4,
+                    screenTime: 12,
+                    studyHours: 1,
+                    exerciseDays: 0,
+                    eatingHabit: 0,
+                    stressLevel: 80,
+                    socialMediaTime: 6,
+                    savingsRate: 5
                 }
             }
         ];
