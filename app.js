@@ -562,18 +562,117 @@ function updateCalculations(instant = false) {
         }
     });
 
-    // Update Projections UI text nodes in column 3
+    // ----------------------------------------------------
+    // PLANETARY SIMULATION ENG METRICS & STACK
+    // ----------------------------------------------------
+    let globalTempRise = 1.1 + (carbon / 100) * 2.2 + (yearDiff * 0.015);
+    globalTempRise = parseFloat(globalTempRise.toFixed(2));
+
+    let seaLevelRise = 0.1 + (globalTempRise - 1.1) * 0.5 + ((100 - ice) / 100) * 0.8;
+    seaLevelRise = parseFloat(seaLevelRise.toFixed(2));
+
+    let renewRatio = Math.max(10, Math.min(100, Math.round(currentState.savingsRate * 1.5 + currentState.exerciseDays * 5 + (100 - currentState.stressLevel) * 0.3 - simFossil * 0.4)));
+    let extinctionRate = Math.round(15 + ((100 - biodiv) / 100) * 225);
+
+    // Save in State
+    currentState.globalTempRise = globalTempRise;
+    currentState.seaLevelRise = seaLevelRise;
+    currentState.renewRatio = renewRatio;
+    currentState.extinctionRate = extinctionRate;
+
+    // Update Projections UI text nodes in column 1 card
     const projTempEl = document.getElementById('proj-temp');
-    if (projTempEl) projTempEl.textContent = `${Math.max(0, Math.round((100 - mentalWellness) * 0.8 + yearDiff * 0.5))}%`;
+    if (projTempEl) projTempEl.textContent = `+${globalTempRise.toFixed(2)} °C`;
 
     const projSpeciesEl = document.getElementById('proj-species');
-    if (projSpeciesEl) projSpeciesEl.textContent = `+${Math.max(0, ((100 - physicalHealth) * 0.12)).toFixed(1)} yrs`;
+    if (projSpeciesEl) projSpeciesEl.textContent = `+${seaLevelRise.toFixed(2)} m`;
 
     const projAcidEl = document.getElementById('proj-acid');
-    if (projAcidEl) projAcidEl.textContent = `${Math.max(0, (currentState.stressLevel * 0.6 + currentState.screenTime * 0.4)).toFixed(1)}%`;
+    if (projAcidEl) projAcidEl.textContent = `${renewRatio} %`;
 
     const projCanopyEl = document.getElementById('proj-canopy');
-    if (projCanopyEl) projCanopyEl.textContent = `${Math.max(15, Math.round(100 - currentState.screenTime * 4 - currentState.socialMediaTime * 5))}%`;
+    if (projCanopyEl) projCanopyEl.textContent = `${extinctionRate} / day`;
+
+    // Dynamic Cause-Effect Feed Updates
+    const elSlide1 = document.querySelector('#tip-slide-1 p');
+    if (elSlide1) {
+        elSlide1.innerHTML = `High screen time (<strong>${currentState.screenTime}h/day</strong>) → higher local grid electricity demand → coal/gas combustion rises → atmospheric quality decays to <strong>${atmos}%</strong>.`;
+    }
+    const elSlide2 = document.querySelector('#tip-slide-2 p');
+    if (elSlide2) {
+        const dietLabels = ["POOR", "AVERAGE", "GOOD QUALITY", "CLEAN NUTRIENT"];
+        elSlide2.innerHTML = `Poor eating habits (<strong>${dietLabels[currentState.eatingHabit]}</strong>) → industrial agriculture pressure climbs → forest canopy cleared for pastures → biodiversity survival drops to <strong>${biodiv}%</strong>.`;
+    }
+    const elSlide3 = document.querySelector('#tip-slide-3 p');
+    if (elSlide3) {
+        elSlide3.innerHTML = `Low savings (<strong>${currentState.savingsRate}% Savings</strong>) → frequent consumer purchases → manufacturing cycles increase → resource depletion climbs → sea level rise compounds by <strong>+${seaLevelRise}m</strong>.`;
+    }
+
+    // Dynamic Event Telemetry alerts
+    const elEventsList = document.getElementById('satellite-events-list');
+    if (elEventsList) {
+        let eventsHtml = "";
+        if (currentState.ecoScore >= 75) {
+            eventsHtml = `
+                <div class="news-item" style="border-left: 2px solid var(--color-friendly); padding-left: 8px; margin-bottom: 0.75rem;">
+                    <div class="news-meta font-green text-xxs" style="font-weight: bold; display: flex; justify-content: space-between;">
+                        <span>🟢 ATMOSPHERIC BALANCED</span> <span>NORMAL</span>
+                    </div>
+                    <h5>Planetary Carbon Scrubbers Operating at Peak</h5>
+                    <p>Carbon saturation remains low at <strong>${carbon}%</strong>. Vibrant atmospheric circulation and solar indices balanced.</p>
+                </div>
+                <div class="news-item" style="border-left: 2px solid var(--color-friendly); padding-left: 8px;">
+                    <div class="news-meta font-green text-xxs" style="font-weight: bold;">
+                        <span>🏔️ POLAR GLACIER SYMMETRY</span>
+                    </div>
+                    <h5>Glacial Ice Caps Stability Reaches ${ice}%</h5>
+                    <p>Polar regions remain frozen and stable. Sea level rise checked at a minimal <strong>+${seaLevelRise}m</strong>.</p>
+                </div>
+            `;
+        } else if (currentState.ecoScore >= 35) {
+            eventsHtml = `
+                <div class="news-item" style="border-left: 2px solid var(--color-moderate); padding-left: 8px; margin-bottom: 0.75rem;">
+                    <div class="news-meta font-amber text-xxs" style="font-weight: bold; display: flex; justify-content: space-between;">
+                        <span>⚠️ ELEVATED AQI HAZARD</span> <span class="animate-pulse">WARNING</span>
+                    </div>
+                    <h5>Aerosol Smog Build-up in Urban Grids</h5>
+                    <p>Atmospheric quality has declined to <strong>${atmos}%</strong>. Carbon load is rising. Bypassing screen loads recommended.</p>
+                </div>
+                <div class="news-item" style="border-left: 2px solid var(--color-unsustainable); padding-left: 8px;">
+                    <div class="news-meta font-pink text-xxs" style="font-weight: bold;">
+                        <span>🏔️ GLACIAL RETREAT DETECTED</span>
+                    </div>
+                    <h5>Polar Ice stability dropped to ${ice}%</h5>
+                    <p>Glaciers are retreating at accelerated velocities. Coastal water lines rising. Sea level currently at <strong>+${seaLevelRise}m</strong>.</p>
+                </div>
+            `;
+        } else {
+            eventsHtml = `
+                <div class="news-item" style="border-left: 2px solid var(--color-danger); padding-left: 8px; margin-bottom: 0.75rem;">
+                    <div class="news-meta font-red text-xxs" style="font-weight: bold; display: flex; justify-content: space-between;">
+                        <span>🚨 PLANETARY STABILITY CRITICAL</span> <span class="animate-flash" style="color:#ef4444;">COLLAPSE</span>
+                    </div>
+                    <h5>Ecosystem Feedback Loop Failures Active</h5>
+                    <p>Consolidated Earth integrity average is at a fatal <strong>${Math.round(planetaryAvg)}%</strong>. Global temperatures have risen by <strong>+${globalTempRise}°C</strong>.</p>
+                </div>
+                <div class="news-item" style="border-left: 2px solid var(--color-danger); padding-left: 8px; margin-bottom: 0.75rem;">
+                    <div class="news-meta font-red text-xxs" style="font-weight: bold;">
+                        <span>💀 MASS EXTINCTION EVENT</span>
+                    </div>
+                    <h5>Marine Acidification Catastrophic at ${oceanpH} pH</h5>
+                    <p>Coral ecosystems have collapsed. Species extinction rate has surged to a critical <strong>${extinctionRate} / day</strong>.</p>
+                </div>
+                <div class="news-item" style="border-left: 2px solid var(--color-danger); padding-left: 8px;">
+                    <div class="news-meta font-red text-xxs" style="font-weight: bold;">
+                        <span>🌊 COASTAL STORM INUNDATION</span>
+                    </div>
+                    <h5>Sea Level Rise Climbs to +${seaLevelRise}m</h5>
+                    <p>Low-lying grid sectors undergo active seawater flooding. Emergency evacuation routes triggered in coastal hubs.</p>
+                </div>
+            `;
+        }
+        elEventsList.innerHTML = eventsHtml;
+    }
 
     // 4.3 Update UI Widgets
     updateUI(burnoutRisk, careerGrowth, mentalWellness, physicalHealth);
@@ -1061,23 +1160,35 @@ function drawAvatar(ctx, center, width, height, score, delta = 1) {
     }
 
     // ----------------------------------------------------
-    // 1. LEFT HALF: ROTATING HOLOGRAPHIC EARTH
+    // 1. LEFT HALF: ROTATING NEXT-GEN EARTH SIMULATION
     // ----------------------------------------------------
     const globeX = 82;
     const globeY = 170;
     const globeRadius = 65;
+
+    // Siren Background Alert Glow (Collapse Mode)
+    if (isCollapse) {
+        ctx.fillStyle = `rgba(239, 68, 68, ${0.03 + Math.sin(performance.now() / 250) * 0.02})`;
+        ctx.beginPath();
+        ctx.arc(globeX, globeY, globeRadius + 30, 0, Math.PI * 2);
+        ctx.fill();
+    }
     
     // Draw Globe Oceans with dynamic colors
     let oceanColor = 'rgba(6, 182, 212, 0.15)'; // healthy cyan
     let landColor = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.65)`;
     if (interpolatedEcoScore >= 75) {
-        oceanColor = 'rgba(16, 185, 129, 0.15)'; // green-cyan
+        oceanColor = 'rgba(16, 185, 129, 0.16)'; // green-cyan
+        landColor = 'rgba(16, 185, 129, 0.78)';
     } else if (interpolatedEcoScore >= 55) {
         oceanColor = 'rgba(6, 182, 212, 0.12)'; // blue-cyan
+        landColor = 'rgba(6, 182, 212, 0.72)';
     } else if (interpolatedEcoScore >= 35) {
         oceanColor = 'rgba(245, 158, 11, 0.08)'; // stagnant amber
+        landColor = 'rgba(217, 119, 6, 0.65)';
     } else {
-        oceanColor = 'rgba(139, 0, 0, 0.12)'; // stagnant collapse red
+        oceanColor = 'rgba(30, 20, 20, 0.85)'; // stagnant collapse charcoal grey
+        landColor = 'rgba(60, 60, 60, 0.85)';
     }
     
     ctx.fillStyle = oceanColor;
@@ -1087,6 +1198,24 @@ function drawAvatar(ctx, center, width, height, score, delta = 1) {
     ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.35)`;
     ctx.lineWidth = 1.5;
     ctx.stroke();
+
+    // Draw Cracks inside oceans if in Collapse Mode
+    if (isCollapse) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(globeX, globeY, globeRadius, 0, Math.PI * 2);
+        ctx.clip();
+        
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.25)';
+        ctx.lineWidth = 0.8;
+        for (let i = 0; i < 6; i++) {
+            ctx.beginPath();
+            ctx.moveTo(globeX + (Math.sin(i * 1.2) * globeRadius * 0.8), globeY - globeRadius);
+            ctx.quadraticCurveTo(globeX + (Math.cos(i) * 18), globeY + (Math.sin(i * 1.5) * 15), globeX + (Math.cos(i * 1.2) * globeRadius * 0.8), globeY + globeRadius);
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
 
     // Atmosphere halo rim glow
     ctx.save();
@@ -1130,7 +1259,6 @@ function drawAvatar(ctx, center, width, height, score, delta = 1) {
     }
     
     // Draw Continent Clusters (simulating land masses floating across)
-    ctx.fillStyle = landColor;
     const landSpeed = 0.0004;
     const landSeed = [
         { lat: 0.1, lonOffset: 0, size: 14 },
@@ -1151,9 +1279,69 @@ function drawAvatar(ctx, center, width, height, score, delta = 1) {
             
             ctx.beginPath();
             ctx.arc(lx, ly, mass.size * (0.35 + cosLon * 0.65), 0, Math.PI * 2);
+            ctx.fillStyle = landColor;
             ctx.fill();
+
+            // Draw forest fires if in Collapse Mode
+            if (isCollapse) {
+                ctx.fillStyle = `rgba(239, 68, 68, ${0.45 + Math.sin(performance.now() / 120) * 0.45})`;
+                ctx.beginPath();
+                ctx.arc(lx + 2, ly - 2, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     });
+
+    // Polar Ice Cap (melts with higher timeline and lower ice stability)
+    const iceFactor = (currentState.ice || 100) / 100;
+    const polarIceSize = 18 * iceFactor;
+    if (polarIceSize > 1) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        // Top Cap
+        ctx.beginPath();
+        ctx.arc(globeX, globeY - 58, polarIceSize, 0, Math.PI, true);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Bottom Cap
+        ctx.beginPath();
+        ctx.arc(globeX, globeY + 58, polarIceSize * 0.8, Math.PI, 0, true);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // Dynamic Cloud Formations (flowing white/grey paths)
+    ctx.fillStyle = isCollapse ? 'rgba(100, 85, 85, 0.28)' : 'rgba(255, 255, 255, 0.16)';
+    const cloudSpeed = 0.0003;
+    const cloudTime = performance.now() * cloudSpeed;
+    for (let c = 0; c < 3; c++) {
+        const cx = globeX + Math.sin(cloudTime + c * 2.2) * globeRadius * 0.7;
+        const cy = globeY - 24 + c * 24;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Glowing Auroras (Active during high score states)
+    if (interpolatedEcoScore >= 75) {
+        ctx.strokeStyle = `rgba(16, 185, 129, ${0.15 + Math.sin(performance.now() / 400) * 0.1})`;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.ellipse(globeX, globeY - 50, 42, 7, 0.08, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    // Atmospheric Red Lightning Bolts (Flashes during collapse)
+    if (isCollapse && Math.random() > 0.93) {
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(globeX - 40 + Math.random() * 80, globeY - 52);
+        ctx.lineTo(globeX - 10 + Math.random() * 20, globeY);
+        ctx.lineTo(globeX - 30 + Math.random() * 60, globeY + 52);
+        ctx.stroke();
+    }
+    
     ctx.restore();
 
     // ----------------------------------------------------
@@ -2614,7 +2802,7 @@ function switchMobilePane(paneId) {
 
 // 8. jsPDF BRANDED REPORT GENERATOR
 function generatePdfReport() {
-    console.log("📄 ECOSPHERE // Compiling custom branded Human-Earth PDF Report...");
+    console.log("📄 ECOSPHERE // Compiling custom branded Human-Earth Future Simulation Report...");
     
     if (!window.jspdf) {
         alert("Report generator initialising. Please try again in a few seconds.");
@@ -2635,14 +2823,14 @@ function generatePdfReport() {
         doc.rect(0, 0, 210, 42, "F");
         
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(20);
+        doc.setFontSize(18);
         doc.setTextColor(255, 255, 255);
-        doc.text("HUMAN-EARTH ECOLOGICAL INTEGRATION", 15, 22);
+        doc.text("HUMAN-EARTH FUTURE SIMULATION REPORT", 15, 22);
         
         doc.setFont("Courier", "bold");
         doc.setFontSize(9);
         doc.setTextColor(...PRIMARY_COLOR);
-        doc.text("PLANETARY_BIOMETRIC_SYNCHRONICITY // TIMELINE_2025_2100", 15, 32);
+        doc.text("PLANETARY_CLIMATE_FEEDBACK_TELEMETRY // PROJECTION_TIMELINE_2100", 15, 32);
         
         doc.setFont("Helvetica", "normal");
         doc.setTextColor(...GRAY_COLOR);
@@ -2654,19 +2842,19 @@ function generatePdfReport() {
         
         // 1. Habit telemetry
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(13);
+        doc.setFontSize(12);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("1. Daily Lifestyle Habits & Telemetry", 15, 54);
+        doc.text("1. Daily Lifestyle Habits & Telemetry", 15, 52);
         
         doc.setDrawColor(...PRIMARY_COLOR);
         doc.setLineWidth(0.5);
-        doc.line(15, 57, 195, 57);
+        doc.line(15, 55, 195, 55);
         
         doc.setFont("Helvetica", "normal");
-        doc.setFontSize(9.5);
+        doc.setFontSize(9);
         
-        let y = 65;
-        const rowHeight = 7.5;
+        let y = 62;
+        const rowHeight = 6.8;
         const addMetricRow = (label, val, baselineVal, rating) => {
             doc.setTextColor(...TEXT_COLOR);
             doc.setFont("Helvetica", "bold");
@@ -2694,46 +2882,46 @@ function generatePdfReport() {
         addMetricRow("Financial Savings Ratio", `${currentState.savingsRate}% Savings`, "5%", currentState.savingsRate >= 35 ? "Wealth Builder" : "Unstable");
         addMetricRow("Neurological Stress", `${currentState.stressLevel}% Index`, "80%", currentState.stressLevel <= 30 ? "Optimal Zen" : "High Cortisol");
         
-        y += 3;
+        y += 2;
         
         // Sustainability score box
         doc.setFillColor(243, 244, 246); 
-        doc.rect(15, y, 180, 24, "F");
+        doc.rect(15, y, 180, 22, "F");
         
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(10.5);
+        doc.setFontSize(10);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("HUMAN-EARTH SUSTAINABILITY INDEX (INTEGRATION)", 20, y + 8);
+        doc.text("HUMAN-EARTH SUSTAINABILITY INDEX (INTEGRATION)", 20, y + 7);
         
-        doc.setFontSize(15);
+        doc.setFontSize(14);
         doc.setTextColor(...PRIMARY_COLOR);
-        doc.text(`${currentState.ecoScore} / 100`, 20, y + 18);
+        doc.text(`${currentState.ecoScore} / 100`, 20, y + 16);
         
         const improvement = Math.max(0, currentState.ecoScore - 35);
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(10.5);
+        doc.setFontSize(10);
         doc.setTextColor(...SECONDARY_COLOR);
-        doc.text(`+${improvement} PTS SYNC GAIN`, 110, y + 8);
+        doc.text(`+${improvement} PTS SYNC GAIN`, 110, y + 7);
         doc.setFont("Helvetica", "normal");
-        doc.setFontSize(8.5);
+        doc.setFontSize(8);
         doc.setTextColor(...GRAY_COLOR);
-        doc.text("Synchronized score compared to poor lifestyle baseline (35 Index)", 110, y + 16);
+        doc.text("Synchronized score compared to poor lifestyle baseline (35 Index)", 110, y + 14);
         
-        y += 34;
+        y += 30;
         
         // 2. Projections
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(13);
+        doc.setFontSize(12);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("2. 2100 Human-Earth Telemetry & Projections", 15, y);
+        doc.text("2. 2100 Human-Earth Telemetry & Projections (Planetary Stability)", 15, y);
         
         doc.setDrawColor(...SECONDARY_COLOR);
         doc.line(15, y + 3, 195, y + 3);
         
-        y += 11;
+        y += 10;
         
         doc.setFont("Helvetica", "normal");
-        doc.setFontSize(9.5);
+        doc.setFontSize(9);
         
         const addForecastRow = (label, val, target) => {
             doc.setTextColor(...TEXT_COLOR);
@@ -2744,33 +2932,40 @@ function generatePdfReport() {
             doc.setTextColor(...GRAY_COLOR);
             doc.setFont("Helvetica", "normal");
             doc.text(`(Target: ${target})`, 152, y);
-            y += 6.5;
+            y += 5.2;
         };
+
+        const survivalProb = Math.max(5, Math.min(99, Math.round(currentState.ecoScore)));
 
         addForecastRow("Projected 2100 Physical Health", `${Math.round(currentState.physicalHealth)}%`, ">=80%");
         addForecastRow("Projected 2100 Mental Wellness", `${Math.round(currentState.mentalWellness)}%`, ">=80%");
-        addForecastRow("Simulated 2100 Chronic Burnout Risk", `${Math.round(currentState.burnoutRisk)}%`, "<40%");
+        addForecastRow("Simulated 2100 Chronic Burnout", `${Math.round(currentState.burnoutRisk)}%`, "<40%");
         addForecastRow("Atmospheric Quality Index", `${currentState.atmos || 100}%`, ">=85%");
         addForecastRow("Ecosystem Biodiversity Index", `${currentState.biodiv || 100}%`, ">=85%");
         addForecastRow("Oceanic Acidity Level", `${currentState.oceanpH || 8.15} pH`, "8.10-8.20 pH");
         addForecastRow("Polar Ice Stability Index", `${currentState.ice || 100}%`, ">=80%");
         addForecastRow("Human-Earth Alignment Ratio", `${currentState.alignment || 100}%`, ">=85%");
+        addForecastRow("Global Temperature Rise", `+${(currentState.globalTempRise || 1.1).toFixed(2)} °C`, "<=+1.5 °C");
+        addForecastRow("Sea Level Rise Inundation", `+${(currentState.seaLevelRise || 0.1).toFixed(2)} m`, "<=+0.3 m");
+        addForecastRow("Renewable Energy Ratio", `${currentState.renewRatio || 25}%`, ">=80%");
+        addForecastRow("Species Extinction Rate", `${currentState.extinctionRate || 15} / day`, "<=25 / day");
+        addForecastRow("Future Survival Probability", `${survivalProb}%`, ">=75%");
         
         y += 8;
         
         // 3. AI recommendations
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(13);
+        doc.setFontSize(12);
         doc.setTextColor(...TEXT_COLOR);
         doc.text("3. Actionable AI Sustainability Adjustments", 15, y);
         
         doc.setDrawColor(...PRIMARY_COLOR);
         doc.line(15, y + 3, 195, y + 3);
         
-        y += 11;
+        y += 10;
         
         doc.setFont("Helvetica", "normal");
-        doc.setFontSize(9);
+        doc.setFontSize(8.5);
         doc.setTextColor(...TEXT_COLOR);
         
         const addAdvicePoint = (title, desc) => {
@@ -2778,7 +2973,7 @@ function generatePdfReport() {
             doc.text(`* ${title}:`, 15, y);
             doc.setFont("Helvetica", "normal");
             doc.text(desc, 50, y);
-            y += 7.0;
+            y += 6.2;
         };
         
         if (currentState.screenTime > 4) {
