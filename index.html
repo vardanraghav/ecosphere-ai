@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Firebase Compat CDN SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -510,6 +512,47 @@
                             <p class="font-mono text-xs">Warning: Simulating rapid planetary decay factors. Adjust threat sliders to watch the centerpiece Earth morph in real-time.</p>
                         </div>
 
+                        <!-- Climate Year Projection Slider (2026 - 2050) -->
+                        <div class="optimizer-card simulator-card year-simulation-card" style="border-color: rgba(239, 68, 68, 0.25) !important;">
+                            <div class="opt-card-header font-red">
+                                <span><i class="fa-solid fa-clock"></i> FUTURE YEAR ESTIMATION</span>
+                                <span class="opt-badge font-mono font-red" id="val-sim-year-label">PRESENT (2026)</span>
+                            </div>
+                            <div class="opt-input-group">
+                                <div class="slider-label-row">
+                                    <label for="input-sim-year">Projected Simulation Year</label>
+                                    <span class="slider-val-bubble font-red"><span id="val-sim-year" class="font-mono">2026</span></span>
+                                </div>
+                                <input type="range" id="input-sim-year" min="2026" max="2050" value="2026" class="eco-slider slider-red" oninput="updateFutureSimulationYear(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- Holographic 2050 Projections Metrics Card -->
+                        <div class="optimizer-card simulator-card simulation-metrics-card" style="border-color: rgba(239, 68, 68, 0.4) !important; background: rgba(239, 68, 68, 0.02) !important;">
+                            <div class="opt-card-header font-red">
+                                <span><i class="fa-solid fa-chart-line"></i> 2050 CLIMATE PROJECTIONS</span>
+                                <span class="opt-badge font-mono font-red animate-pulse">MODELLED FORECAST</span>
+                            </div>
+                            <div class="metrics-grid">
+                                <div class="metric-item glass-card">
+                                    <div class="metric-title font-mono">TEMP RISE</div>
+                                    <div class="metric-value font-mono font-red" id="proj-temp">1.10 °C</div>
+                                </div>
+                                <div class="metric-item glass-card">
+                                    <div class="metric-title font-mono">SPECIES LOSS</div>
+                                    <div class="metric-value font-mono font-red" id="proj-species">0.00 %</div>
+                                </div>
+                                <div class="metric-item glass-card">
+                                    <div class="metric-title font-mono">OCEAN pH ACIDITY</div>
+                                    <div class="metric-value font-mono font-red" id="proj-acid">8.100</div>
+                                </div>
+                                <div class="metric-item glass-card">
+                                    <div class="metric-title font-mono">CANOPY COVER</div>
+                                    <div class="metric-value font-mono font-red" id="proj-canopy">100 %</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Pollution Increase Slider -->
                         <div class="optimizer-card simulator-card">
                             <div class="opt-card-header font-red">
@@ -705,14 +748,54 @@
                 <!-- Interactive Dynamic Column Tabs -->
                 <div class="col-tabs font-mono" id="col3-tabs">
                     <button class="col-tab active" onclick="switchColTab('col3', 'analytics')"><i class="fa-solid fa-chart-line"></i> ANALYTICS</button>
-                    <button class="col-tab" onclick="switchColTab('col3', 'challenges')"><i class="fa-solid fa-list-check"></i> DAILY QUESTS</button>
-                    <button class="col-tab" onclick="switchColTab('col3', 'battle')"><i class="fa-solid fa-fire-flame-curved"></i> CAMPUS BATTLE</button>
-                    <button class="col-tab" onclick="switchColTab('col3', 'profile')"><i class="fa-solid fa-user-astronaut"></i> AGENT PROFILE</button>
+                    <button class="col-tab" onclick="switchColTab('col3', 'challenges')"><i class="fa-solid fa-list-check"></i> QUESTS</button>
+                    <button class="col-tab" onclick="switchColTab('col3', 'battle')"><i class="fa-solid fa-fire-flame-curved"></i> BATTLE</button>
+                    <button class="col-tab" onclick="switchColTab('col3', 'leaderboard')"><i class="fa-solid fa-users-viewfinder"></i> COMMUNITY</button>
+                    <button class="col-tab" onclick="switchColTab('col3', 'news')"><i class="fa-solid fa-newspaper"></i> NEWS</button>
+                    <button class="col-tab" onclick="switchColTab('col3', 'profile')"><i class="fa-solid fa-user-astronaut"></i> PROFILE</button>
                 </div>
 
                 <div class="analytics-scroll-area">
                     <!-- Tab Panel 1: Analytics & Projections -->
                     <div id="panel-analytics" class="col-tab-panel">
+                        <!-- Futuristic Branded PDF Export Card -->
+                        <div class="pdf-export-card glass-card font-mono">
+                            <div class="pdf-header font-cyan">
+                                <span><i class="fa-solid fa-file-pdf"></i> INTEL REPORT GENERATOR</span>
+                                <span class="font-cyan animate-pulse">SYS_OK</span>
+                            </div>
+                            <div class="pdf-body">
+                                <p class="text-xs">Compile and download a comprehensive sustainability report containing carbon footprints, utility savings, 2030 predictions, and automated carbon-reduction advice.</p>
+                                <button class="btn-pdf-export" onclick="generatePdfReport()">
+                                    <i class="fa-solid fa-download"></i> EXPORT SECURE PDF
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Carbon Savings Target Card -->
+                        <div class="weekly-goal-card glass-card font-mono">
+                            <div class="weekly-header">
+                                <span><i class="fa-solid fa-calendar-check font-green"></i> WEEKLY SUSTAINABILITY TARGET</span>
+                                <span class="lbl-small font-green" id="weekly-goal-target-lbl">SAVE 50 KG CO₂</span>
+                            </div>
+                            <div class="weekly-progress-section">
+                                <div class="weekly-progress-labels">
+                                    <span class="text-xxs">WEEKLY PROGRESS</span>
+                                    <span class="weekly-progress-value font-green" id="weekly-goal-pct">0%</span>
+                                </div>
+                                <div class="weekly-bar-bg">
+                                    <div id="weekly-bar-fill" class="weekly-bar-fill" style="width: 0%;"></div>
+                                </div>
+                                <div class="weekly-saved-stats text-xxs text-sub">
+                                    <span>CO₂ SAVED: <strong class="font-green" id="weekly-goal-saved-val">0.0 kg</strong></span>
+                                    <span>REWARD: <strong class="font-gold">+200 XP</strong></span>
+                                </div>
+                            </div>
+                            <button id="btn-claim-weekly" class="btn-claim-weekly font-mono" disabled onclick="claimWeeklyTargetReward()">
+                                CLAIM WEEKLY REWARD
+                            </button>
+                        </div>
+
                         <!-- Chart 1: Carbon Breakdown -->
                         <div class="chart-container-card">
                             <div class="chart-header">
@@ -992,6 +1075,136 @@
                         </div>
                     </div>
 
+                    <!-- Tab Panel 5: Community & Global Leaderboard -->
+                    <div id="panel-leaderboard" class="col-tab-panel hidden">
+                        <div class="leaderboard-header-card glass-card font-mono">
+                            <span><i class="fa-solid fa-trophy font-gold"></i> GLOBAL AGENT STANDINGS</span>
+                            <span class="lbl-small font-gold">SYS_SYNC // ACTIVE</span>
+                        </div>
+
+                        <!-- Global Leaderboard Standings -->
+                        <div class="battle-arena-card glass-card">
+                            <div class="battle-list font-mono" id="global-agents-list">
+                                <div class="battle-row">
+                                    <div class="battle-dept-meta">
+                                        <span class="battle-rank font-gold">🥇 #1</span>
+                                        <span class="battle-name">alex_green_guardian</span>
+                                    </div>
+                                    <div class="battle-progress-wrapper">
+                                        <div class="battle-progress-fill" style="width: 95%;"></div>
+                                    </div>
+                                    <span class="battle-score font-gold">95 pts</span>
+                                </div>
+                                <div class="battle-row">
+                                    <div class="battle-dept-meta">
+                                        <span class="battle-rank">🥈 #2</span>
+                                        <span class="battle-name">sara_planet_protector</span>
+                                    </div>
+                                    <div class="battle-progress-wrapper">
+                                        <div class="battle-progress-fill" style="width: 88%;"></div>
+                                    </div>
+                                    <span class="battle-score">88 pts</span>
+                                </div>
+                                <div class="battle-row user-dept-row">
+                                    <div class="battle-dept-meta">
+                                        <span class="battle-rank font-cyan">🥉 #3</span>
+                                        <span class="battle-name font-cyan" id="leaderboard-user-name">YOU</span>
+                                    </div>
+                                    <div class="battle-progress-wrapper">
+                                        <div class="battle-progress-fill bg-cyan shadow-cyan animate-pulse-slow" id="leaderboard-user-progress" style="width: 72%;"></div>
+                                    </div>
+                                    <span class="battle-score font-cyan" id="leaderboard-user-score">72 pts</span>
+                                </div>
+                                <div class="battle-row">
+                                    <div class="battle-dept-meta">
+                                        <span class="battle-rank"> #4</span>
+                                        <span class="battle-name">david_eco_warrior</span>
+                                    </div>
+                                    <div class="battle-progress-wrapper">
+                                        <div class="battle-progress-fill" style="width: 65%;"></div>
+                                    </div>
+                                    <span class="battle-score">65 pts</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Friend Challenge Console -->
+                        <div class="challenge-console-card glass-card font-mono">
+                            <div class="console-header font-cyan">
+                                <span><i class="fa-solid fa-satellite-dish"></i> SUSTAINABILITY DUELLING CONSOLE</span>
+                                <span class="font-cyan animate-flash">SYS_READY</span>
+                            </div>
+                            <p class="text-xxs text-sub">Challenge rival campus agents or departments to a 24-hour Eco-Score Duel! Pledging increases department visibility.</p>
+                            
+                            <div class="challenge-actions" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.8rem;">
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn-pledge btn-challenge" style="flex: 1;" onclick="sendFriendChallenge('alex_green_guardian')">CHALLENGE ALEX</button>
+                                    <button class="btn-pledge btn-challenge" style="flex: 1;" onclick="sendFriendChallenge('sara_planet_protector')">CHALLENGE SARA</button>
+                                </div>
+                                <button class="btn-pledge btn-pledge-gold" onclick="sendFriendChallenge('CSE_DEPARTMENT')">CHALLENGE CSE DEPT</button>
+                            </div>
+                            
+                            <div class="pledge-feedback hidden font-gold" id="challenge-feedback-text">
+                                <i class="fa-solid fa-satellite-dish animate-pulse"></i> DUEL_ESTABLISHED // Challenge transmission broadcasted.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Panel 6: Climate News & Awareness Hub -->
+                    <div id="panel-news" class="col-tab-panel hidden">
+                        <!-- Sustainability Tips Carousel -->
+                        <div class="carousel-card glass-card">
+                            <div class="carousel-header font-mono">
+                                <span><i class="fa-solid fa-lightbulb font-gold"></i> DYNAMIC AWARENESS PROTOCOL</span>
+                                <span class="lbl-small font-gold">CAROUSEL // LIVE</span>
+                            </div>
+                            
+                            <div class="carousel-container font-mono">
+                                <div class="carousel-slide active" id="tip-slide-1">
+                                    <h4>Tip #1: Phantom Load Mitigation</h4>
+                                    <p>Smart plugs can save up to ₹1,800 annually by automatically cutting off standby power from TV consoles and monitors.</p>
+                                </div>
+                                <div class="carousel-slide" id="tip-slide-2">
+                                    <h4>Tip #2: Optimal Thermostat Easing</h4>
+                                    <p>Setting your AC temperature to 24°C instead of 18°C reduces electricity consumption by up to 25% while remaining comfortable.</p>
+                                </div>
+                                <div class="carousel-slide" id="tip-slide-3">
+                                    <h4>Tip #3: The Water Footprint Secret</h4>
+                                    <p>A single single-use plastic water bottle requires 3 times the volume of water it holds just to produce. Switch to glass or stainless steel!</p>
+                                </div>
+                            </div>
+
+                            <div class="carousel-controls">
+                                <button class="btn-carousel-prev" onclick="moveCarousel(-1)"><i class="fa-solid fa-arrow-left"></i></button>
+                                <button class="btn-carousel-next" onclick="moveCarousel(1)"><i class="fa-solid fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Climate News Cards -->
+                        <div class="news-feed-card glass-card font-mono">
+                            <div class="news-header">
+                                <span><i class="fa-solid fa-earth-americas font-cyan"></i> CLIMATE NEWS NETWORK</span>
+                                <span class="lbl-small">SYS_SYNC // FEED_07</span>
+                            </div>
+                            <div class="news-cards-list">
+                                <div class="news-item">
+                                    <div class="news-meta font-cyan text-xxs">
+                                        <span>27 MAY 2026</span> • <span>GREEN TECH</span>
+                                    </div>
+                                    <h5>Quantum Dot Solar Panels Smash Efficiency Limits</h5>
+                                    <p>Researchers achieve 34% efficiency using standard organic quantum dot overlays, enabling transparent solar windows.</p>
+                                </div>
+                                <div class="news-item">
+                                    <div class="news-meta font-pink text-xxs">
+                                        <span>25 MAY 2026</span> • <span>ECO POLICY</span>
+                                    </div>
+                                    <h5>Campus Coalition Targets Net-Zero Operations by 2030</h5>
+                                    <p>Universities announce joint quantum-ledger carbon funding to fully offset scope 1 and scope 2 emissions across ECE/CSE blocks.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Tab Panel 4: User Agent Profile -->
                     <div id="panel-profile" class="col-tab-panel hidden">
                         <!-- Holographic Agent Overview Card -->
@@ -1048,6 +1261,60 @@
                                     <span class="val" id="profile-commute-val">-</span>
                                 </div>
                             </div>
+                            <button class="btn-edit-profile font-mono" id="btn-edit-profile-toggle" onclick="toggleProfileEditMode(true)">
+                                <i class="fa-solid fa-user-gear"></i> EDIT AGENT PROFILE
+                            </button>
+                        </div>
+
+                        <!-- Holographic Profile Editing Form -->
+                        <div id="profile-edit-container" class="glass-card profile-edit-container hidden font-mono">
+                            <div class="edit-header">
+                                <h4><i class="fa-solid fa-user-pen font-cyan"></i> EDIT AGENT PROFILE</h4>
+                                <span class="lbl-small font-mono">SECURE_LINK // UPDATE</span>
+                            </div>
+                            
+                            <form id="profile-update-form" onsubmit="handleProfileUpdateSubmit(event)">
+                                <div class="edit-avatar-section">
+                                    <div class="edit-avatar-preview-wrapper">
+                                        <img id="edit-avatar-preview-img" class="agent-avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=EcoAgent" alt="Avatar Preview">
+                                        <div class="edit-avatar-ring"></div>
+                                    </div>
+                                    <div class="edit-avatar-upload-btn-wrapper">
+                                        <label for="edit-profile-pic" class="btn-cyber-upload font-mono">
+                                            <i class="fa-solid fa-camera"></i> UPLOAD PHOTO
+                                        </label>
+                                        <input type="file" id="edit-profile-pic" accept="image/*" onchange="previewEditProfilePic(event)" style="display: none;">
+                                        <span class="upload-tip">JPG, PNG OR SVG (MAX 500KB)</span>
+                                    </div>
+                                </div>
+
+                                <div class="edit-fields-grid">
+                                    <div class="auth-input-group">
+                                        <label for="edit-name"><i class="fa-solid fa-signature"></i> FULL NAME</label>
+                                        <input type="text" id="edit-name" class="auth-input" required placeholder="ENTER AGENT NAME">
+                                    </div>
+
+                                    <div class="auth-input-group">
+                                        <label for="edit-age"><i class="fa-solid fa-calendar"></i> AGE</label>
+                                        <input type="number" id="edit-age" class="auth-input" required placeholder="ENTER AGE" min="1" max="120">
+                                    </div>
+
+                                    <div class="auth-input-group">
+                                        <label for="edit-phone"><i class="fa-solid fa-phone"></i> PHONE</label>
+                                        <input type="tel" id="edit-phone" class="auth-input" required placeholder="ENTER PHONE">
+                                    </div>
+
+                                    <div class="auth-input-group">
+                                        <label for="edit-city"><i class="fa-solid fa-city"></i> CITY</label>
+                                        <input type="text" id="edit-city" class="auth-input" required placeholder="ENTER CITY">
+                                    </div>
+                                </div>
+
+                                <div class="edit-actions">
+                                    <button type="button" class="btn-edit-action btn-edit-cancel" onclick="toggleProfileEditMode(false)">CANCEL</button>
+                                    <button type="submit" class="btn-edit-action btn-edit-save">SAVE CHANGES</button>
+                                </div>
+                            </form>
                         </div>
 
                         <!-- Achievements Section -->
@@ -1350,9 +1617,30 @@
             <!-- Chat Input Area -->
             <div class="chat-input-area">
                 <input type="text" id="chat-user-input" placeholder="Ask about emissions, savings, score..." onkeypress="handleChatKeyPress(event)">
+                <button id="chat-voice-btn" class="chat-voice-btn" onclick="toggleVoiceInput()"><i class="fa-solid fa-microphone"></i></button>
                 <button id="chat-send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
+    </div>
+
+    <!-- MOBILE BOTTOM APP-LIKE NAVIGATION BAR -->
+    <div class="mobile-bottom-nav font-mono">
+        <button id="nav-pane-home" class="mobile-nav-item active" onclick="switchMobilePane('home')">
+            <i class="fa-solid fa-earth-asia"></i>
+            <span>HOME</span>
+        </button>
+        <button id="nav-pane-optimize" class="mobile-nav-item" onclick="switchMobilePane('optimize')">
+            <i class="fa-solid fa-sliders"></i>
+            <span>OPTIMIZE</span>
+        </button>
+        <button id="nav-pane-intel" class="mobile-nav-item" onclick="switchMobilePane('intel')">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>INTEL</span>
+        </button>
+        <button id="nav-pane-profile" class="mobile-nav-item" onclick="switchMobilePane('profile')">
+            <i class="fa-solid fa-user-astronaut"></i>
+            <span>PROFILE</span>
+        </button>
     </div>
 
     <!-- Authentication Controller JS -->

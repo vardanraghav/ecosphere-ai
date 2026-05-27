@@ -478,6 +478,36 @@ function updateCalculations(instant = false) {
 
     // 4.4 Live Charts Update
     updateCharts(elecCo2, transportCo2, waterCo2, plasticCo2, foodCo2, instant);
+
+    // 4.5 Holographic 2050 Climate Projections Calculations
+    const futureYear = typeof simulatedFutureYear !== 'undefined' ? simulatedFutureYear : 2026;
+    const yearDiff = futureYear - 2026;
+    
+    // Emissions factor scaled by simulation pollution and current carbon footprint
+    const baseCo2 = currentState.dailyCo2 || 12.2;
+    const pollutionScale = 1 + (currentState.simPollution || 0) / 100;
+    const effectiveCo2 = baseCo2 * pollutionScale;
+    
+    // Math & Estimation Models
+    const tempRise = 1.1 + yearDiff * (effectiveCo2 / 12) * 0.08;
+    const speciesLoss = yearDiff * (effectiveCo2 / 10) * 0.4;
+    const pHAcidity = 8.10 - yearDiff * (effectiveCo2 / 20) * 0.008;
+    
+    const deforestPct = currentState.simDeforestation || 0;
+    const canopyCover = Math.max(15, 100 - yearDiff * 1.5 - deforestPct * 0.5);
+    
+    // Update Projections UI text nodes
+    const projTempEl = document.getElementById('proj-temp');
+    if (projTempEl) projTempEl.textContent = `${tempRise.toFixed(2)} °C`;
+    
+    const projSpeciesEl = document.getElementById('proj-species');
+    if (projSpeciesEl) projSpeciesEl.textContent = `${speciesLoss.toFixed(2)} %`;
+    
+    const projAcidEl = document.getElementById('proj-acid');
+    if (projAcidEl) projAcidEl.textContent = pHAcidity.toFixed(3);
+    
+    const projCanopyEl = document.getElementById('proj-canopy');
+    if (projCanopyEl) projCanopyEl.textContent = `${Math.round(canopyCover)} %`;
 }
 
 // 5. UPDATE UI VIEW & TICKERS
@@ -1092,7 +1122,15 @@ function initEarthCanvas() {
         
         let maxThreat = Math.max(simPollution, simDeforestation, simPlastic, simFossil) / 100;
         
-        if (maxThreat > 0.05) {
+        // Add threat factor based on future simulated year
+        const futureYear = typeof simulatedFutureYear !== 'undefined' ? simulatedFutureYear : 2026;
+        if (futureYear > 2026) {
+            const yearFactor = (futureYear - 2026) / 24;
+            const co2Impact = Math.min(1.0, (currentState.dailyCo2 || 12.2) / 15);
+            maxThreat = Math.min(1.0, maxThreat + yearFactor * co2Impact * 0.65);
+        }
+        
+        if (maxThreat > 0.02) {
             // Darken oceans to stagnant grey/brown
             const toxicO1 = [35, 45, 55];
             const toxicO2 = [20, 25, 30];
@@ -1703,7 +1741,15 @@ function spawnCanvasParticles(center, radius, score) {
     let simFossil = parseFloat(document.getElementById('input-sim-fossil')?.value || 0);
     let maxThreat = Math.max(simPollution, simDeforestation, simPlastic, simFossil) / 100;
     
-    if (maxThreat > 0.1) {
+    // Add threat factor based on future simulated year
+    const futureYear = typeof simulatedFutureYear !== 'undefined' ? simulatedFutureYear : 2026;
+    if (futureYear > 2026) {
+        const yearFactor = (futureYear - 2026) / 24;
+        const co2Impact = Math.min(1.0, (currentState.dailyCo2 || 12.2) / 15);
+        maxThreat = Math.min(1.0, maxThreat + yearFactor * co2Impact * 0.65);
+    }
+    
+    if (maxThreat > 0.05) {
         // Toxic future simulation particles
         if (Math.random() < maxThreat) {
             type = Math.random() > 0.4 ? 'smoke' : 'ash';
@@ -2611,8 +2657,552 @@ function updateProfileDashboardUI() {
     }
 }
 
+// Onboarding & Personalized Profile Properties
+let speechRecognizer = null;
+let isListening = false;
+let simulatedFutureYear = 2026;
+let currentTipIndex = 0;
+
 // Expose functions to window for global access
 window.handleProfileSetupSubmit = handleProfileSetupSubmit;
 window.checkAchievements = checkAchievements;
 window.updateProfileDashboardUI = updateProfileDashboardUI;
+
+// 1. EDITABLE PROFILE HANDLERS
+function toggleProfileEditMode(isEditing) {
+    const editContainer = document.getElementById('profile-edit-container');
+    const toggleBtn = document.getElementById('btn-edit-profile-toggle');
+    const staticElements = document.querySelectorAll('#panel-profile > *:not(.profile-edit-container)');
+    
+    if (isEditing) {
+        if (editContainer) editContainer.classList.remove('hidden');
+        if (toggleBtn) toggleBtn.classList.add('hidden');
+        staticElements.forEach(el => {
+            if (el !== editContainer && el !== toggleBtn) {
+                el.style.display = 'none';
+            }
+        });
+        
+        // Pre-fill inputs with current state values
+        document.getElementById('edit-name').value = currentState.name || "";
+        document.getElementById('edit-age').value = currentState.age || "";
+        document.getElementById('edit-phone').value = currentState.phone || "";
+        document.getElementById('edit-city').value = currentState.city || "";
+        
+        const previewImg = document.getElementById('edit-avatar-preview-img');
+        if (previewImg) {
+            previewImg.src = currentState.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentState.name || 'EcoAgent')}`;
+        }
+    } else {
+        if (editContainer) editContainer.classList.add('hidden');
+        if (toggleBtn) toggleBtn.classList.remove('hidden');
+        staticElements.forEach(el => {
+            if (el !== editContainer && el !== toggleBtn) {
+                el.style.display = '';
+            }
+        });
+    }
+}
+
+function previewEditProfilePic(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 500 * 1024) {
+        alert("File size exceeds 500KB. Please choose a smaller image.");
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewImg = document.getElementById('edit-avatar-preview-img');
+        if (previewImg) {
+            previewImg.src = e.target.result;
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function handleProfileUpdateSubmit(event) {
+    event.preventDefault();
+    console.log("💾 ECOSPHERE // Saving edited user profile metrics...");
+    
+    const name = document.getElementById('edit-name').value.trim();
+    const age = parseInt(document.getElementById('edit-age').value);
+    const phone = document.getElementById('edit-phone').value.trim();
+    const city = document.getElementById('edit-city').value.trim();
+    
+    currentState.name = name;
+    currentState.age = age;
+    currentState.phone = phone;
+    currentState.city = city;
+    
+    const previewImg = document.getElementById('edit-avatar-preview-img');
+    if (previewImg) {
+        currentState.photoURL = previewImg.src;
+    }
+    
+    // Save to database
+    if (window.saveUserDataToCloud) {
+        window.saveUserDataToCloud(currentState);
+    }
+    
+    // Visual celebrate
+    createAchievementParticles();
+    
+    // Exit edit mode
+    toggleProfileEditMode(false);
+    
+    // Sync dashboard
+    updateProfileDashboardUI();
+    
+    // Alert user
+    console.log("🔗 ECOSPHERE // Profile successfully saved.");
+}
+
+// 2. SPEECH RECOGNITION VOICE CONTROLLER
+function toggleVoiceInput() {
+    const voiceBtn = document.getElementById('chat-voice-btn');
+    if (!voiceBtn) return;
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Speech Recognition API is not supported in this browser. Try Chrome or Safari.");
+        return;
+    }
+    
+    if (isListening) {
+        if (speechRecognizer) speechRecognizer.stop();
+        isListening = false;
+        voiceBtn.classList.remove('active-mic');
+        console.log("🎤 ECOSPHERE // Speech recognition disabled.");
+        return;
+    }
+    
+    try {
+        speechRecognizer = new SpeechRecognition();
+        speechRecognizer.continuous = false;
+        speechRecognizer.interimResults = false;
+        speechRecognizer.lang = 'en-US';
+        
+        speechRecognizer.onstart = () => {
+            isListening = true;
+            voiceBtn.classList.add('active-mic');
+            console.log("🎤 ECOSPHERE // Speech recognition active... Speak now.");
+        };
+        
+        speechRecognizer.onerror = (e) => {
+            console.error("Speech Recognition Error:", e);
+            isListening = false;
+            voiceBtn.classList.remove('active-mic');
+        };
+        
+        speechRecognizer.onend = () => {
+            isListening = false;
+            voiceBtn.classList.remove('active-mic');
+            console.log("🎤 ECOSPHERE // Speech recognition finalized.");
+        };
+        
+        speechRecognizer.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            console.log("🎤 ECOSPHERE // Speech transcript: " + transcript);
+            const inputField = document.getElementById('chat-user-input');
+            if (inputField) {
+                inputField.value = transcript;
+                setTimeout(() => {
+                    if (window.sendMessage) window.sendMessage();
+                }, 800);
+            }
+        };
+        
+        speechRecognizer.start();
+    } catch (err) {
+        console.error("Voice input start error:", err);
+        isListening = false;
+        voiceBtn.classList.remove('active-mic');
+    }
+}
+
+// 3. WEEKLY CARBON SAVINGS TARGET MODULE
+function updateWeeklyTargetProgress() {
+    if (!currentState.profileComplete) return;
+    
+    const dailySaved = Math.max(0, 21.82 - currentState.dailyCo2);
+    const weeklySaved = dailySaved * 7;
+    
+    const target = 50; 
+    const pct = Math.min(100, Math.round((weeklySaved / target) * 100));
+    
+    currentState.weeklySavedCo2 = weeklySaved;
+    
+    const pctEl = document.getElementById('weekly-goal-pct');
+    if (pctEl) pctEl.textContent = `${pct}%`;
+    
+    const fillBar = document.getElementById('weekly-bar-fill');
+    if (fillBar) fillBar.style.width = `${pct}%`;
+    
+    const savedEl = document.getElementById('weekly-goal-saved-val');
+    if (savedEl) savedEl.textContent = `${weeklySaved.toFixed(1)} kg`;
+    
+    const claimBtn = document.getElementById('btn-claim-weekly');
+    if (claimBtn) {
+        if (pct >= 100 && !currentState.claimedWeeklyReward) {
+            claimBtn.disabled = false;
+        } else {
+            claimBtn.disabled = true;
+        }
+    }
+}
+
+function claimWeeklyTargetReward() {
+    if (currentState.claimedWeeklyReward) return;
+    
+    console.log("🏆 WEEKLY REWARD CLAIMED! Awarded +200 XP!");
+    currentState.xp = (currentState.xp || 40) + 200;
+    currentState.claimedWeeklyReward = true;
+    
+    if (window.saveUserDataToCloud) {
+        window.saveUserDataToCloud(currentState);
+    }
+    
+    createAchievementParticles();
+    
+    if (window.updateAvatarXPWidget) window.updateAvatarXPWidget();
+    if (window.checkAvatarLevelUp) window.checkAvatarLevelUp();
+    updateWeeklyTargetProgress();
+}
+
+// 4. DUEL STANDINGS & CHALLENGE BROADCAST
+function sendFriendChallenge(opponent) {
+    console.log("⚔️ ECOSPHERE // Sending challenge duel request to: " + opponent);
+    
+    const feedback = document.getElementById('challenge-feedback-text');
+    if (feedback) {
+        feedback.textContent = `DUEL_ESTABLISHED // Challenge transmitted to ${opponent}. +10 XP awarded!`;
+        feedback.classList.remove('hidden');
+        setTimeout(() => {
+            feedback.classList.add('hidden');
+        }, 3000);
+    }
+    
+    currentState.xp = (currentState.xp || 40) + 10;
+    
+    if (window.saveUserDataToCloud) {
+        window.saveUserDataToCloud(currentState);
+    }
+    
+    createAchievementParticles();
+    
+    if (window.updateAvatarXPWidget) window.updateAvatarXPWidget();
+    if (window.checkAvatarLevelUp) window.checkAvatarLevelUp();
+}
+
+// 5. CLIMATE NEWS CAROUSEL
+function moveCarousel(direction) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    if (slides.length === 0) return;
+    
+    slides[currentTipIndex].classList.remove('active');
+    currentTipIndex = (currentTipIndex + direction + slides.length) % slides.length;
+    slides[currentTipIndex].classList.add('active');
+}
+
+// 6. FUTURE simulation 2050 estimation
+function updateFutureSimulationYear(year) {
+    simulatedFutureYear = parseInt(year);
+    document.getElementById('val-sim-year').textContent = simulatedFutureYear;
+    
+    const label = document.getElementById('val-sim-year-label');
+    if (label) {
+        if (simulatedFutureYear === 2026) {
+            label.textContent = "PRESENT (2026)";
+            label.className = "opt-badge font-mono font-red";
+        } else if (simulatedFutureYear <= 2035) {
+            label.textContent = `WARMING (${simulatedFutureYear})`;
+            label.className = "opt-badge font-mono font-red animate-pulse";
+        } else if (simulatedFutureYear <= 2045) {
+            label.textContent = `CRITICAL (${simulatedFutureYear})`;
+            label.className = "opt-badge font-mono font-red animate-flash";
+        } else {
+            label.textContent = `DECAY STAGE (${simulatedFutureYear})`;
+            label.className = "opt-badge font-mono font-red animate-flash";
+        }
+    }
+    
+    updateCalculations(true);
+}
+
+// 7. MOBILE APP-LIKE TRANSITIONS
+function switchMobilePane(paneId) {
+    console.log("📱 ECOSPHERE // Mobile pane active: " + paneId);
+    
+    const cols = {
+        home: document.querySelector('.centerpiece-column'),
+        optimize: document.querySelector('.optimizer-column'),
+        intel: document.querySelector('.analytics-column'),
+        profile: document.querySelector('.analytics-column')
+    };
+    
+    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById(`nav-pane-${paneId}`);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    Object.values(cols).forEach(c => {
+        if (c) c.classList.remove('mobile-visible');
+    });
+    
+    const targetCol = cols[paneId];
+    if (targetCol) {
+        targetCol.classList.add('mobile-visible');
+    }
+    
+    if (paneId === 'intel') {
+        switchColTab('col3', 'analytics');
+    } else if (paneId === 'profile') {
+        switchColTab('col3', 'profile');
+    }
+}
+
+// 8. jsPDF BRANDED REPORT GENERATOR
+function generatePdfReport() {
+    console.log("📄 ECOSPHERE // Compiling custom branded PDF Report...");
+    
+    if (!window.jspdf) {
+        alert("Report generator initialising. Please try again in a few seconds.");
+        return;
+    }
+    
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        const PRIMARY_COLOR = [16, 185, 129];   
+        const SECONDARY_COLOR = [6, 182, 212];  
+        const TEXT_COLOR = [17, 24, 39];        
+        const GRAY_COLOR = [107, 114, 128];     
+        
+        doc.setFillColor(15, 23, 42); 
+        doc.rect(0, 0, 210, 40, "F");
+        
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(22);
+        doc.setTextColor(255, 255, 255);
+        doc.text("ECOSPHERE AI", 15, 20);
+        
+        doc.setFont("Courier", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...SECONDARY_COLOR);
+        doc.text("SECURE_SYSTEM_INTELLIGENCE // ENVIRONMENTAL_ANALYSIS", 15, 30);
+        
+        doc.setFont("Helvetica", "normal");
+        doc.setTextColor(...GRAY_COLOR);
+        doc.setFontSize(9);
+        const today = new Date().toLocaleDateString();
+        doc.text(`REPORT_DATE: ${today}`, 150, 20);
+        doc.text(`AGENT_ID: ${currentState.name ? currentState.name.toUpperCase().replace(/\s+/g, '_') : 'ECO_AGENT_01'}`, 150, 26);
+        doc.text("SYS_STATUS: VERIFIED", 150, 32);
+        
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(...TEXT_COLOR);
+        doc.text("1. HABIT Telemetry & Carbon Analysis", 15, 55);
+        
+        doc.setDrawColor(...PRIMARY_COLOR);
+        doc.setLineWidth(0.5);
+        doc.line(15, 58, 195, 58);
+        
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(10);
+        
+        let y = 68;
+        const rowHeight = 8;
+        const addMetricRow = (label, val, baselineVal, rating) => {
+            doc.setTextColor(...TEXT_COLOR);
+            doc.setFont("Helvetica", "bold");
+            doc.text(label, 15, y);
+            doc.setFont("Helvetica", "normal");
+            doc.text(val, 70, y);
+            doc.setTextColor(...GRAY_COLOR);
+            doc.text(`(Baseline: ${baselineVal})`, 110, y);
+            
+            if (rating.includes("Good") || rating.includes("Excellent") || rating.includes("Zero")) {
+                doc.setTextColor(...PRIMARY_COLOR);
+            } else {
+                doc.setTextColor(239, 68, 68); 
+            }
+            doc.setFont("Helvetica", "bold");
+            doc.text(rating, 160, y);
+            y += rowHeight;
+        };
+        
+        addMetricRow("Air Conditioning Runtime", `${currentState.acHours} Hours/Day`, "18 Hours", currentState.acHours <= 4 ? "Excellent" : "Heavy Load");
+        addMetricRow("Household Appliances", `${currentState.appliances} Appliances`, "12 Appliances", currentState.appliances <= 6 ? "Good Opt" : "Heavy Load");
+        addMetricRow("Transportation Mode", currentState.travelMode.toUpperCase(), "PETROL CAR", currentState.travelMode === "walk" ? "Zero Carbon" : "Fossil Fuel");
+        addMetricRow("Daily Distance Commuted", `${currentState.distance} km`, "65 km", currentState.distance <= 15 ? "Low Impact" : "High Distance");
+        addMetricRow("Domestic Water Usage", `${currentState.waterLiters} Liters/Day`, "360 Liters", currentState.waterLiters <= 150 ? "Water Saving" : "Excessive");
+        addMetricRow("Water Wastage Habits", currentState.waterWastage ? "ACTIVE WASTE" : "ZERO WASTE", "ACTIVE", currentState.waterWastage ? "Critical Alert" : "Eco Safe");
+        addMetricRow("Single-Use Plastic", `${currentState.plasticBottles} Bottles/Week`, "25 Bottles", currentState.plasticBottles <= 2 ? "Zero Plastic" : "Heavy Plastic");
+        
+        y += 5;
+        
+        doc.setFillColor(243, 244, 246); 
+        doc.rect(15, y, 180, 24, "F");
+        
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(...TEXT_COLOR);
+        doc.text("TOTAL DAILY EMISSIONS ANALYSIS", 20, y + 8);
+        
+        doc.setFontSize(16);
+        doc.setTextColor(239, 68, 68);
+        doc.text(`${currentState.dailyCo2.toFixed(2)} kg CO2`, 20, y + 18);
+        
+        const pctReduction = Math.max(0, Math.round(((21.82 - currentState.dailyCo2) / 21.82) * 100));
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(...PRIMARY_COLOR);
+        doc.text(`-${pctReduction}% SAVINGS`, 110, y + 8);
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(...GRAY_COLOR);
+        doc.text("Compared to alarmist baseline emissions (21.82 kg CO2)", 110, y + 16);
+        
+        y += 36;
+        
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(...TEXT_COLOR);
+        doc.text("2. Resource & Projections Intel", 15, y);
+        
+        doc.setDrawColor(...SECONDARY_COLOR);
+        doc.line(15, y + 3, 195, y + 3);
+        
+        y += 12;
+        
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(10);
+        
+        const energyUnits = (currentState.acHours * 1.45) + (currentState.appliances * 0.95);
+        const estimatedBill = Math.round(energyUnits * 30 * 8.5);
+        const baselineBill = Math.round(((8 * 1.45) + (6 * 0.95)) * 30 * 8.5);
+        const billSavings = Math.max(0, baselineBill - estimatedBill);
+        
+        doc.setTextColor(...TEXT_COLOR);
+        doc.text("Projected Monthly Energy Units Consumption:", 15, y);
+        doc.setFont("Helvetica", "bold");
+        doc.text(`${energyUnits.toFixed(1)} kWh`, 110, y);
+        
+        y += rowHeight;
+        doc.setFont("Helvetica", "normal");
+        doc.text("Estimated Monthly Electricity Bill:", 15, y);
+        doc.setFont("Helvetica", "bold");
+        doc.text(`INR ${estimatedBill.toLocaleString()}`, 110, y);
+        
+        y += rowHeight;
+        doc.setFont("Helvetica", "normal");
+        doc.text("Monthly Utility Cost Avoidance:", 15, y);
+        doc.setFont("Helvetica", "bold");
+        doc.setTextColor(...PRIMARY_COLOR);
+        doc.text(`INR ${billSavings.toLocaleString()} Saved`, 110, y);
+        
+        y += 16;
+        
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(...TEXT_COLOR);
+        doc.text("3. Actionable AI Carbon Reduction Advice", 15, y);
+        
+        doc.setDrawColor(...PRIMARY_COLOR);
+        doc.line(15, y + 3, 195, y + 3);
+        
+        y += 12;
+        
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(...TEXT_COLOR);
+        
+        const addAdvicePoint = (title, desc) => {
+            doc.setFont("Helvetica", "bold");
+            doc.text(`* ${title}:`, 15, y);
+            doc.setFont("Helvetica", "normal");
+            doc.text(desc, 50, y);
+            y += rowHeight - 1;
+        };
+        
+        if (currentState.acHours > 4) {
+            addAdvicePoint("AC Optimisation", "Consider limiting runtime below 4 hrs or cooling at 24C to avoid up to 5.4kg daily CO2.");
+        } else {
+            addAdvicePoint("AC Optimisation", "AC metrics outstanding! Your cooling habits protect scope 1 grid loads effectively.");
+        }
+        
+        if (currentState.travelMode === "petrol" || currentState.travelMode === "diesel") {
+            addAdvicePoint("Transit Transition", "Your fossil fuel commuting causes high emissions. Switch to EV or public transit to save 14 points.");
+        } else {
+            addAdvicePoint("Transit Transition", "Stunning commuter efficiency! Active walk/EV mode locks your carbon baseline.");
+        }
+        
+        if (currentState.waterLiters > 150 || currentState.waterWastage) {
+            addAdvicePoint("Hydration Habits", "Mitigate water leakage and cap domestic flow below 150 liters/day to unlock Hydration Guard.");
+        } else {
+            addAdvicePoint("Hydration Habits", "Superior water stewardship active. Leakage prevention matrices verified.");
+        }
+        
+        if (currentState.plasticBottles > 2) {
+            addAdvicePoint("Plastic Warrior", "Curb single-use plastic bottle units and utilize steel containers to slash 3.6kg weekly microplastics.");
+        } else {
+            addAdvicePoint("Plastic Warrior", "Brilliant plastic-free profile! Zero single-use waste vectors detected.");
+        }
+        
+        doc.setFillColor(15, 23, 42); 
+        doc.rect(0, 280, 210, 17, "F");
+        doc.setFont("Courier", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(...GRAY_COLOR);
+        doc.text("ECOSPHERE AI COMMAND CLIENT // SECURE PORTAL REPORT VERIFIED", 15, 290);
+        
+        const filename = `EcoSphere_Report_${currentState.name ? currentState.name.replace(/\s+/g, '_') : 'Agent'}.pdf`;
+        doc.save(filename);
+        
+        console.log("💾 ECOSPHERE // PDF downloaded successfully!");
+        createAchievementParticles();
+    } catch (e) {
+        console.error("PDF generation failure:", e);
+        alert("Error exporting PDF report. Please verify connection and try again.");
+    }
+}
+
+// Auto-rotate news slides every 8 seconds
+setInterval(() => {
+    moveCarousel(1);
+}, 8000);
+
+// Initialize mobile panes view automatically
+window.addEventListener('load', () => {
+    if (window.innerWidth <= 768) {
+        switchMobilePane('home');
+    }
+});
+
+// Update calculations when year is changed
+const originalUpdateCalculations = window.updateCalculations;
+window.updateCalculations = function(instant) {
+    if (typeof originalUpdateCalculations === 'function') {
+        originalUpdateCalculations(instant);
+    }
+    
+    // Inject weekly goal progression evaluation
+    updateWeeklyTargetProgress();
+};
+
+window.toggleProfileEditMode = toggleProfileEditMode;
+window.previewEditProfilePic = previewEditProfilePic;
+window.handleProfileUpdateSubmit = handleProfileUpdateSubmit;
+window.toggleVoiceInput = toggleVoiceInput;
+window.updateWeeklyTargetProgress = updateWeeklyTargetProgress;
+window.claimWeeklyTargetReward = claimWeeklyTargetReward;
+window.sendFriendChallenge = sendFriendChallenge;
+window.moveCarousel = moveCarousel;
+window.updateFutureSimulationYear = updateFutureSimulationYear;
+window.switchMobilePane = switchMobilePane;
+window.generatePdfReport = generatePdfReport;
 
