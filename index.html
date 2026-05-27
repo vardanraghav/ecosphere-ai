@@ -23,6 +23,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+    <!-- Collapse Mode Danger Banner -->
+    <div class="collapse-alert-banner">⚠️ PLANETARY COLLAPSE PROTOCOL INITIATED — ECOSYSTEM INTEGRITY UNDER CRITICAL THREAT ⚠️</div>
+
     <!-- Viewport Atmospheric Vignette Alert Overlay -->
     <div id="vignette-overlay" class="vignette-overlay"></div>
 
@@ -214,8 +217,8 @@
                     <div class="logo-pulse"></div>
                 </div>
                 <div class="logo-text">
-                    <h1>ECOSPHERE <span class="accent-text">AI</span></h1>
-                    <p class="subtitle">Environmental Impact & Sustainability Intelligence</p>
+                    <h1>HUMAN-EARTH <span class="accent-text">INTELLIGENCE</span></h1>
+                    <p class="subtitle">Cybernetic Command Center // Behavioral & Ecological Synchronicity</p>
                 </div>
             </div>
 
@@ -303,18 +306,18 @@
         </section>
 
         <!-- MAIN DASHBOARD CONTENT GRID -->
-                   <!-- COLUMN 1: HABITS & CHRONO CALIBRATOR -->
+            <!-- COLUMN 1: HUMAN IMPACT CALIBRATION SYSTEM -->
             <section class="grid-col optimizer-column glass-card">
                 <div class="column-header">
                     <span class="telemetry-tag font-mono">SYS_LOC // 01.A</span>
-                    <h2><i class="fa-solid fa-sliders icon-accent"></i> HABITS CALIBRATOR</h2>
-                    <p>Adjust your daily behavior telemetry to simulate your future self projection.</p>
+                    <h2 id="col1-title"><i class="fa-solid fa-sliders icon-accent"></i> HUMAN IMPACT CALIBRATION SYSTEM</h2>
+                    <p id="calibrator-desc">Adjust daily human lifestyle habits to simulate real-time planetary & personal impact.</p>
                 </div>
 
                 <!-- Interactive Dynamic Column Tabs -->
                 <div class="col-tabs font-mono" id="col1-tabs">
                     <button class="col-tab active" onclick="switchColTab('col1', 'optimizer')"><i class="fa-solid fa-gears"></i> HABITS TUNING</button>
-                    <button class="col-tab" onclick="switchColTab('col1', 'simulator')"><i class="fa-solid fa-clock-rotate-left"></i> CHRONO SIMULATOR</button>
+                    <button class="col-tab" onclick="switchColTab('col1', 'simulator')"><i class="fa-solid fa-clock-rotate-left"></i> FUTURE EARTH PROJECTION ENGINE</button>
                 </div>
 
                 <div class="optimizer-scroll-area">
@@ -433,20 +436,20 @@
                         </div>
                     </div>
 
-                    <!-- Tab Panel 2: Futuristic Chrono Simulator -->
+                    <!-- Tab Panel 2: Future Earth Projection Engine -->
                     <div id="panel-simulator" class="col-tab-panel hidden">
                         <!-- Red alert system card -->
                         <div class="simulation-alert-card glass-card" style="border-color: rgba(239, 68, 68, 0.4) !important;">
                             <div class="alert-header font-red font-mono">
-                                <i class="fa-solid fa-triangle-exclamation animate-flash"></i> CHRONO_TEMPORAL_LINK_ACTIVE
+                                <i class="fa-solid fa-triangle-exclamation animate-flash"></i> CLIMATE_PROJECTION_LINK_ACTIVE
                             </div>
-                            <p class="font-mono text-xs">Warning: Simulating biological and neurological changes over time. Slide simulated years to dynamically age the future avatar.</p>
+                            <p class="font-mono text-xs">Simulating compounding ecological and behavioral feedback loops. Select projection years to forecast Earth's future condition.</p>
                         </div>
 
-                        <!-- Climate Year Projection Slider (2025 - 2040) -->
+                        <!-- Climate Year Projection Slider (2025 - 2100) -->
                         <div class="optimizer-card simulator-card year-simulation-card" style="border-color: rgba(239, 68, 68, 0.25) !important;">
                             <div class="opt-card-header font-red">
-                                <span><i class="fa-solid fa-clock"></i> FUTURE YEAR ESTIMATION</span>
+                                <span><i class="fa-solid fa-clock"></i> PROJECTION TIMELINE MODE</span>
                                 <span class="opt-badge font-mono font-red" id="val-sim-year-label">PRESENT (2025)</span>
                             </div>
                             <div class="opt-input-group">
@@ -454,7 +457,13 @@
                                     <label for="input-sim-year">Projected Simulation Year</label>
                                     <span class="slider-val-bubble font-red"><span id="val-sim-year" class="font-mono">2025</span></span>
                                 </div>
-                                <input type="range" id="input-sim-year" min="2025" max="2040" value="2025" class="eco-slider slider-red" oninput="updateFutureSimulationYear(this.value)">
+                                <input type="range" id="input-sim-year" min="2025" max="2100" step="25" value="2025" class="eco-slider slider-red" oninput="updateFutureSimulationYear(this.value)">
+                                <div class="slider-ticks font-mono">
+                                    <span>2025</span>
+                                    <span>2050</span>
+                                    <span>2075</span>
+                                    <span>2100</span>
+                                </div>
                             </div>
                         </div>
 
@@ -547,17 +556,17 @@
                 </div>
             </section>
 
-            <!-- COLUMN 2: CYBERNETIC CHRONO NEXUS (HERO SECTION) -->
+            <!-- COLUMN 2: HYBRID HUMAN-EARTH OPERATIONS CENTER (HERO SECTION) -->
             <section class="grid-col hero-column">
-                <!-- Future Self Vitality Status Card -->
+                <!-- Connected Human-Earth Status Card -->
                 <div class="score-status-card glass-card">
                     <div class="score-indicator-top">
-                        <span class="live-tag"><span class="live-dot"></span> CHRONO ENGINE</span>
-                        <span class="status-lbl">FUTURE SELF VITALITY INDEX</span>
+                        <span class="live-tag" id="score-title"><span class="live-dot"></span> INTEGRATED CHRONO ENGINE</span>
+                        <span class="status-lbl" id="score-status-lbl">HUMAN-EARTH SUSTAINABILITY INDEX</span>
                     </div>
 
                     <div class="score-circle-container">
-                        <!-- Outer Holographic Vitality HUD Ring -->
+                        <!-- Outer Holographic Sustainability HUD Ring -->
                         <div class="score-gauge">
                             <svg class="score-ring-svg" viewBox="0 0 200 200">
                                 <circle class="score-ring-bg" cx="100" cy="100" r="92"></circle>
@@ -565,10 +574,10 @@
                             </svg>
                         </div>
 
-                        <!-- Dynamic Human Cyber-Avatar Rendering Area -->
+                        <!-- Hybrid Half Human + Half Earth Rendering Area -->
                         <div class="earth-visualization-container">
                             <div id="earth-halo" class="earth-halo-glow status-moderately"></div>
-                            <!-- Core Avatar Canvas -->
+                            <!-- Core Split Canvas -->
                             <div class="earth-sphere-wrapper">
                                 <canvas id="earth-canvas" width="340" height="340"></canvas>
                                 <div id="earth-cracks" class="earth-cracked-overlay"></div>
@@ -579,11 +588,11 @@
                     <!-- Sleek HUD Score & Status Display underneath -->
                     <div class="score-hud-panel glass-card">
                         <div class="score-hud-value">
-                            <span class="hud-label">VITALITY SCORE</span>
+                            <span class="hud-label">SUSTAINABILITY INDEX</span>
                             <span id="score-num" class="hud-number font-mono">72</span><span class="hud-max">/100</span>
                         </div>
                         <div id="status-badge" class="status-badge status-moderately">
-                            <i class="fa-solid fa-circle-check"></i> <span id="status-text">Optimized Health Profile</span>
+                            <i class="fa-solid fa-circle-check"></i> <span id="status-text">Synchronized Eco Balance</span>
                         </div>
                     </div>
 
@@ -683,6 +692,82 @@
                 <div class="analytics-scroll-area">
                     <!-- Tab Panel 1: Futures & Telemetry -->
                     <div id="panel-analytics" class="col-tab-panel">
+                        
+                        <!-- NEW HOLOGRAPHIC LIVE EARTH CONDITION METRICS PANEL -->
+                        <div class="live-earth-condition-card glass-card font-mono" style="margin-bottom: 1.25rem; border-color: rgba(16, 185, 129, 0.25);">
+                            <div class="pdf-header font-green" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.5rem; margin-bottom:0.75rem;">
+                                <span><i class="fa-solid fa-earth-americas animate-spin-slow"></i> LIVE EARTH CONDITION</span>
+                                <span class="opt-badge font-green" id="earth-health-state-badge" style="border: 1px solid var(--color-friendly); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem;">HEALTHY EARTH</span>
+                            </div>
+                            <div class="pdf-body" style="padding-top: 0rem;">
+                                
+                                <div class="earth-metric-row" style="margin-bottom: 0.65rem;">
+                                    <div class="slider-label-row" style="display:flex; justify-content:space-between; font-size:0.72rem; color:#d1d5db; margin-bottom:0.15rem;">
+                                        <span>Atmospheric Quality</span>
+                                        <span id="earth-val-atmos" class="font-cyan">100 %</span>
+                                    </div>
+                                    <div class="weekly-bar-bg" style="height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
+                                        <div id="earth-bar-atmos" class="weekly-bar-fill" style="width: 100%; height:100%; background:var(--color-friendly);"></div>
+                                    </div>
+                                </div>
+
+                                <div class="earth-metric-row" style="margin-bottom: 0.65rem;">
+                                    <div class="slider-label-row" style="display:flex; justify-content:space-between; font-size:0.72rem; color:#d1d5db; margin-bottom:0.15rem;">
+                                        <span>Biodiversity Index</span>
+                                        <span id="earth-val-biodiv" class="font-emerald">100 %</span>
+                                    </div>
+                                    <div class="weekly-bar-bg" style="height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
+                                        <div id="earth-bar-biodiv" class="weekly-bar-fill" style="width: 100%; height:100%; background:var(--color-friendly);"></div>
+                                    </div>
+                                </div>
+
+                                <div class="earth-metric-row" style="margin-bottom: 0.65rem;">
+                                    <div class="slider-label-row" style="display:flex; justify-content:space-between; font-size:0.72rem; color:#d1d5db; margin-bottom:0.15rem;">
+                                        <span>Ocean Acidity Index</span>
+                                        <span id="earth-val-ocean" class="font-blue">8.15 pH</span>
+                                    </div>
+                                    <div class="weekly-bar-bg" style="height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
+                                        <div id="earth-bar-ocean" class="weekly-bar-fill" style="width: 100%; height:100%; background:var(--color-friendly);"></div>
+                                    </div>
+                                </div>
+
+                                <div class="earth-metric-row" style="margin-bottom: 0.65rem;">
+                                    <div class="slider-label-row" style="display:flex; justify-content:space-between; font-size:0.72rem; color:#d1d5db; margin-bottom:0.15rem;">
+                                        <span>Forest Canopy Density</span>
+                                        <span id="earth-val-canopy" class="font-amber">100 %</span>
+                                    </div>
+                                    <div class="weekly-bar-bg" style="height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
+                                        <div id="earth-bar-canopy" class="weekly-bar-fill" style="width: 100%; height:100%; background:var(--color-friendly);"></div>
+                                    </div>
+                                </div>
+
+                                <div class="earth-metric-row" style="margin-bottom: 0.65rem;">
+                                    <div class="slider-label-row" style="display:flex; justify-content:space-between; font-size:0.72rem; color:#d1d5db; margin-bottom:0.15rem;">
+                                        <span>Polar Ice Stability</span>
+                                        <span id="earth-val-ice" class="font-blue">100 %</span>
+                                    </div>
+                                    <div class="weekly-bar-bg" style="height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
+                                        <div id="earth-bar-ice" class="weekly-bar-fill" style="width: 100%; height:100%; background:var(--color-friendly);"></div>
+                                    </div>
+                                </div>
+
+                                <div class="earth-metric-row" style="margin-bottom: 0.75rem;">
+                                    <div class="slider-label-row" style="display:flex; justify-content:space-between; font-size:0.72rem; color:#d1d5db; margin-bottom:0.15rem;">
+                                        <span>Planetary Carbon Load</span>
+                                        <span id="earth-val-carbon" class="font-red">0 %</span>
+                                    </div>
+                                    <div class="weekly-bar-bg" style="height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
+                                        <div id="earth-bar-carbon" class="weekly-bar-fill" style="width: 0%; height:100%; background:var(--color-danger);"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="earth-metric-row" style="border-top:1px solid rgba(255,255,255,0.05); padding-top:0.5rem; display:flex; justify-content:space-between; align-items:center; font-size:0.75rem;">
+                                    <span style="color:var(--color-text-sub);">Human-Earth Alignment Ratio</span>
+                                    <span id="earth-val-align" class="font-green font-mono" style="font-weight:bold;">100 %</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Futuristic Branded PDF Export Card -->
                         <div class="pdf-export-card glass-card font-mono">
                             <div class="pdf-header font-cyan">

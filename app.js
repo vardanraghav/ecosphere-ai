@@ -395,13 +395,172 @@ function updateCalculations(instant = false) {
     let wealthProjection = currentState.savingsRate * 1.5 * (1 + yearDiff * 0.12);
     wealthProjection = Math.max(0, Math.min(100, wealthProjection));
 
-    // Overall Vitality Index (ex-Eco Score)
+    // ----------------------------------------------------
+    // PLANETARY IMPACT TELEMETRY CALCULATIONS
+    // ----------------------------------------------------
+    const eatingHabitValue = currentState.eatingHabit; // 0, 1, 2, 3
+    const simPollution = currentState.simPollution || 0;
+    const simDeforestation = currentState.simDeforestation || 0;
+    const simPlastic = currentState.simPlastic || 0;
+    const simFossil = currentState.simFossil || 0;
+
+    // Atmospheric Quality
+    let atmos = 100 - (currentState.screenTime * 1.5) - (currentState.stressLevel * 0.2) - (yearDiff * 0.6) - (simPollution * 0.3) - (simFossil * 0.2);
+    atmos = Math.max(10, Math.min(100, Math.round(atmos)));
+
+    // Biodiversity Index
+    let biodiv = 100 - (eatingHabitValue === 0 ? 25 : eatingHabitValue === 1 ? 12 : 0) - (currentState.screenTime * 0.8) - (yearDiff * 0.8) - (simDeforestation * 0.4) - (simPlastic * 0.1);
+    biodiv = Math.max(10, Math.min(100, Math.round(biodiv)));
+
+    // Ocean Acidity Index (pH)
+    let oceanpH = 8.15 - (yearDiff * 0.005) - (currentState.screenTime * 0.008) - (simPollution * 0.001) - (simFossil * 0.002);
+    oceanpH = Math.max(7.2, Math.min(8.2, parseFloat(oceanpH.toFixed(3))));
+
+    // Forest Canopy Density
+    let canopy = 100 - (yearDiff * 1.2) - ((3 - eatingHabitValue) * 5) - (simDeforestation * 0.5);
+    canopy = Math.max(10, Math.min(100, Math.round(canopy)));
+
+    // Polar Ice Stability
+    let ice = 100 - (yearDiff * 1.5) - (currentState.stressLevel * 0.15) - (simFossil * 0.3) - (simPollution * 0.1);
+    ice = Math.max(10, Math.min(100, Math.round(ice)));
+
+    // Planetary Carbon Load
+    let carbon = (currentState.screenTime * 4 + currentState.stressLevel * 0.3 + (simFossil * 0.4) + (simPollution * 0.3)) * (1 + yearDiff * 0.08);
+    carbon = Math.max(0, Math.min(100, Math.round(carbon)));
+
+    // Human-Earth Alignment Ratio
+    let alignment = 100 - (currentState.screenTime * 2) - (currentState.stressLevel * 0.3) + (currentState.exerciseDays * 3) + (eatingHabitValue * 4) - (simFossil * 0.2);
+    alignment = Math.max(10, Math.min(100, Math.round(alignment)));
+
+    // Store in State
+    currentState.atmos = atmos;
+    currentState.biodiv = biodiv;
+    currentState.oceanpH = oceanpH;
+    currentState.canopy = canopy;
+    currentState.ice = ice;
+    currentState.carbon = carbon;
+    currentState.alignment = alignment;
+
+    // Scale pH to 0-100% for progress bars
+    const pHPercent = Math.max(0, Math.min(100, Math.round(((oceanpH - 7.2) / 1.0) * 100)));
+
+    // Calculate Planetary average (with Carbon Load inverted)
+    const planetaryAvg = (atmos + biodiv + pHPercent + canopy + ice + (100 - carbon) + alignment) / 7;
+    currentState.planetaryAvg = planetaryAvg;
+
+    // Overall Vitality Index (Personal Wellness)
     let vitalityIndex = (physicalHealth + mentalWellness) / 2;
-    currentState.ecoScore = Math.max(10, Math.min(100, Math.round(vitalityIndex)));
+    
+    // Weighted Human-Earth Sustainability Index (50% Personal Wellness, 50% Planetary Health)
+    let sustainabilityIndex = (vitalityIndex * 0.5) + (planetaryAvg * 0.5);
+    currentState.ecoScore = Math.max(10, Math.min(100, Math.round(sustainabilityIndex)));
     currentState.burnoutRisk = burnoutRisk;
     currentState.careerGrowth = careerGrowth;
     currentState.physicalHealth = physicalHealth;
     currentState.mentalWellness = mentalWellness;
+
+    // ----------------------------------------------------
+    // DEFENSIVE UPDATE DOM FOR LIVE EARTH PANEL
+    // ----------------------------------------------------
+    const elAtmosVal = document.getElementById('earth-val-atmos');
+    const elAtmosBar = document.getElementById('earth-bar-atmos');
+    if (elAtmosVal) elAtmosVal.textContent = `${atmos} %`;
+    if (elAtmosBar) {
+        elAtmosBar.style.width = `${atmos}%`;
+        elAtmosBar.style.background = atmos >= 75 ? 'var(--color-friendly)' : atmos >= 55 ? 'var(--color-moderate)' : atmos >= 35 ? 'var(--color-unsustainable)' : 'var(--color-danger)';
+    }
+
+    const elBiodivVal = document.getElementById('earth-val-biodiv');
+    const elBiodivBar = document.getElementById('earth-bar-biodiv');
+    if (elBiodivVal) elBiodivVal.textContent = `${biodiv} %`;
+    if (elBiodivBar) {
+        elBiodivBar.style.width = `${biodiv}%`;
+        elBiodivBar.style.background = biodiv >= 75 ? 'var(--color-friendly)' : biodiv >= 55 ? 'var(--color-moderate)' : biodiv >= 35 ? 'var(--color-unsustainable)' : 'var(--color-danger)';
+    }
+
+    const elOceanVal = document.getElementById('earth-val-ocean');
+    const elOceanBar = document.getElementById('earth-bar-ocean');
+    if (elOceanVal) elOceanVal.textContent = `${oceanpH.toFixed(2)} pH`;
+    if (elOceanBar) {
+        elOceanBar.style.width = `${pHPercent}%`;
+        elOceanBar.style.background = oceanpH >= 8.0 ? 'var(--color-friendly)' : oceanpH >= 7.8 ? 'var(--color-moderate)' : oceanpH >= 7.5 ? 'var(--color-unsustainable)' : 'var(--color-danger)';
+    }
+
+    const elCanopyVal = document.getElementById('earth-val-canopy');
+    const elCanopyBar = document.getElementById('earth-bar-canopy');
+    if (elCanopyVal) elCanopyVal.textContent = `${canopy} %`;
+    if (elCanopyBar) {
+        elCanopyBar.style.width = `${canopy}%`;
+        elCanopyBar.style.background = canopy >= 75 ? 'var(--color-friendly)' : canopy >= 55 ? 'var(--color-moderate)' : canopy >= 35 ? 'var(--color-unsustainable)' : 'var(--color-danger)';
+    }
+
+    const elIceVal = document.getElementById('earth-val-ice');
+    const elIceBar = document.getElementById('earth-bar-ice');
+    if (elIceVal) elIceVal.textContent = `${ice} %`;
+    if (elIceBar) {
+        elIceBar.style.width = `${ice}%`;
+        elIceBar.style.background = ice >= 75 ? 'var(--color-friendly)' : ice >= 55 ? 'var(--color-moderate)' : ice >= 35 ? 'var(--color-unsustainable)' : 'var(--color-danger)';
+    }
+
+    const elCarbonVal = document.getElementById('earth-val-carbon');
+    const elCarbonBar = document.getElementById('earth-bar-carbon');
+    if (elCarbonVal) elCarbonVal.textContent = `${carbon} %`;
+    if (elCarbonBar) {
+        elCarbonBar.style.width = `${carbon}%`;
+        elCarbonBar.style.background = carbon < 35 ? 'var(--color-friendly)' : carbon < 55 ? 'var(--color-moderate)' : carbon < 75 ? 'var(--color-unsustainable)' : 'var(--color-danger)';
+    }
+
+    const elAlignVal = document.getElementById('earth-val-align');
+    if (elAlignVal) {
+        elAlignVal.textContent = `${alignment} %`;
+        elAlignVal.className = alignment >= 75 ? 'font-green font-mono' : alignment >= 55 ? 'font-cyan font-mono' : alignment >= 35 ? 'font-amber font-mono' : 'font-red font-mono';
+    }
+
+    // Earth Health State Machine (Four-Tier Planetary Indicators)
+    let earthHealthBadgeText = "HEALTHY EARTH";
+    let earthHealthColor = "var(--color-friendly)";
+    let bodyCollapseActive = false;
+
+    if (currentState.ecoScore >= 75) {
+        earthHealthBadgeText = "HEALTHY EARTH";
+        earthHealthColor = "var(--color-friendly)";
+    } else if (currentState.ecoScore >= 55) {
+        earthHealthBadgeText = "WARNING EARTH";
+        earthHealthColor = "var(--color-moderate)";
+    } else if (currentState.ecoScore >= 35) {
+        earthHealthBadgeText = "CRITICAL EARTH";
+        earthHealthColor = "var(--color-unsustainable)";
+    } else {
+        earthHealthBadgeText = "COLLAPSE MODE";
+        earthHealthColor = "var(--color-danger)";
+        bodyCollapseActive = true;
+    }
+
+    const elBadge = document.getElementById('earth-health-state-badge');
+    if (elBadge) {
+        elBadge.textContent = earthHealthBadgeText;
+        elBadge.style.borderColor = earthHealthColor;
+        elBadge.style.color = earthHealthColor;
+    }
+
+    // Toggle Collapse active class on body and glass cards
+    const bodyEl = document.body;
+    if (bodyEl) {
+        if (bodyCollapseActive) {
+            bodyEl.classList.add('collapse-active');
+        } else {
+            bodyEl.classList.remove('collapse-active');
+        }
+    }
+
+    const glassCards = document.querySelectorAll('.glass-card');
+    glassCards.forEach(c => {
+        if (bodyCollapseActive) {
+            c.classList.add('glitch-effect');
+        } else {
+            c.classList.remove('glitch-effect');
+        }
+    });
 
     // Update Projections UI text nodes in column 3
     const projTempEl = document.getElementById('proj-temp');
@@ -877,13 +1036,13 @@ function drawAvatar(ctx, center, width, height, score, delta = 1) {
     
     let glowColor = 'rgba(6, 182, 212, 0.85)'; // cyan
     let glowRgb = [6, 182, 212];
-    if (interpolatedEcoScore >= 80) {
+    if (interpolatedEcoScore >= 75) {
         glowColor = 'rgba(16, 185, 129, 0.85)'; // green
         glowRgb = [16, 185, 129];
-    } else if (interpolatedEcoScore >= 60) {
+    } else if (interpolatedEcoScore >= 55) {
         glowColor = 'rgba(6, 182, 212, 0.85)'; // cyan
         glowRgb = [6, 182, 212];
-    } else if (interpolatedEcoScore >= 40) {
+    } else if (interpolatedEcoScore >= 35) {
         glowColor = 'rgba(245, 158, 11, 0.85)'; // amber
         glowRgb = [245, 158, 11];
     } else {
@@ -891,109 +1050,190 @@ function drawAvatar(ctx, center, width, height, score, delta = 1) {
         glowRgb = [239, 68, 68];
     }
 
-    // 1. Orbit telemetry rings
-    ctx.save();
-    ctx.translate(center, center);
-    ctx.rotate(-0.12);
-    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.22)`;
-    ctx.lineWidth = 1.0;
-    ctx.setLineDash([4, 12]);
-    ctx.lineDashOffset = -hudRingRotation * 70;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 115 + pulseScale, 32 + pulseScale * 0.2, 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.12)`;
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([8, 16]);
-    ctx.lineDashOffset = hudRingRotation * 90;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 145 + pulseScale * 1.5, 48 + pulseScale * 0.35, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-
-    // Glitch offsets triggered by high burnout risk (>75%)
+    // Glitch offsets triggered by collapse mode or high burnout risk (>75%)
     const burnoutRisk = currentState.burnoutRisk || 0;
-    const isGlitching = burnoutRisk > 75 && Math.random() > 0.88;
+    const isCollapse = interpolatedEcoScore < 35;
+    const isGlitching = (isCollapse || burnoutRisk > 75) && Math.random() > 0.82;
 
     ctx.save();
     if (isGlitching) {
-        ctx.translate((Math.random() - 0.5) * 10, 0); // horizontal CRT jitter
+        ctx.translate((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 4); // intense CRT jitter
     }
 
-    // 2. Glowing vector outline humanoid coordinate mappings
-    ctx.strokeStyle = glowColor;
-    ctx.lineWidth = 2.2;
+    // ----------------------------------------------------
+    // 1. LEFT HALF: ROTATING HOLOGRAPHIC EARTH
+    // ----------------------------------------------------
+    const globeX = 82;
+    const globeY = 170;
+    const globeRadius = 65;
+    
+    // Draw Globe Oceans with dynamic colors
+    let oceanColor = 'rgba(6, 182, 212, 0.15)'; // healthy cyan
+    let landColor = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.65)`;
+    if (interpolatedEcoScore >= 75) {
+        oceanColor = 'rgba(16, 185, 129, 0.15)'; // green-cyan
+    } else if (interpolatedEcoScore >= 55) {
+        oceanColor = 'rgba(6, 182, 212, 0.12)'; // blue-cyan
+    } else if (interpolatedEcoScore >= 35) {
+        oceanColor = 'rgba(245, 158, 11, 0.08)'; // stagnant amber
+    } else {
+        oceanColor = 'rgba(139, 0, 0, 0.12)'; // stagnant collapse red
+    }
+    
+    ctx.fillStyle = oceanColor;
+    ctx.beginPath();
+    ctx.arc(globeX, globeY, globeRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.35)`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Atmosphere halo rim glow
+    ctx.save();
     ctx.shadowColor = `rgb(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]})`;
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 12;
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.25)`;
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    ctx.arc(globeX, globeY, globeRadius + 4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Rotating Grid lines (longitude/latitude) simulating orthographic rotation
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(globeX, globeY, globeRadius, 0, Math.PI * 2);
+    ctx.clip(); // Keep grid inside oceans
+    
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.22)`;
+    ctx.lineWidth = 0.85;
+    const timeRot = performance.now() * 0.0006;
+    
+    // Draw 3 rotating longitudes
+    for (let i = 0; i < 3; i++) {
+        const offset = ((timeRot + i * (Math.PI / 3)) % Math.PI) - Math.PI / 2;
+        const width = globeRadius * Math.sin(offset);
+        if (Math.cos(offset) > 0) {
+            ctx.beginPath();
+            ctx.ellipse(globeX, globeY, Math.abs(width), globeRadius, 0, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+    }
+    
+    // Draw latitudes
+    for (let lat = -2; lat <= 2; lat++) {
+        const latY = globeY + (lat * globeRadius * 0.3);
+        const latR = Math.sqrt(globeRadius * globeRadius - (latY - globeY) * (latY - globeY));
+        ctx.beginPath();
+        ctx.ellipse(globeX, latY, latR, latR * 0.12, 0, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+    
+    // Draw Continent Clusters (simulating land masses floating across)
+    ctx.fillStyle = landColor;
+    const landSpeed = 0.0004;
+    const landSeed = [
+        { lat: 0.1, lonOffset: 0, size: 14 },
+        { lat: -0.3, lonOffset: 1.5, size: 20 },
+        { lat: 0.4, lonOffset: 3.0, size: 16 },
+        { lat: -0.1, lonOffset: 4.2, size: 12 },
+        { lat: 0.2, lonOffset: 5.5, size: 18 }
+    ];
+    landSeed.forEach(mass => {
+        const lon = (performance.now() * landSpeed + mass.lonOffset) % (Math.PI * 2);
+        const cosLat = Math.cos(mass.lat);
+        const sinLon = Math.sin(lon);
+        const cosLon = Math.cos(lon);
+        
+        if (cosLon > 0) { // On the visible hemisphere
+            const lx = globeX + globeRadius * cosLat * sinLon;
+            const ly = globeY + globeRadius * Math.sin(mass.lat);
+            
+            ctx.beginPath();
+            ctx.arc(lx, ly, mass.size * (0.35 + cosLon * 0.65), 0, Math.PI * 2);
+            ctx.fill();
+        }
+    });
+    ctx.restore();
+
+    // ----------------------------------------------------
+    // 2. RIGHT HALF: GLOWING CYBERNETIC HUMAN
+    // ----------------------------------------------------
+    const humanX = 258;
+    const humanY = 170;
+    
+    ctx.strokeStyle = glowColor;
+    ctx.lineWidth = 2.0;
+    ctx.shadowColor = `rgb(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]})`;
+    ctx.shadowBlur = 8;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
     // HEAD
     ctx.beginPath();
-    ctx.arc(center, center - 68, 18, 0, Math.PI * 2);
+    ctx.arc(humanX, humanY - 45, 13, 0, Math.PI * 2);
     ctx.stroke();
 
-    // NECK
+    // SPINE/NECK
     ctx.beginPath();
-    ctx.moveTo(center, center - 50);
-    ctx.lineTo(center, center - 40);
+    ctx.moveTo(humanX, humanY - 32);
+    ctx.lineTo(humanX, humanY + 22);
     ctx.stroke();
 
     // SHOULDERS
     ctx.beginPath();
-    ctx.moveTo(center - 42, center - 30);
-    ctx.lineTo(center + 42, center - 30);
+    ctx.moveTo(humanX - 26, humanY - 20);
+    ctx.lineTo(humanX + 26, humanY - 20);
     ctx.stroke();
 
     // ARMS
     ctx.beginPath();
-    ctx.moveTo(center - 42, center - 30);
-    ctx.lineTo(center - 62, center + 10);
-    ctx.moveTo(center + 42, center - 30);
-    ctx.lineTo(center + 62, center + 10);
+    ctx.moveTo(humanX - 26, humanY - 20);
+    ctx.lineTo(humanX - 38, humanY + 12);
+    ctx.moveTo(humanX + 26, humanY - 20);
+    ctx.lineTo(humanX + 38, humanY + 12);
     ctx.stroke();
 
     // TORSO/CHEST
     ctx.beginPath();
-    ctx.moveTo(center - 42, center - 30);
-    ctx.lineTo(center - 22, center + 38);
-    ctx.lineTo(center + 22, center + 38);
-    ctx.lineTo(center + 42, center - 30);
+    ctx.moveTo(humanX - 26, humanY - 20);
+    ctx.lineTo(humanX - 14, humanY + 22);
+    ctx.lineTo(humanX + 14, humanY + 22);
+    ctx.lineTo(humanX + 26, humanY - 20);
     ctx.closePath();
     ctx.stroke();
 
     // LEGS
     ctx.beginPath();
-    ctx.moveTo(center - 22, center + 38);
-    ctx.lineTo(center - 30, center + 98);
-    ctx.moveTo(center + 22, center + 38);
-    ctx.lineTo(center + 30, center + 98);
+    ctx.moveTo(humanX - 14, humanY + 22);
+    ctx.lineTo(humanX - 18, humanY + 68);
+    ctx.moveTo(humanX + 14, humanY + 22);
+    ctx.lineTo(humanX + 18, humanY + 68);
     ctx.stroke();
 
-    // 3. Head Brain Wave Sine Pulse
+    // 2.3 HEAD BRAIN OSCILLATIONS
     ctx.save();
     ctx.beginPath();
-    ctx.arc(center, center - 68, 18, 0, Math.PI * 2);
+    ctx.arc(humanX, humanY - 45, 13, 0, Math.PI * 2);
     ctx.clip();
 
     ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.55)`;
-    ctx.lineWidth = 1.2;
+    ctx.lineWidth = 1.0;
     ctx.beginPath();
-    const frequency = 0.16;
-    const speed = 0.008 * (currentState.stressLevel || 30);
-    const amplitude = 5;
+    const frequency = 0.18;
+    const speed = 0.009 * (currentState.stressLevel || 30);
+    const amplitude = 4;
     const time = performance.now() * speed;
 
-    for (let x = center - 20; x <= center + 20; x++) {
-        const y = center - 68 + Math.sin((x - center) * frequency + time) * amplitude;
-        if (x === center - 20) ctx.moveTo(x, y);
+    for (let x = humanX - 15; x <= humanX + 15; x++) {
+        const y = humanY - 45 + Math.sin((x - humanX) * frequency + time) * amplitude;
+        if (x === humanX - 15) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
     }
     ctx.stroke();
     ctx.restore();
 
-    // 4. Chest Heart Rate Beats
+    // 2.4 CHEST HEART RATE BEATS
     const heartPulseBpm = 60 + (burnoutRisk / 100) * 120;
     const heartPulsePeriod = 60000 / heartPulseBpm;
     const heartPulsePhase = (performance.now() % heartPulsePeriod) / heartPulsePeriod;
@@ -1001,31 +1241,96 @@ function drawAvatar(ctx, center, width, height, score, delta = 1) {
     
     ctx.fillStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.8)`;
     ctx.beginPath();
-    ctx.arc(center, center - 12, 5 * heartPulseScale, 0, Math.PI * 2);
+    ctx.arc(humanX, humanY - 8, 4.5 * heartPulseScale, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, ${Math.max(0, 0.6 - heartPulsePhase)})`;
-    ctx.lineWidth = 1.0;
+    ctx.lineWidth = 0.9;
     ctx.beginPath();
-    ctx.arc(center, center - 12, 18 * heartPulsePhase, 0, Math.PI * 2);
+    ctx.arc(humanX, humanY - 8, 16 * heartPulsePhase, 0, Math.PI * 2);
     ctx.stroke();
+
+    // ----------------------------------------------------
+    // 3. CENTER TELEMETRY & BEZIER CONNECTIONS
+    // ----------------------------------------------------
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.22)`;
+    ctx.lineWidth = 1.0;
+    ctx.setLineDash([4, 4]);
+    
+    // Path 1: Upper link
+    ctx.beginPath();
+    ctx.moveTo(humanX, humanY - 20);
+    ctx.quadraticCurveTo(170, 130, globeX + 50, globeY - 25);
+    ctx.stroke();
+
+    // Path 2: Center link
+    ctx.beginPath();
+    ctx.moveTo(humanX, humanY - 8);
+    ctx.quadraticCurveTo(170, 170, globeX + 65, globeY);
+    ctx.stroke();
+
+    // Path 3: Lower link
+    ctx.beginPath();
+    ctx.moveTo(humanX, humanY + 15);
+    ctx.quadraticCurveTo(170, 210, globeX + 50, globeY + 25);
+    ctx.stroke();
+    
+    ctx.setLineDash([]); // Reset
+    
+    // Flowing connection dots
+    const dotTime = (performance.now() * 0.0008) % 1.0;
+    ctx.fillStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.9)`;
+    
+    // P1 dot
+    const p1x = humanX * (1 - dotTime) + (globeX + 50) * dotTime;
+    const p1y = (humanY - 20) * (1 - dotTime) + (globeY - 25) * dotTime - Math.sin(dotTime * Math.PI) * 12;
+    ctx.beginPath();
+    ctx.arc(p1x, p1y, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // P2 dot
+    const p2x = (globeX + 65) * (1 - dotTime) + humanX * dotTime;
+    const p2y = globeY * (1 - dotTime) + (humanY - 8) * dotTime;
+    ctx.beginPath();
+    ctx.arc(p2x, p2y, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // P3 dot
+    const p3x = humanX * (1 - dotTime) + (globeX + 50) * dotTime;
+    const p3y = (humanY + 15) * (1 - dotTime) + (globeY + 25) * dotTime + Math.sin(dotTime * Math.PI) * 12;
+    ctx.beginPath();
+    ctx.arc(p3x, p3y, 3, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.restore();
 
-    // 5. Horizontal CRT scanlines
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+    // 4. Orbit telemetries HUD rings around the whole view
+    ctx.save();
+    ctx.translate(center, center);
+    ctx.rotate(-0.06);
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.16)`;
+    ctx.lineWidth = 0.8;
+    ctx.setLineDash([3, 15]);
+    ctx.lineDashOffset = -hudRingRotation * 60;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 160 + pulseScale, 152 + pulseScale * 0.15, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // 5. Horizontal CRT scanlines overlay
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.015)';
     for (let y = 10; y < height - 10; y += 4) {
-        ctx.fillRect(10, y, width - 20, 1.2);
+        ctx.fillRect(10, y, width - 20, 1.0);
     }
 
     // 6. Draw Volumetric Atmospheric Aura Glow
     ctx.save();
     ctx.shadowColor = `rgb(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]})`;
-    ctx.shadowBlur = 16;
-    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.18)`;
+    ctx.shadowBlur = 12;
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.15)`;
     ctx.lineWidth = 1.0;
     ctx.beginPath();
-    ctx.arc(center, center, 140, 0, Math.PI * 2);
+    ctx.arc(globeX, globeY, globeRadius + 12, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
@@ -1189,46 +1494,46 @@ function getAIResponsePreset(type) {
     if (type === 'boost') {
         let recommendation = "";
         if (currentState.screenTime >= 8) {
-            recommendation = `Currently, your digital screen time is a heavy <strong>${currentState.screenTime} hours</strong>. Sliding it below 4 hours will add about <strong>+12 points</strong> to your Vitality Score!`;
+            recommendation = `Currently, your digital screen time is a heavy <strong>${currentState.screenTime} hours</strong>. Bypassing screen load reduces household power dissipation and restores cognitive clarity, adding <strong>+12 points</strong> to the Human-Earth Sustainability Index!`;
         } else if (currentState.sleepHours < 6) {
-            recommendation = `Your biological rest is too low. Elevating sleep above 7.5 hours daily will restore cognitive health, adding <strong>+15 points</strong>!`;
+            recommendation = `Your biological rest is too low (<strong>${currentState.sleepHours}h</strong>). Elevating sleep above 7.5 hours restores deep biological cellular integrity and balances natural circadian loops, adding <strong>+15 points</strong>!`;
         } else if (currentState.stressLevel >= 50) {
-            recommendation = `Correcting daily neurological stress through breathing/meditation cycles will instantly boost your score by <strong>+10 points</strong>!`;
+            recommendation = `High stress (<strong>${currentState.stressLevel}%</strong>) releases neuro-toxins and drains planetary carbon focus. Correcting daily stress through meditation boosts the Alignment ratio, adding <strong>+10 points</strong>!`;
         } else if (currentState.savingsRate < 20) {
-            recommendation = `Your savings rate is sub-optimal. Saving at least 40% will secure wealth projections, boosting your rank score by <strong>+8 points</strong>!`;
+            recommendation = `Your savings rate is sub-optimal (<strong>${currentState.savingsRate}%</strong>). Bypassing consumer carbon footprints by saving at least 40% will boost environmental wealth, adding <strong>+8 points</strong>!`;
         } else {
-            recommendation = `You are doing exceptionally well with a Vitality Index of <strong>${scoreVal}</strong>! To get closer to 100, try minimizing screen time further and optimizing deep rest.`;
+            recommendation = `Your Human-Earth Sustainability Index is a superb <strong>${scoreVal}</strong>! To approach 100, try minimizing screen time further and optimizing plant-based clean intake.`;
         }
         
-        return `⚡ <strong>AI Bio-Telemetry Coach Advice:</strong><br><br>${recommendation}<br><br>Every minor habit optimization reflects immediately in your future self metrics!`;
+        return `⚡ <strong>Planetary Intelligence AI - Calibration Advice:</strong><br><br>${recommendation}<br><br>Every personal habit optimization directly reduces environmental load and restores natural ecosystems!`;
     }
     
     if (type === 'transport') {
-        let analysis = `You spent <strong>${currentState.screenTime} hours</strong> active on screens and <strong>${currentState.socialMediaTime} hours</strong> doomscrolling daily.<br><br>`;
+        let analysis = `You spent <strong>${currentState.screenTime} hours</strong> on screens and <strong>${currentState.socialMediaTime} hours</strong> doomscrolling daily.<br><br>`;
         if (currentState.screenTime >= 10) {
-            analysis += `⚠️ <strong>Heavy Digital Load</strong> detected. Screens over 10 hours release excessive neural fatigue, increasing dopaminergic desensitization by 60%+. Try locking your screen after 4 hours.`;
+            analysis += `⚠️ <strong>Heavy Grid & Neural Load</strong> detected. High screens waste electricity and increase carbon emissions while causing dopamine fatigue. Bypassing screens after 6 hours reduces grid carbon load significantly.`;
         } else {
-            analysis += `⭐ Outstanding! Your screen time is well regulated, keeping neural pathways healthy and active standing optimal!`;
+            analysis += `⭐ Outstanding screen conservation! You are keeping carbon footprints minimal and cognitive pathways sharp.`;
         }
         return analysis;
     }
     
     if (type === 'forecast') {
-        let prediction = `🔮 <strong>Future Life Projection (2025 - 2035):</strong><br><br>`;
+        let prediction = `🔮 <strong>Future Earth & Self Projection (2025 - 2100):</strong><br><br>`;
         if (scoreVal < 50) {
-            prediction += `⚠️ Continuing with your current habits will lead to a <strong>burnout outcome by 2035</strong>. Cognitive fatigue surge reaches critical levels and financial wealth decays sharply.`;
+            prediction += `⚠️ Continuing with your current habits will trigger a <strong>Planetary Collapse outcome by 2100</strong>. Forest canopies decay, atmospheric quality drops to critical levels, and carbon indexes skyrocket. Hectares of polar ice will melt rapidly.`;
         } else {
-            prediction += `🟢 By adopting your current disciplined habits, you will prevent biological decay and secure a <strong>Successful Zen Entrepreneur</strong> path by 2035!<br><br>Physical health peaks, cognitive wellness stays stable, and annual savings reach a cumulative <strong>₹${(currentState.savingsRate * 12 * 80 * 10).toLocaleString()}</strong> by 2035!`;
+            prediction += `🟢 By adopting your current disciplined habits, you will secure a <strong>Utopian Co-existence</strong> path by 2100!<br><br>Ecosystem biodiversity peaks, carbon emissions are fully neutralized, and your human biometrics scale to optimal limits. Earth health stabilizes at healthy parameters!`;
         }
         return prediction;
     }
     
     if (type === 'water') {
-        let tips = `🧠 <strong>Dopamine Regulation Insight:</strong><br><br>Doomscrolling for <strong>${currentState.socialMediaTime} hours/day</strong> creates severe neurological stress. `;
+        let tips = `🧠 <strong>Behavioral Ecology Insight:</strong><br><br>Doomscrolling for <strong>${currentState.socialMediaTime} hours/day</strong> drains both your focus and local water-saving focus. `;
         if (currentState.socialMediaTime >= 4) {
-            tips += `Bypassing social media alerts after 8 PM will instantly restore dopamine receptor densities by up to 25%. `;
+            tips += `Bypassing social media alerts after 8 PM will reduce active screen consumption, saving valuable kilowatt-hours and restoring mental index by 25%. `;
         }
-        tips += `Try setting app-limit grids, doing active physical exercise, and sleeping in dark, isolated rooms to maximize recovery!`;
+        tips += `Try consuming clean foods, practicing regular exercise, and maintaining high savings to lock ecological synchronicity!`;
         return tips;
     }
 }
@@ -1239,25 +1544,25 @@ function getAIResponse(msgText) {
     const scoreVal = currentState.ecoScore;
 
     if (text.includes('hello') || text.includes('hi') || text.includes('hey')) {
-        return "Greetings Agent! Ask me any questions about your future path, biological biometrics, screen load, or click a suggestion chip for instant advice!";
+        return "Greetings Agent! I am the Planetary Intelligence AI coach. Ask me any questions about your biometrics, carbon load, atmospheric levels, or ecosystem synchronicity!";
     }
-    if (text.includes('score') || text.includes('vitality') || text.includes('eco')) {
-        return `Your current Future Self Vitality Index is <strong>${scoreVal}/100</strong>. ${scoreVal >= 80 ? 'An outstanding score! You are locked for Utopian Success.' : 'You can easily boost this by adjusting sleep, reducing screens, or boosting savings.'}`;
+    if (text.includes('score') || text.includes('vitality') || text.includes('eco') || text.includes('sustainability')) {
+        return `Your current Human-Earth Sustainability Index is <strong>${scoreVal}/100</strong>. ${scoreVal >= 75 ? 'An outstanding score! You are locked in for a sustainable future.' : 'This can be easily optimized by improving sleep, eating clean foods, or minimizing screens.'}`;
     }
     if (text.includes('sleep') || text.includes('rest') || text.includes('tired')) {
-        return `Your sleep duration is set to <strong>${currentState.sleepHours} hours</strong>. Deep rest below 6 hours decays cellular tissues. Try aim for 7.5+ hours!`;
+        return `Your biological sleep is set to <strong>${currentState.sleepHours} hours</strong>. Deep rest below 6 hours decays cellular tissues. Try to aim for 7.5+ hours!`;
     }
     if (text.includes('screen') || text.includes('social') || text.includes('media') || text.includes('doomscroll')) {
-        return `You spent <strong>${currentState.screenTime}h</strong> on screens and <strong>${currentState.socialMediaTime}h</strong> doomscrolling daily. High screen loads burn out dopamine receptors!`;
+        return `You spent <strong>${currentState.screenTime}h</strong> on screens and <strong>${currentState.socialMediaTime}h</strong> doomscrolling daily. High screen usage increases grid electricity consumption and increases planetary carbon load!`;
     }
     if (text.includes('stress') || text.includes('mental') || text.includes('burnout')) {
-        return `Your Neurological Stress is <strong>${currentState.stressLevel}%</strong>, and Burnout Risk is projected at <strong>${Math.round(currentState.burnoutRisk)}%</strong>. High stress decays your 2035 health exponentially.`;
+        return `Your Neurological Stress is <strong>${currentState.stressLevel}%</strong>, and Burnout Risk is projected at <strong>${Math.round(currentState.burnoutRisk)}%</strong>. High stress impacts your focus and decreases human-earth alignment!`;
     }
     if (text.includes('saving') || text.includes('money') || text.includes('wealth')) {
-        return `Your savings rate is <strong>${currentState.savingsRate}%</strong>. This leads to a cost Cost Avoidance/Savings of <strong>₹${currentState.savingsRate * 1000} annually</strong>. High savings locks Utopian Wealth!`;
+        return `Your savings rate is <strong>${currentState.savingsRate}%</strong>. High savings rates prevent impulse consumer purchases, directly avoiding manufacturing carbon footprints!`;
     }
 
-    return "Fascinating query! My chrono-telemetry matrices highlight that minor tweaks in daily loops—like sleeping 1 hour more, bypassing doomscrolling, and savings ₹500 more—accumulate massive destiny-shifting results in 2035. Test a slider and watch your future self visualizer shift!";
+    return "Fascinating query! My analytical matrices highlight that minor tweaks in daily loops—like sleeping 1 hour more, clean dietary intake, and minimizing screen usage—accumulate massive ecosystem-shifting results by 2100. Try a slider and watch the split-screen Earth visualizer react!";
 }
 
 // Particle physics emitter
@@ -2309,7 +2614,7 @@ function switchMobilePane(paneId) {
 
 // 8. jsPDF BRANDED REPORT GENERATOR
 function generatePdfReport() {
-    console.log("📄 ECOSPHERE // Compiling custom branded PDF Report...");
+    console.log("📄 ECOSPHERE // Compiling custom branded Human-Earth PDF Report...");
     
     if (!window.jspdf) {
         alert("Report generator initialising. Please try again in a few seconds.");
@@ -2330,14 +2635,14 @@ function generatePdfReport() {
         doc.rect(0, 0, 210, 42, "F");
         
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(22);
+        doc.setFontSize(20);
         doc.setTextColor(255, 255, 255);
-        doc.text("FUTURE SELF SIMULATOR", 15, 22);
+        doc.text("HUMAN-EARTH ECOLOGICAL INTEGRATION", 15, 22);
         
         doc.setFont("Courier", "bold");
         doc.setFontSize(9);
         doc.setTextColor(...PRIMARY_COLOR);
-        doc.text("SECURE_BIOMETRIC_CHRONO_TELEMETRY // PROJECTION_2035", 15, 32);
+        doc.text("PLANETARY_BIOMETRIC_SYNCHRONICITY // TIMELINE_2025_2100", 15, 32);
         
         doc.setFont("Helvetica", "normal");
         doc.setTextColor(...GRAY_COLOR);
@@ -2349,19 +2654,19 @@ function generatePdfReport() {
         
         // 1. Habit telemetry
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(14);
+        doc.setFontSize(13);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("1. Daily Lifestyle Habits & Telemetry", 15, 56);
+        doc.text("1. Daily Lifestyle Habits & Telemetry", 15, 54);
         
         doc.setDrawColor(...PRIMARY_COLOR);
         doc.setLineWidth(0.5);
-        doc.line(15, 59, 195, 59);
+        doc.line(15, 57, 195, 57);
         
         doc.setFont("Helvetica", "normal");
-        doc.setFontSize(10);
+        doc.setFontSize(9.5);
         
-        let y = 68;
-        const rowHeight = 8;
+        let y = 65;
+        const rowHeight = 7.5;
         const addMetricRow = (label, val, baselineVal, rating) => {
             doc.setTextColor(...TEXT_COLOR);
             doc.setFont("Helvetica", "bold");
@@ -2371,7 +2676,7 @@ function generatePdfReport() {
             doc.setTextColor(...GRAY_COLOR);
             doc.text(`(Baseline: ${baselineVal})`, 112, y);
             
-            if (rating.includes("Optimal") || rating.includes("Healthy") || rating.includes("Regulated")) {
+            if (rating.includes("Optimal") || rating.includes("Healthy") || rating.includes("Regulated") || rating.includes("Zen") || rating.includes("Active")) {
                 doc.setTextColor(...SECONDARY_COLOR);
             } else {
                 doc.setTextColor(239, 68, 68); 
@@ -2389,84 +2694,83 @@ function generatePdfReport() {
         addMetricRow("Financial Savings Ratio", `${currentState.savingsRate}% Savings`, "5%", currentState.savingsRate >= 35 ? "Wealth Builder" : "Unstable");
         addMetricRow("Neurological Stress", `${currentState.stressLevel}% Index`, "80%", currentState.stressLevel <= 30 ? "Optimal Zen" : "High Cortisol");
         
-        y += 5;
+        y += 3;
         
-        // Vitality score box
+        // Sustainability score box
         doc.setFillColor(243, 244, 246); 
         doc.rect(15, y, 180, 24, "F");
         
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(11);
+        doc.setFontSize(10.5);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("FUTURE LIFE VITALITY INDEX (SCORE)", 20, y + 8);
+        doc.text("HUMAN-EARTH SUSTAINABILITY INDEX (INTEGRATION)", 20, y + 8);
         
-        doc.setFontSize(16);
+        doc.setFontSize(15);
         doc.setTextColor(...PRIMARY_COLOR);
         doc.text(`${currentState.ecoScore} / 100`, 20, y + 18);
         
         const improvement = Math.max(0, currentState.ecoScore - 35);
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(11);
+        doc.setFontSize(10.5);
         doc.setTextColor(...SECONDARY_COLOR);
-        doc.text(`+${improvement} PTS ACCELERATION`, 110, y + 8);
+        doc.text(`+${improvement} PTS SYNC GAIN`, 110, y + 8);
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(8.5);
         doc.setTextColor(...GRAY_COLOR);
-        doc.text("Improvement compared to poor baseline habits (35 Index)", 110, y + 16);
+        doc.text("Synchronized score compared to poor lifestyle baseline (35 Index)", 110, y + 16);
         
-        y += 36;
+        y += 34;
         
         // 2. Projections
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(14);
+        doc.setFontSize(13);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("2. 2035 Biometric & Lifepath Forecasts", 15, y);
+        doc.text("2. 2100 Human-Earth Telemetry & Projections", 15, y);
         
         doc.setDrawColor(...SECONDARY_COLOR);
         doc.line(15, y + 3, 195, y + 3);
         
-        y += 12;
+        y += 11;
         
         doc.setFont("Helvetica", "normal");
-        doc.setFontSize(10);
+        doc.setFontSize(9.5);
         
-        doc.setTextColor(...TEXT_COLOR);
-        doc.text("Projected 2035 Physical Health Index:", 15, y);
-        doc.setFont("Helvetica", "bold");
-        doc.text(`${Math.round(currentState.physicalHealth)}%`, 115, y);
+        const addForecastRow = (label, val, target) => {
+            doc.setTextColor(...TEXT_COLOR);
+            doc.setFont("Helvetica", "normal");
+            doc.text(label, 15, y);
+            doc.setFont("Helvetica", "bold");
+            doc.text(val, 115, y);
+            doc.setTextColor(...GRAY_COLOR);
+            doc.setFont("Helvetica", "normal");
+            doc.text(`(Target: ${target})`, 152, y);
+            y += 6.5;
+        };
+
+        addForecastRow("Projected 2100 Physical Health", `${Math.round(currentState.physicalHealth)}%`, ">=80%");
+        addForecastRow("Projected 2100 Mental Wellness", `${Math.round(currentState.mentalWellness)}%`, ">=80%");
+        addForecastRow("Simulated 2100 Chronic Burnout Risk", `${Math.round(currentState.burnoutRisk)}%`, "<40%");
+        addForecastRow("Atmospheric Quality Index", `${currentState.atmos || 100}%`, ">=85%");
+        addForecastRow("Ecosystem Biodiversity Index", `${currentState.biodiv || 100}%`, ">=85%");
+        addForecastRow("Oceanic Acidity Level", `${currentState.oceanpH || 8.15} pH`, "8.10-8.20 pH");
+        addForecastRow("Polar Ice Stability Index", `${currentState.ice || 100}%`, ">=80%");
+        addForecastRow("Human-Earth Alignment Ratio", `${currentState.alignment || 100}%`, ">=85%");
         
-        y += rowHeight;
-        doc.setFont("Helvetica", "normal");
-        doc.text("Projected 2035 Mental Wellness Index:", 15, y);
-        doc.setFont("Helvetica", "bold");
-        doc.text(`${Math.round(currentState.mentalWellness)}%`, 115, y);
-        
-        y += rowHeight;
-        doc.setFont("Helvetica", "normal");
-        doc.text("Simulated 2035 Chronic Burnout Risk:", 15, y);
-        doc.setFont("Helvetica", "bold");
-        if (currentState.burnoutRisk > 70) {
-            doc.setTextColor(239, 68, 68);
-        } else {
-            doc.setTextColor(...SECONDARY_COLOR);
-        }
-        doc.text(`${Math.round(currentState.burnoutRisk)}% (Max Target: <40%)`, 115, y);
-        
-        y += 16;
+        y += 8;
         
         // 3. AI recommendations
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(14);
+        doc.setFontSize(13);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("3. Actionable AI Lifestyle Adjustments", 15, y);
+        doc.text("3. Actionable AI Sustainability Adjustments", 15, y);
         
         doc.setDrawColor(...PRIMARY_COLOR);
         doc.line(15, y + 3, 195, y + 3);
         
-        y += 12;
+        y += 11;
         
         doc.setFont("Helvetica", "normal");
-        doc.setFontSize(9.5);
+        doc.setFontSize(9);
         doc.setTextColor(...TEXT_COLOR);
         
         const addAdvicePoint = (title, desc) => {
@@ -2474,31 +2778,31 @@ function generatePdfReport() {
             doc.text(`* ${title}:`, 15, y);
             doc.setFont("Helvetica", "normal");
             doc.text(desc, 50, y);
-            y += rowHeight - 1;
+            y += 7.0;
         };
         
         if (currentState.screenTime > 4) {
-            addAdvicePoint("Screen Limitation", "Regulate screen use below 4h daily to boost vitality score by up to 12 pts.");
+            addAdvicePoint("Screen Limitation", "Limit screens below 4h to reduce grid energy loads and restore biological stress.");
         } else {
-            addAdvicePoint("Screen Limitation", "Excellent digital detox hygiene! Dopamine receptors levels healthy.");
+            addAdvicePoint("Screen Limitation", "Excellent digital detox habits maintained! Keeping grid carbon loads minimal.");
         }
         
         if (currentState.sleepHours < 7.5) {
-            addAdvicePoint("Sleep Regulation", "Raise daily rest to 8h to recover cellular aging and prevent cognitive depletion.");
+            addAdvicePoint("Sleep Regulation", "Aim for 7.5h sleep to optimize cellular metabolism and increase recovery indices.");
         } else {
-            addAdvicePoint("Sleep Regulation", "Stunning rest patterns maintained! Tissues are regenerating efficiently.");
+            addAdvicePoint("Sleep Regulation", "Exceptional circadian harmony! Biological tissues are regenerating optimally.");
         }
         
         if (currentState.savingsRate < 25) {
-            addAdvicePoint("Savings Allocation", "Curb excess expenses to save at least 25% monthly, securing wealth index goals.");
+            addAdvicePoint("Savings Allocation", "Curb impulsive consumer purchases to save 25%+, preventing manufacturing carbon load.");
         } else {
-            addAdvicePoint("Savings Allocation", "Excellent discipline active! Future savings assets are compounding exponentially.");
+            addAdvicePoint("Savings Allocation", "Excellent economic wisdom! Directing excess assets toward green wealth growth.");
         }
         
         if (currentState.stressLevel >= 40) {
-            addAdvicePoint("Neurological Zen", "Adopt evening screen blockers and deep breathing to reduce cortisol stress fatigue.");
+            addAdvicePoint("Ecosystem Zen", "Commit to early screens-off hours to reduce cortisol levels and maximize planetary focus.");
         } else {
-            addAdvicePoint("Neurological Zen", "Remarkable stress regulation verified! Neural baseline in complete harmony.");
+            addAdvicePoint("Ecosystem Zen", "Perfect neurological zen! Your cognitive stability is in perfect ecosystem sync.");
         }
         
         // Footer card
@@ -2507,9 +2811,9 @@ function generatePdfReport() {
         doc.setFont("Courier", "bold");
         doc.setFontSize(8);
         doc.setTextColor(...GRAY_COLOR);
-        doc.text("FUTURE SELF SIMULATOR COMMAND CLIENT // SECURE PORTAL COMPILER REPORT", 15, 290);
+        doc.text("HUMAN-EARTH COMMAND CLIENT // SECURE PORTAL COMPILER REPORT v2.0", 15, 290);
         
-        const filename = `FutureSelf_Report_${currentState.name ? currentState.name.replace(/\s+/g, '_') : 'Agent'}.pdf`;
+        const filename = `HumanEarth_Report_${currentState.name ? currentState.name.replace(/\s+/g, '_') : 'Agent'}.pdf`;
         doc.save(filename);
         
         console.log("💾 ECOSPHERE // PDF downloaded successfully!");
