@@ -4280,5 +4280,24 @@ body.collapse-active .collapse-alert-banner {
     100% { opacity: 0.5; }
 }
 
+@keyframes screenShake {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-0.8px, -0.8px); }
+    20% { transform: translate(0.8px, -0.8px); }
+    30% { transform: translate(-0.8px, 0.8px); }
+    40% { transform: translate(0.8px, 0.8px); }
+    50% { transform: translate(-0.8px, -0.8px); }
+    60% { transform: translate(0.8px, 0.8px); }
+    70% { transform: translate(-0.8px, 0.8px); }
+    80% { transform: translate(0.8px, -0.8px); }
+    90% { transform: translate(-0.8px, -0.8px); }
+    100% { transform: translate(0, 0); }
+}
+
+body.collapse-active .app-container {
+    animation: screenShake 0.2s infinite;
+}
+
+
 
 
