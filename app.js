@@ -1,98 +1,60 @@
 /* ==========================================================================
-   ECOSPHERE AI - PLATFORM CONTROLLER & INTEL ENGINE
-   Real-Time Calculations, Dynamic 2D Canvas Earth, Chart.js & Chatbot
+   FUTURE SELF SIMULATOR - CORE CONTROLLER & INTEL ENGINE
+   Premium Cyber-Dark Aesthetic // Real-Time Biometric & Lifestyle Telemetry
+   Vanilla Javascript, Canvas Physics, Chart.js & Chatbot
    ========================================================================== */
 
-// 1. GLOBAL STATE & BASELINE VALUES (Alarming Impact is our comparative baseline)
+// 1. GLOBAL STATE & BASELINE VALUES
 const BASELINE = {
-    acHours: 18,
-    appliances: 12,
-    travelMode: 'petrol',
-    distance: 65,
-    waterLiters: 360,
-    waterWastage: true,
-    plasticBottles: 25,
-    plasticBags: true,
-    foodWaste: 3, // Extreme
-    dailyCo2: 21.82,
-    dailyWater: 360,
-    ecoScore: 24
+    sleepHours: 4.5,
+    screenTime: 12,
+    studyHours: 1,
+    exerciseDays: 0,
+    eatingHabit: 0,
+    stressLevel: 80,
+    socialMediaTime: 6,
+    savingsRate: 5,
+    ecoScore: 35 // Base Vitality Index
 };
 
 let currentState = {
-    acHours: 8,
-    appliances: 6,
-    travelMode: 'petrol',
-    distance: 30,
-    waterLiters: 200,
-    waterWastage: false,
-    plasticBottles: 12,
-    plasticBags: true,
-    foodWaste: 2, // Frequent
-    dailyCo2: 0,
-    dailyWater: 0,
-    ecoScore: 0,
+    sleepHours: 7,
+    screenTime: 5,
+    studyHours: 4,
+    exerciseDays: 3,
+    eatingHabit: 2, // Good
+    stressLevel: 30,
+    socialMediaTime: 2,
+    savingsRate: 20,
 
-    // New Gamification & Simulation Properties
-    xp: 40,
-    avatarLevel: 1,
-    pledgedPoints: 0,
-    claimedQuests: [],
-    inSimulationMode: false,
+    // Simulated Threat Factors
     simPollution: 0,
     simDeforestation: 0,
     simPlastic: 0,
     simFossil: 0,
 
-    // Onboarding & Personalized Profile Properties
+    // Progression & Profile
+    xp: 40,
+    avatarLevel: 1,
+    pledgedPoints: 0,
+    claimedQuests: [],
+    streakCount: 1,
+    simulatedYear: 2025,
     name: "",
     age: "",
     phone: "",
     department: "ECE",
     city: "",
-    sustainabilityGoal: "Carbon Neutral",
-    transportPreference: "EV",
+    futureGoal: "Entrepreneurial Success",
+    gender: "astronaut",
     photoURL: "",
-    sustainabilityStreak: 1,
-    lastActiveDate: "",
-    achievements: ["first_uplink"],
-    profileComplete: false
+    profileComplete: false,
+    achievements: ["first_uplink"]
 };
 
 // Rates & Constants
-const ELEC_CO2_PER_AC_HR = 1.35; // kg CO2
-const ELEC_CO2_PER_UNIT = 0.40;   // kg CO2
-const ELEC_RATE_PER_KWH = 8;     // ₹
-const ELEC_AC_KWH = 1.5;         // kWh/hour
-
-const TRANSPORT_FACTORS = {
-    walk: 0.00,
-    ev: 0.03,
-    transit: 0.04,
-    bike: 0.11,
-    petrol: 0.18
-};
-
-const TRANSPORT_COSTS = {
-    walk: 0,
-    ev: 1.0,
-    transit: 1.5,
-    bike: 2.5,
-    petrol: 8.0
-};
-
-const WATER_CO2_PER_LITER = 0.0003; // kg CO2 per liter
-const WATER_RATE_PER_L = 0.15;      // ₹ cost
-
-const PLASTIC_CO2_PER_BOTTLE = 0.12; // kg CO2
-const PLASTIC_BOTTLE_COST = 20;      // ₹ cost
-
-const FOOD_WASTE_DATA = [
-    { label: "Never", co2: 0.10, penalty: 0 },
-    { label: "Rare", co2: 0.50, penalty: 5 },
-    { label: "Frequent", co2: 1.50, penalty: 15 },
-    { label: "Extreme", co2: 3.00, penalty: 30 }
-];
+const DOPAMINE_MULTIPLIER = 1.2;
+const CELLULAR_DECAY_RATE = 0.12; // aging factor
 
 // Document Elements cache
 let breakdownChart = null;
@@ -101,6 +63,7 @@ let earthRotationAngle = 0;
 let earthAnimationFrameId = null;
 let interpolatedEcoScore = 72; // Smooth tracking for state transitions
 let hudRingRotation = 0; // Rotation tracking for planet HUD rings
+let activeParticles = [];
 
 // Initialize app when window loads
 window.addEventListener('load', () => {
@@ -113,33 +76,34 @@ window.addEventListener('load', () => {
     // Set initial baseline comparison stats and populate charts with live calculated data
     updateCalculations(true);
     
-    // Run Earth visual loop
+    // Run Earth/Avatar visual loop
     initEarthCanvas();
     
     // Generate background atmosphere particles
     initBackgroundAtmosphere();
 
     // Initialize Gamification Widgets & Avatar states
-    if (window.updateAvatarXPWidget) window.updateAvatarXPWidget();
-    if (window.evaluateQuests) window.evaluateQuests();
-    if (window.updateBattleLeaderboard) window.updateBattleLeaderboard();
-    if (window.initHistoryMiniChart) window.initHistoryMiniChart();
+    updateAvatarXPWidget();
+    evaluateQuests();
+    updateWeeklyTargetProgress();
+    updateBattleLeaderboard();
     
     // Run cinematic startup loader timeline
     runLoaderSequence();
 });
 
+// Cinematic Loader
 function runLoaderSequence() {
     const loader = document.getElementById('app-loader');
     const bar = document.getElementById('loader-bar-fill');
     const statusText = document.getElementById('loader-status-text');
     
     const steps = [
-        { progress: 15, text: "Initializing Eco-Intelligence Core..." },
-        { progress: 38, text: "Loading predictive climate action formulas..." },
-        { progress: 62, text: "Calibrating lifestyle optimization ratios..." },
-        { progress: 85, text: "Retrieving campus standing & standings..." },
-        { progress: 100, text: "Establishing climate action protocols..." }
+        { progress: 15, text: "Initializing Chrono-Intelligence Core..." },
+        { progress: 38, text: "Loading predictive biological aging models..." },
+        { progress: 62, text: "Calibrating neurological wellness matrices..." },
+        { progress: 85, text: "Retrieving user bio-telemetry..." },
+        { progress: 100, text: "Establishing secure future simulation link..." }
     ];
     
     let stepIndex = 0;
@@ -147,21 +111,25 @@ function runLoaderSequence() {
     function nextStep() {
         if (stepIndex < steps.length) {
             const step = steps[stepIndex];
-            bar.style.width = `${step.progress}%`;
-            statusText.textContent = step.text;
+            if (bar) bar.style.width = `${step.progress}%`;
+            if (statusText) statusText.textContent = step.text;
             stepIndex++;
-            setTimeout(nextStep, 450); // Snappy build-up
+            setTimeout(nextStep, 350);
         } else {
-            // Loader completes! Fade out dashboard loader
             setTimeout(() => {
-                loader.classList.add('fade-out');
+                if (loader) {
+                    loader.classList.add('fade-out');
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 500);
+                }
                 
                 // Show AI bot welcome message with typewriter stream!
                 setTimeout(() => {
                     showThinkingIndicator();
                     setTimeout(() => {
                         hideThinkingIndicator();
-                        addBotMessage("Hello! I am your <strong>Eco-Intelligence Assistant</strong>. 🌍<br><br>I've loaded the <strong>Typical Student</strong> profile. You can drag the sliders on the left or select the presets at the top to simulate lifestyle improvements in real-time. Notice how your score, charts, savings, and the Earth's atmosphere change dynamically!");
+                        addBotMessage("Welcome to the <strong>Future Self Simulator</strong>. 🔮<br><br>Your baseline profile is initialized. Adjust the behavior telemetry sliders on the left or select presets to dynamically simulate your cognitive, physical, and financial destiny in the year <strong>2035</strong>! Watch your Chrono-Avatar wireframe visualizer change dynamically.");
                     }, 800);
                 }, 500);
             }, 300);
@@ -173,76 +141,73 @@ function runLoaderSequence() {
 
 // 2. INITIALIZE SLIDERS AND EVENT LISTENERS
 function initSliders() {
-    const inputs = [
-        { id: 'input-ac-hours', bubbleId: 'val-ac-hours', stateKey: 'acHours', type: 'slider' },
-        { id: 'input-appliances', bubbleId: 'val-appliances', stateKey: 'appliances', type: 'slider' },
-        { id: 'input-distance', bubbleId: 'val-distance', stateKey: 'distance', type: 'slider' },
-        { id: 'input-water', bubbleId: 'val-water', stateKey: 'waterLiters', type: 'slider' },
-        { id: 'input-plastic', bubbleId: 'val-plastic', stateKey: 'plasticBottles', type: 'slider' },
-        { id: 'input-food-waste', bubbleId: 'lbl-food-waste', stateKey: 'foodWaste', type: 'food' },
-        { id: 'input-water-wastage', stateKey: 'waterWastage', type: 'checkbox' },
-        { id: 'input-plastic-bags', stateKey: 'plasticBags', type: 'checkbox' }
+    const sliders = [
+        { id: 'input-screen-time', bubbleId: 'val-screen-time', stateKey: 'screenTime', badgeId: 'val-screen-level', thresholds: ['LIGHT', 'MODERATE', 'HEAVY LOAD', 'SEVERE DEPLETION'] },
+        { id: 'input-social-media', bubbleId: 'val-social-media', stateKey: 'socialMediaTime' },
+        { id: 'input-sleep-hours', bubbleId: 'val-sleep-hours', stateKey: 'sleepHours', badgeId: 'val-sleep-quality', thresholds: ['CRITICAL', 'DEPRIVED', 'RESTED', 'ZEN'] },
+        { id: 'input-exercise-days', bubbleId: 'val-exercise-days', stateKey: 'exerciseDays' },
+        { id: 'input-study-hours', bubbleId: 'val-study-hours', stateKey: 'studyHours', badgeId: 'val-focus-level', thresholds: ['DISTRACTED', 'STANDARD', 'HIGH FOCUS', 'DEEP SCHOLAR'] },
+        { id: 'input-savings-rate', bubbleId: 'val-savings-rate', stateKey: 'savingsRate' },
+        { id: 'input-stress-level', bubbleId: 'val-stress-level', stateKey: 'stressLevel' }
     ];
 
-    inputs.forEach(input => {
-        const el = document.getElementById(input.id);
+    sliders.forEach(s => {
+        const el = document.getElementById(s.id);
         if (!el) return;
 
-        if (input.type === 'slider') {
-            el.addEventListener('input', (e) => {
-                const val = parseFloat(e.target.value);
-                document.getElementById(input.bubbleId).textContent = val;
-                currentState[input.stateKey] = val;
-                updateCalculations(true);
-                triggerAutoSave();
-            });
-        } else if (input.type === 'food') {
-            el.addEventListener('input', (e) => {
-                const val = parseInt(e.target.value);
-                const label = FOOD_WASTE_DATA[val].label;
-                document.getElementById(input.bubbleId).textContent = label;
-                currentState[input.stateKey] = val;
-                updateCalculations(true);
-                triggerAutoSave();
-            });
-        } else if (input.type === 'checkbox') {
-            el.addEventListener('change', (e) => {
-                currentState[input.stateKey] = e.target.checked;
-                updateCalculations(true);
-                triggerAutoSave();
-            });
-        }
-    });
+        el.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            const bubble = document.getElementById(s.bubbleId);
+            if (bubble) bubble.textContent = val;
+            currentState[s.stateKey] = val;
 
-    // Travel radio buttons
-    const radios = document.querySelectorAll('input[name="travelMode"]');
-    radios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                currentState.travelMode = e.target.value;
-                
-                // Update badge label
-                const labelText = {
-                    walk: 'Walk/Cycle',
-                    ev: 'Electric Veh',
-                    transit: 'Public Transit',
-                    bike: 'Motorcycle',
-                    petrol: 'Petrol Car'
-                }[e.target.value];
-                document.getElementById('val-transport-mode-text').textContent = labelText;
-                
-                updateCalculations(true);
-                triggerAutoSave();
+            // Update semantic status badge if threshold specified
+            if (s.badgeId && s.thresholds) {
+                const badge = document.getElementById(s.badgeId);
+                if (badge) {
+                    let status = s.thresholds[0];
+                    if (s.stateKey === 'screenTime') {
+                        if (val >= 12) status = s.thresholds[3];
+                        else if (val >= 8) status = s.thresholds[2];
+                        else if (val >= 4) status = s.thresholds[1];
+                    } else if (s.stateKey === 'sleepHours') {
+                        if (val >= 8) status = s.thresholds[3];
+                        else if (val >= 7) status = s.thresholds[2];
+                        else if (val >= 5) status = s.thresholds[1];
+                    } else if (s.stateKey === 'studyHours') {
+                        if (val >= 10) status = s.thresholds[3];
+                        else if (val >= 6) status = s.thresholds[2];
+                        else if (val >= 3) status = s.thresholds[1];
+                    }
+                    badge.textContent = status;
+                }
             }
+
+            updateCalculations(true);
+            triggerAutoSave();
         });
     });
 
-    // Futuristic Environmental Simulator range slider attachments
+    const eatingSelect = document.getElementById('input-eating-habit');
+    if (eatingSelect) {
+        eatingSelect.addEventListener('change', (e) => {
+            currentState.eatingHabit = parseInt(e.target.value);
+            const badge = document.getElementById('val-diet-status');
+            if (badge) {
+                const dietLabels = ["POOR", "AVERAGE", "GOOD QUALITY", "CLEAN NUTRIENT"];
+                badge.textContent = dietLabels[currentState.eatingHabit] || "GOOD";
+            }
+            updateCalculations(true);
+            triggerAutoSave();
+        });
+    }
+
+    // Dynamic environmental sliders inside simulation card
     const simInputs = [
-        { id: 'input-sim-pollution', bubbleId: 'val-sim-pollution', stateKey: 'simPollution', labelId: 'val-sim-pollution-label', thresholds: ['STABLE', 'MODERATE', 'HIGH CHOKE', 'SEVERE ALERT!'] },
-        { id: 'input-sim-deforestation', bubbleId: 'val-sim-deforestation', stateKey: 'simDeforestation', labelId: 'val-sim-deforestation-label', thresholds: ['HEALTHY Canopy', 'MINOR LOSS', 'DEFORESTATION', 'DEAD ECOSYSTEM!'] },
-        { id: 'input-sim-plastic', bubbleId: 'val-sim-plastic', stateKey: 'simPlastic', labelId: 'val-sim-plastic-label', thresholds: ['CLEAR Oceans', 'PLASTIC RESIDUE', 'GARBAGE PATCH', 'TOXIC WASTE OCEAN'] },
-        { id: 'input-sim-fossil', bubbleId: 'val-sim-fossil', stateKey: 'simFossil', labelId: 'val-sim-fossil-label', thresholds: ['RENEWABLE Base', 'CARBON EXHAUST', 'HEAVY SOOT SMOG', 'PLANETARY SUFFOCATION!'] }
+        { id: 'input-sim-pollution', bubbleId: 'val-sim-pollution', stateKey: 'simPollution', labelId: 'val-sim-pollution-label', thresholds: ['STABLE', 'FATIGUE', 'DRAINED', 'SEVERE CHRONIC!'] },
+        { id: 'input-sim-deforestation', bubbleId: 'val-sim-deforestation', stateKey: 'simDeforestation', labelId: 'val-sim-deforestation-label', thresholds: ['HEALTHY Tissues', 'MINOR DECAY', 'ACCELERATED AGING', 'CRITICAL CELL DECAY!'] },
+        { id: 'input-sim-plastic', bubbleId: 'val-sim-plastic', stateKey: 'simPlastic', labelId: 'val-sim-plastic-label', thresholds: ['CONNECTED', 'SOCIAL DETACH', 'ISOLATION SURGE', 'TOTAL BRAIN BURNOUT'] },
+        { id: 'input-sim-fossil', bubbleId: 'val-sim-fossil', stateKey: 'simFossil', labelId: 'val-sim-fossil-label', thresholds: ['NORMAL Rate', 'MINOR FATIGUE', 'ACUTE EXHAUSTION', 'TEMPORAL FAILURE!'] }
     ];
 
     simInputs.forEach(sim => {
@@ -251,24 +216,23 @@ function initSliders() {
 
         el.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
-            document.getElementById(sim.bubbleId).textContent = val;
+            const bubble = document.getElementById(sim.bubbleId);
+            if (bubble) bubble.textContent = val;
             currentState[sim.stateKey] = val;
-            
-            // Update semantic descriptions
+
             let status = sim.thresholds[0];
             let color = 'var(--color-friendly)';
             if (val >= 75) { status = sim.thresholds[3]; color = 'var(--color-danger)'; }
             else if (val >= 45) { status = sim.thresholds[2]; color = 'var(--color-unsustainable)'; }
             else if (val >= 15) { status = sim.thresholds[1]; color = 'var(--color-moderate)'; }
-            
+
             const lbl = document.getElementById(sim.labelId);
             if (lbl) {
                 lbl.textContent = status;
                 lbl.style.color = color;
                 lbl.style.borderColor = color;
             }
-            
-            // Force redraw centerpiece simulation
+
             updateCalculations(true);
         });
     });
@@ -276,13 +240,9 @@ function initSliders() {
 
 // 3. PRESETS CONTROLLER
 function applyPreset(presetType) {
-    // Remove active class from all preset buttons
     document.querySelectorAll('.btn-preset').forEach(btn => btn.classList.remove('active'));
-    
-    // Clear dynamic body preset themes
     document.body.classList.remove('preset-theme-green', 'preset-theme-red', 'preset-theme-blue');
     
-    // Trigger screen glitch-shake command center feedback!
     const appContainer = document.querySelector('.app-container');
     if (appContainer) {
         appContainer.classList.add('glitch-shake');
@@ -292,67 +252,66 @@ function applyPreset(presetType) {
     }
     
     if (presetType === 'alarm') {
-        document.getElementById('btn-preset-alarm').classList.add('active');
+        const btnAlarm = document.getElementById('btn-preset-alarm');
+        if (btnAlarm) btnAlarm.classList.add('active');
         document.body.classList.add('preset-theme-red');
         setFormInputs({
-            acHours: 18,
-            appliances: 12,
-            travelMode: 'petrol',
-            distance: 65,
-            waterLiters: 360,
-            waterWastage: true,
-            plasticBottles: 25,
-            plasticBags: true,
-            foodWaste: 3
+            sleepHours: 4,
+            screenTime: 12,
+            studyHours: 2,
+            exerciseDays: 0,
+            eatingHabit: 0,
+            stressLevel: 85,
+            socialMediaTime: 7,
+            savingsRate: 5
         });
         
-        // Custom typewriter bot sequence with thinking indicator
         showThinkingIndicator();
         setTimeout(() => {
             hideThinkingIndicator();
-            addBotMessage("🚨 <strong>SYSTEM EMERGENCY ACTIVE: Alarming Impact Profile</strong>.<br><br>Warning! High AC loads, long commutes in a petrol car, leaking water resources, packaging waste, and extreme food leftovers have been activated.<br><br>The Earth's atmosphere has degraded to a desolated <strong>critical state</strong>, oceans are stagnant sludge, and your ECE Department campus standing has fallen to <strong>Rank #3</strong> with a warning warning badge!");
+            addBotMessage("🚨 <strong>SYSTEM CRISIS: Burnout Future Seeded (2035 Warning)</strong>.<br><br>Warning! Deprived sleep (4h), high daily screen load (12h), excessive stress (85%), and low savings (5%) have been activated.<br><br>Your future self in 2035 is projected to be in **severe physical and cognitive burnout**, experiencing chronic neural depletion and high stress fatigue. Action is highly recommended!");
         }, 650);
 
     } else if (presetType === 'student') {
-        document.getElementById('btn-preset-student').classList.add('active');
+        const btnStudent = document.getElementById('btn-preset-student');
+        if (btnStudent) btnStudent.classList.add('active');
         document.body.classList.add('preset-theme-blue');
         setFormInputs({
-            acHours: 8,
-            appliances: 6,
-            travelMode: 'petrol',
-            distance: 30,
-            waterLiters: 200,
-            waterWastage: false,
-            plasticBottles: 12,
-            plasticBags: true,
-            foodWaste: 2
+            sleepHours: 7,
+            screenTime: 6,
+            studyHours: 4,
+            exerciseDays: 2,
+            eatingHabit: 1,
+            stressLevel: 45,
+            socialMediaTime: 3,
+            savingsRate: 15
         });
         
         showThinkingIndicator();
         setTimeout(() => {
             hideThinkingIndicator();
-            addBotMessage("🎓 <strong>Preset Activated: Typical Campus Student</strong>.<br><br>This is a moderate profile: some AC during study hours, travel by petrol car or motorbike, standard water usage, moderate packaging waste, and typical food discard. A solid base to begin optimizing!");
+            addBotMessage("🎓 <strong>Preset Loaded: Typical Campus Student (2035 Forecast)</strong>.<br><br>This is a standard behavioral baseline: 7h sleep, 6h screen time, 4h study focus, and 15% financial savings.<br><br>Your 2035 self is forecast to be a **Moderate Achiever** but with high screen load and minor physical fatigue. It is a solid baseline to optimize and accelerate discipline!");
         }, 650);
 
     } else if (presetType === 'warrior') {
-        document.getElementById('btn-preset-warrior').classList.add('active');
+        const btnWarrior = document.getElementById('btn-preset-warrior');
+        if (btnWarrior) btnWarrior.classList.add('active');
         document.body.classList.add('preset-theme-green');
         setFormInputs({
-            acHours: 1,
-            appliances: 2,
-            travelMode: 'walk',
-            distance: 10,
-            waterLiters: 80,
-            waterWastage: false,
-            plasticBottles: 0,
-            plasticBags: false,
-            foodWaste: 0
+            sleepHours: 8,
+            screenTime: 3,
+            studyHours: 8,
+            exerciseDays: 5,
+            eatingHabit: 3,
+            stressLevel: 10,
+            socialMediaTime: 1,
+            savingsRate: 50
         });
         
         showThinkingIndicator();
         setTimeout(() => {
             hideThinkingIndicator();
-            addBotMessage("🌱 <strong>GLOBAL EQUILIBRIUM SECURED: Green Eco-Warrior</strong>.<br><br>Excellent! This simulates an highly sustainable, low-carbon lifestyle: minimal AC, active walking/cycling for transit, conscious water saving, zero single-use plastics, and zero leftovers waste.<br><br>The Earth is healthy, leaf particles are floating, and the ECE department climbs to **Rank #1** in campus standing! Outstanding leadership!");
+            addBotMessage("🌱 <strong>CHRONO EQUILIBRIUM: Successful Entrepreneur & Zen Leader</strong>.<br><br>Outstanding! This simulates a highly disciplined lifestyle: 8h quality rest, 8h productive work/study focus, clean nutrition, and 50% savings rate.<br><br>Your 2035 self is projected to achieve **exceptional professional growth, physical vitality, and digital harmony**. Your future self thanks you!");
         }, 650);
     }
 }
@@ -360,109 +319,105 @@ function applyPreset(presetType) {
 function setFormInputs(data) {
     currentState = { ...currentState, ...data };
 
-    // Update range elements in UI
-    document.getElementById('input-ac-hours').value = data.acHours;
-    document.getElementById('val-ac-hours').textContent = data.acHours;
+    const mappings = [
+        { id: 'input-screen-time', bubbleId: 'val-screen-time', val: data.screenTime },
+        { id: 'input-social-media', bubbleId: 'val-social-media', val: data.socialMediaTime },
+        { id: 'input-sleep-hours', bubbleId: 'val-sleep-hours', val: data.sleepHours },
+        { id: 'input-exercise-days', bubbleId: 'val-exercise-days', val: data.exerciseDays },
+        { id: 'input-study-hours', bubbleId: 'val-study-hours', val: data.studyHours },
+        { id: 'input-savings-rate', bubbleId: 'val-savings-rate', val: data.savingsRate },
+        { id: 'input-stress-level', bubbleId: 'val-stress-level', val: data.stressLevel }
+    ];
 
-    document.getElementById('input-appliances').value = data.appliances;
-    document.getElementById('val-appliances').textContent = data.appliances;
+    mappings.forEach(m => {
+        const el = document.getElementById(m.id);
+        const bubble = document.getElementById(m.bubbleId);
+        if (el) el.value = m.val;
+        if (bubble) bubble.textContent = m.val;
+    });
 
-    document.getElementById('input-distance').value = data.distance;
-    document.getElementById('val-distance').textContent = data.distance;
-
-    document.getElementById('input-water').value = data.waterLiters;
-    document.getElementById('val-water').textContent = data.waterLiters;
-
-    document.getElementById('input-plastic').value = data.plasticBottles;
-    document.getElementById('val-plastic').textContent = data.plasticBottles;
-
-    document.getElementById('input-food-waste').value = data.foodWaste;
-    document.getElementById('lbl-food-waste').textContent = FOOD_WASTE_DATA[data.foodWaste].label;
-
-    document.getElementById('input-water-wastage').checked = data.waterWastage;
-    document.getElementById('input-plastic-bags').checked = data.plasticBags;
-
-    // Check correct radio button
-    document.getElementById(`mode-${data.travelMode}`).checked = true;
-    
-    // Update badge labels
-    const labelText = {
-        walk: 'Walk/Cycle',
-        ev: 'Electric Veh',
-        transit: 'Public Transit',
-        bike: 'Motorcycle',
-        petrol: 'Petrol Car'
-    }[data.travelMode];
-    document.getElementById('val-transport-mode-text').textContent = labelText;
+    const eatingSelect = document.getElementById('input-eating-habit');
+    if (eatingSelect) {
+        eatingSelect.value = data.eatingHabit;
+        const dietBadge = document.getElementById('val-diet-status');
+        if (dietBadge) {
+            const dietLabels = ["POOR", "AVERAGE", "GOOD QUALITY", "CLEAN NUTRIENT"];
+            dietBadge.textContent = dietLabels[data.eatingHabit] || "GOOD";
+        }
+    }
 
     updateCalculations();
 }
 
+// Helper to calculate vitality dynamically for any year
+function calculateVitalityForYear(year) {
+    const yearDiff = year - 2025;
+    let sleepHours = currentState.sleepHours;
+    let screenTime = currentState.screenTime;
+    let exerciseDays = currentState.exerciseDays;
+    let eatingHabit = currentState.eatingHabit; 
+    let stressLevel = currentState.stressLevel;
+    let socialMediaTime = currentState.socialMediaTime;
+
+    let health = 100 - (10 - sleepHours) * 3.5 - screenTime * 1.2 + exerciseDays * 4.5 + eatingHabit * 5 - (yearDiff * stressLevel * 0.05);
+    health = Math.max(10, Math.min(100, health));
+
+    let mental = 100 - stressLevel * 0.5 - screenTime * 1.5 - socialMediaTime * 2.0 + sleepHours * 3.0;
+    mental = mental - (yearDiff * (screenTime + socialMediaTime) * 0.15);
+    mental = Math.max(10, Math.min(100, mental));
+
+    let vitality = Math.round((health + mental) / 2);
+    return Math.max(10, Math.min(100, vitality));
+}
+
 // 4. MAIN CALCULATIONS ENGINE
 function updateCalculations(instant = false) {
-    // 4.1 Carbon Footprint calculations (Daily emissions in kg CO2)
-    const elecCo2 = (currentState.acHours * ELEC_CO2_PER_AC_HR) + (currentState.appliances * ELEC_CO2_PER_UNIT);
-    
-    const transportFactor = TRANSPORT_FACTORS[currentState.travelMode];
-    const transportCo2 = currentState.distance * transportFactor;
-    
-    const waterWastagePenaltyCo2 = currentState.waterWastage ? 0.40 : 0.00;
-    const waterCo2 = (currentState.waterLiters * WATER_CO2_PER_LITER) + waterWastagePenaltyCo2;
-    
-    const plasticBagPenaltyCo2 = currentState.plasticBags ? 0.30 : 0.00;
-    const plasticCo2 = (currentState.plasticBottles / 7 * PLASTIC_CO2_PER_BOTTLE) + plasticBagPenaltyCo2;
-    
-    const foodCo2 = FOOD_WASTE_DATA[currentState.foodWaste].co2;
-    
-    const totalDailyCo2 = elecCo2 + transportCo2 + waterCo2 + plasticCo2 + foodCo2;
-    currentState.dailyCo2 = totalDailyCo2;
-    currentState.dailyWater = currentState.waterLiters;
+    const yearDiff = (currentState.simulatedYear || 2025) - 2025;
 
-    // 4.2 Eco Score calculation (10 - 100 scale)
-    let acDeduction = currentState.acHours * 2.0;
-    let applianceDeduction = currentState.appliances * 1.2;
-    
-    // Transport deduction weighted by mode
-    let transportDeduction = transportCo2 * 4.0;
-    
-    // Water deduction
-    let waterDeduction = 0;
-    if (currentState.waterLiters > 100) {
-        waterDeduction = (currentState.waterLiters - 100) * 0.08;
-    }
-    if (currentState.waterWastage) waterDeduction += 8;
-    
-    // Plastic deduction
-    let plasticDeduction = currentState.plasticBottles * 0.7;
-    if (currentState.plasticBags) plasticDeduction += 6;
-    
-    // Food deduction
-    let foodDeduction = FOOD_WASTE_DATA[currentState.foodWaste].penalty;
+    // Physical Health Score
+    let physicalHealth = 100 - (10 - currentState.sleepHours) * 3.5 - currentState.screenTime * 1.2 + currentState.exerciseDays * 4.5 + currentState.eatingHabit * 5;
+    physicalHealth -= (yearDiff * currentState.stressLevel * 0.05);
+    physicalHealth = Math.max(10, Math.min(100, physicalHealth));
 
-    let totalScore = 100 - (acDeduction + applianceDeduction + transportDeduction + waterDeduction + plasticDeduction + foodDeduction);
-    currentState.ecoScore = Math.max(12, Math.min(100, Math.round(totalScore)));
+    // Mental Wellness Score
+    let mentalWellness = 100 - currentState.stressLevel * 0.5 - currentState.screenTime * 1.5 - currentState.socialMediaTime * 2.0 + currentState.sleepHours * 3.0;
+    mentalWellness -= (yearDiff * (currentState.screenTime + currentState.socialMediaTime) * 0.15);
+    mentalWellness = Math.max(10, Math.min(100, mentalWellness));
 
-    // Smart Utility Bill Predictor calculations
-    const AC_KWH = 1.45;
-    const APP_KWH = 0.95;
-    const energyUnits = (currentState.acHours * AC_KWH) + (currentState.appliances * APP_KWH);
-    const estimatedBill = Math.round(energyUnits * 30 * 8.5);
-    const baselineBill = Math.round(((8 * AC_KWH) + (6 * APP_KWH)) * 30 * 8.5);
-    const billSavings = Math.max(0, baselineBill - estimatedBill);
+    // Burnout Risk Score
+    let burnoutRisk = (currentState.stressLevel * 0.7 + currentState.screenTime * 0.4 + currentState.studyHours * 0.5 - currentState.sleepHours * 2.0) * (1 + yearDiff * 0.08);
+    burnoutRisk = Math.max(0, Math.min(100, burnoutRisk));
 
-    const billEstimateEl = document.getElementById('bill-estimate');
-    if (billEstimateEl) billEstimateEl.textContent = estimatedBill.toLocaleString();
-    const billSavingsEl = document.getElementById('bill-savings');
-    if (billSavingsEl) billSavingsEl.textContent = billSavings.toLocaleString();
-    
-    const progressFill = document.getElementById('bill-progress');
-    if (progressFill) {
-        const progressPct = Math.min(100, Math.max(0, (billSavings / baselineBill) * 100));
-        progressFill.style.width = progressPct + '%';
-    }
+    // Career Growth & Wealth Projection
+    let careerGrowth = currentState.studyHours * 6.0 + (100 - currentState.stressLevel) * 0.15 + currentState.sleepHours * 2.0 - currentState.screenTime * 0.8;
+    careerGrowth = Math.max(10, Math.min(100, careerGrowth));
+
+    let wealthProjection = currentState.savingsRate * 1.5 * (1 + yearDiff * 0.12);
+    wealthProjection = Math.max(0, Math.min(100, wealthProjection));
+
+    // Overall Vitality Index (ex-Eco Score)
+    let vitalityIndex = (physicalHealth + mentalWellness) / 2;
+    currentState.ecoScore = Math.max(10, Math.min(100, Math.round(vitalityIndex)));
+    currentState.burnoutRisk = burnoutRisk;
+    currentState.careerGrowth = careerGrowth;
+    currentState.physicalHealth = physicalHealth;
+    currentState.mentalWellness = mentalWellness;
+
+    // Update Projections UI text nodes in column 3
+    const projTempEl = document.getElementById('proj-temp');
+    if (projTempEl) projTempEl.textContent = `${Math.max(0, Math.round((100 - mentalWellness) * 0.8 + yearDiff * 0.5))}%`;
+
+    const projSpeciesEl = document.getElementById('proj-species');
+    if (projSpeciesEl) projSpeciesEl.textContent = `+${Math.max(0, ((100 - physicalHealth) * 0.12)).toFixed(1)} yrs`;
+
+    const projAcidEl = document.getElementById('proj-acid');
+    if (projAcidEl) projAcidEl.textContent = `${Math.max(0, (currentState.stressLevel * 0.6 + currentState.screenTime * 0.4)).toFixed(1)}%`;
+
+    const projCanopyEl = document.getElementById('proj-canopy');
+    if (projCanopyEl) projCanopyEl.textContent = `${Math.max(15, Math.round(100 - currentState.screenTime * 4 - currentState.socialMediaTime * 5))}%`;
 
     // 4.3 Update UI Widgets
-    updateUI(elecCo2, transportCo2, waterCo2, plasticCo2, foodCo2);
+    updateUI(burnoutRisk, careerGrowth, mentalWellness, physicalHealth);
     
     // Check achievements unlock conditions
     checkAchievements();
@@ -471,193 +426,156 @@ function updateCalculations(instant = false) {
     updateProfileDashboardUI();
     
     // Evaluate daily challenges
-    if (window.evaluateQuests) window.evaluateQuests();
+    evaluateQuests();
     
     // Update Campus Battle scoring Standings
-    if (window.updateBattleLeaderboard) window.updateBattleLeaderboard();
+    updateBattleLeaderboard();
 
     // 4.4 Live Charts Update
-    updateCharts(elecCo2, transportCo2, waterCo2, plasticCo2, foodCo2, instant);
-
-    // 4.5 Holographic 2050 Climate Projections Calculations
-    const futureYear = typeof simulatedFutureYear !== 'undefined' ? simulatedFutureYear : 2026;
-    const yearDiff = futureYear - 2026;
-    
-    // Emissions factor scaled by simulation pollution and current carbon footprint
-    const baseCo2 = currentState.dailyCo2 || 12.2;
-    const pollutionScale = 1 + (currentState.simPollution || 0) / 100;
-    const effectiveCo2 = baseCo2 * pollutionScale;
-    
-    // Math & Estimation Models
-    const tempRise = 1.1 + yearDiff * (effectiveCo2 / 12) * 0.08;
-    const speciesLoss = yearDiff * (effectiveCo2 / 10) * 0.4;
-    const pHAcidity = 8.10 - yearDiff * (effectiveCo2 / 20) * 0.008;
-    
-    const deforestPct = currentState.simDeforestation || 0;
-    const canopyCover = Math.max(15, 100 - yearDiff * 1.5 - deforestPct * 0.5);
-    
-    // Update Projections UI text nodes
-    const projTempEl = document.getElementById('proj-temp');
-    if (projTempEl) projTempEl.textContent = `${tempRise.toFixed(2)} °C`;
-    
-    const projSpeciesEl = document.getElementById('proj-species');
-    if (projSpeciesEl) projSpeciesEl.textContent = `${speciesLoss.toFixed(2)} %`;
-    
-    const projAcidEl = document.getElementById('proj-acid');
-    if (projAcidEl) projAcidEl.textContent = pHAcidity.toFixed(3);
-    
-    const projCanopyEl = document.getElementById('proj-canopy');
-    if (projCanopyEl) projCanopyEl.textContent = `${Math.round(canopyCover)} %`;
+    updateCharts(instant);
 }
 
 // 5. UPDATE UI VIEW & TICKERS
-function updateUI(elecCo2, transportCo2, waterCo2, plasticCo2, foodCo2) {
-    // Score ring progress bar
+function updateUI(burnout, career, mental, physical) {
     const scoreVal = currentState.ecoScore;
-    document.getElementById('score-num').textContent = scoreVal;
+    const scoreNum = document.getElementById('score-num');
+    if (scoreNum) scoreNum.textContent = scoreVal;
     
     // Calculate circular stroke-dashoffset (Radius = 92, Perimeter = 2 * PI * 92 = 578)
     const strokeDashOffset = 578 - (578 * scoreVal) / 100;
     const progressRing = document.getElementById('score-ring-progress');
-    progressRing.style.strokeDashoffset = strokeDashOffset;
+    if (progressRing) {
+        progressRing.style.strokeDashoffset = strokeDashOffset;
+    }
 
     // Get color & status classes
     let statusClass = 'status-moderately';
-    let statusText = 'Moderately Sustainable';
+    let statusText = 'Stable Cognitive Path';
     let scoreColor = 'var(--color-moderate)';
     
     if (scoreVal >= 80) {
         statusClass = 'status-friendly';
-        statusText = 'Eco Friendly';
+        statusText = 'Optimal Vitality Path';
         scoreColor = 'var(--color-friendly)';
     } else if (scoreVal >= 60) {
         statusClass = 'status-moderately';
-        statusText = 'Moderately Sustainable';
+        statusText = 'Stable Cognitive Path';
         scoreColor = 'var(--color-moderate)';
     } else if (scoreVal >= 40) {
         statusClass = 'status-unsustainable';
-        statusText = 'Unsustainable';
+        statusText = 'Stressed Burnout Path';
         scoreColor = 'var(--color-unsustainable)';
     } else {
         statusClass = 'status-highimpact';
-        statusText = 'High Environmental Impact';
+        statusText = 'Critical Cognitive Exhaustion';
         scoreColor = 'var(--color-danger)';
     }
 
-    progressRing.style.stroke = scoreColor;
-
-    // Update Earth visual containers
-    const earthHalo = document.getElementById('earth-halo');
-    earthHalo.className = `earth-halo-glow ${statusClass}`;
-    
-    const statusBadge = document.getElementById('status-badge');
-    statusBadge.className = `status-badge ${statusClass}`;
-    
-    // Update badge checkmark icon based on score
-    const statusIcon = statusBadge.querySelector('i');
-    statusIcon.className = scoreVal >= 60 ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation';
-    
-    document.getElementById('status-text').textContent = statusText;
-
-    // Update real-time header badges for each optimizer category
-    const electricityCost = Math.round((currentState.acHours * 1.5 * 30 * 8) + (currentState.appliances * 0.4 * 30 * 8));
-    document.getElementById('val-electricity-cost').textContent = '₹' + electricityCost.toLocaleString() + '/mo';
-
-    let waterRating = "Standard";
-    if (currentState.waterLiters <= 100 && !currentState.waterWastage) waterRating = "Excellent";
-    else if (currentState.waterLiters <= 180 && !currentState.waterWastage) waterRating = "Efficient";
-    else if (currentState.waterLiters > 300 || currentState.waterWastage) waterRating = "Excessive";
-    document.getElementById('val-water-efficiency').textContent = waterRating;
-
-    let plasticRating = "Moderate";
-    if (currentState.plasticBottles <= 2 && !currentState.plasticBags) plasticRating = "Zero Plastic";
-    else if (currentState.plasticBottles <= 10 && !currentState.plasticBags) plasticRating = "Low Waste";
-    else if (currentState.plasticBottles > 20 || currentState.plasticBags) plasticRating = "High Waste";
-    document.getElementById('val-plastic-level').textContent = plasticRating;
-
-    const foodImpactLabels = ["Zero Waste", "Low Scraps", "Frequent Leftovers", "Severe Waste"];
-    document.getElementById('val-food-impact').textContent = foodImpactLabels[currentState.foodWaste];
-
-    // 5.1 Dynamic Particle Emitter runs automatically inside the Canvas frame loop
-
-    // 5.2 Live Tickers Calculations (Compare Current vs BASELINE [Alarming Profile])
-    // Base Baseline daily water: 360L, daily co2: 21.82 kg
-    const baseDailyCo2 = BASELINE.dailyCo2;
-    const baseDailyWater = BASELINE.dailyWater;
-
-    // Annual Money Saved (₹)
-    // Electricity Cash saved
-    const baselineAcCost = BASELINE.acHours * ELEC_AC_KWH * 30 * ELEC_RATE_PER_KWH;
-    const currentAcCost = currentState.acHours * ELEC_AC_KWH * 30 * ELEC_RATE_PER_KWH;
-    const electricitySavingsAnnual = (baselineAcCost - currentAcCost) * 12;
-
-    // Transport Cash saved
-    const baselineTransportCost = BASELINE.distance * TRANSPORT_COSTS.petrol * 365;
-    const currentTransportCost = currentState.distance * TRANSPORT_COSTS[currentState.travelMode] * 365;
-    const transportSavingsAnnual = Math.max(0, baselineTransportCost - currentTransportCost);
-
-    // Water Cash saved
-    const waterSavingsAnnual = Math.max(0, (baseDailyWater - currentState.waterLiters) * 365 * WATER_RATE_PER_L);
-
-    // Plastic Cash saved
-    const baselinePlasticCost = BASELINE.plasticBottles * 52 * PLASTIC_BOTTLE_COST;
-    const currentPlasticCost = currentState.plasticBottles * 52 * PLASTIC_BOTTLE_COST;
-    const plasticSavingsAnnual = baselinePlasticCost - currentPlasticCost;
-
-    // Total Savings
-    const totalCashSavedAnnual = Math.max(0, Math.round(electricitySavingsAnnual + transportSavingsAnnual + waterSavingsAnnual + plasticSavingsAnnual));
-    animateTicker('save-cash', totalCashSavedAnnual);
-
-    // Annual CO2 prevented in kg
-    const co2SavedAnnual = Math.max(0, Math.round((baseDailyCo2 - currentState.dailyCo2) * 365));
-    animateTicker('save-co2', co2SavedAnnual);
-
-    // Annual Water Saved in Liters
-    const waterSavedAnnual = Math.max(0, Math.round((baseDailyWater - currentState.waterLiters) * 365));
-    animateTicker('save-water', waterSavedAnnual);
-
-    // Trees Equivalent
-    const treesEquivalent = Math.max(0, (co2SavedAnnual / 22)).toFixed(1);
-    document.getElementById('save-trees').textContent = treesEquivalent;
-
-    // 5.3 Campus Standings & Rank Shift (JUDGE WOW EFFECT)
-    const campusRankVal = document.getElementById('campus-rank-val');
-    if (scoreVal >= 82) {
-        campusRankVal.innerHTML = 'Rank #1 <span class="rank-pct" style="color:var(--color-friendly)">🏆 Leader! (Top 1%)</span>';
-        campusRankVal.style.color = 'var(--color-friendly)';
-        campusRankVal.style.textShadow = '0 0 10px rgba(16, 185, 129, 0.4)';
-    } else if (scoreVal >= 55) {
-        campusRankVal.innerHTML = 'Rank #2 <span class="rank-pct">(Top 5%)</span>';
-        campusRankVal.style.color = '#fff';
-        campusRankVal.style.textShadow = 'none';
-    } else {
-        campusRankVal.innerHTML = 'Rank #3 <span class="rank-pct" style="color:var(--color-danger)">⚠️ Warning! (Bottom 20%)</span>';
-        campusRankVal.style.color = 'var(--color-danger)';
-        campusRankVal.style.textShadow = '0 0 10px rgba(239, 68, 68, 0.4)';
+    if (progressRing) {
+        progressRing.style.stroke = scoreColor;
     }
 
-    // Leaderboard Live Update
+    // Update earth-halo style
+    const earthHalo = document.getElementById('earth-halo');
+    if (earthHalo) {
+        earthHalo.className = `earth-halo-glow ${statusClass}`;
+    }
+    
+    const statusBadge = document.getElementById('status-badge');
+    if (statusBadge) {
+        statusBadge.className = `status-badge ${statusClass}`;
+        const statusIcon = statusBadge.querySelector('i');
+        if (statusIcon) {
+            statusIcon.className = scoreVal >= 60 ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation';
+        }
+    }
+    
+    const statusTextEl = document.getElementById('status-text');
+    if (statusTextEl) {
+        statusTextEl.textContent = statusText;
+    }
+
+    // Update real-time header badges for each category in columns
+    const valElectricity = document.getElementById('val-electricity-cost');
+    if (valElectricity) valElectricity.textContent = `${Math.round(career)} pts`;
+
+    const valWater = document.getElementById('val-water-efficiency');
+    if (valWater) valWater.textContent = `${Math.round(mental)}%`;
+
+    const valPlastic = document.getElementById('val-plastic-level');
+    if (valPlastic) valPlastic.textContent = `${Math.round(burnout)}%`;
+
+    const valFood = document.getElementById('val-food-impact');
+    if (valFood) {
+        const eatingLabels = ["Poor Intake", "Average Diet", "Good Balanced", "Clean Superfoods"];
+        valFood.textContent = eatingLabels[currentState.eatingHabit] || "Good Balanced";
+    }
+
+    // Live Tickers Calculations (Compare Current vs BASELINE)
+    const annualSavings = Math.round(currentState.savingsRate * 12 * 80); // proportional INR saved
+    const annualCo2 = Math.round((16 - currentState.screenTime) * 150); // screen equivalent detox
+    const annualWater = Math.round((currentState.sleepHours - 3) * 5000); // deep biological recovery equivalent
+    const treesEquivalent = (currentState.exerciseDays * 1.5).toFixed(1);
+
+    animateTicker('save-cash', annualSavings);
+    animateTicker('save-co2', annualCo2);
+    animateTicker('save-water', annualWater);
+    
+    const saveTrees = document.getElementById('save-trees');
+    if (saveTrees) saveTrees.textContent = treesEquivalent;
+
+    // Campus standings ECE Department average
+    const campusRankVal = document.getElementById('campus-rank-val');
+    if (campusRankVal) {
+        if (scoreVal >= 82) {
+            campusRankVal.innerHTML = 'Rank #1 <span class="rank-pct" style="color:var(--color-friendly)">🏆 Leader! (Top 1%)</span>';
+            campusRankVal.style.color = 'var(--color-friendly)';
+            campusRankVal.style.textShadow = '0 0 10px rgba(16, 185, 129, 0.4)';
+        } else if (scoreVal >= 55) {
+            campusRankVal.innerHTML = 'Rank #2 <span class="rank-pct">(Top 5%)</span>';
+            campusRankVal.style.color = '#fff';
+            campusRankVal.style.textShadow = 'none';
+        } else {
+            campusRankVal.innerHTML = 'Rank #3 <span class="rank-pct" style="color:var(--color-danger)">⚠️ Warning! (Bottom 20%)</span>';
+            campusRankVal.style.color = 'var(--color-danger)';
+            campusRankVal.style.textShadow = '0 0 10px rgba(239, 68, 68, 0.4)';
+        }
+    }
+
+    // Standings list update
     updateLeaderboard();
 
-    // 5.4 Update Before vs After comparison Table
-    document.getElementById('comp-opt-score').textContent = scoreVal;
-    document.getElementById('comp-diff-score').textContent = `+${Math.max(0, scoreVal - BASELINE.ecoScore)} pts`;
+    // Update Before vs After comparison Table in centerpiece
+    const compOptScore = document.getElementById('comp-opt-score');
+    if (compOptScore) compOptScore.textContent = scoreVal;
     
-    document.getElementById('comp-opt-co2').textContent = `${Math.round(currentState.dailyCo2 * 30)} kg`;
-    const co2ReductionPct = Math.max(0, Math.round((1 - (currentState.dailyCo2 / BASELINE.dailyCo2)) * 100));
-    document.getElementById('comp-diff-co2').textContent = `-${co2ReductionPct}%`;
+    const compDiffScore = document.getElementById('comp-diff-score');
+    if (compDiffScore) compDiffScore.textContent = `+${Math.max(0, scoreVal - BASELINE.ecoScore)} pts`;
+    
+    const compOptCo2 = document.getElementById('comp-opt-co2');
+    if (compOptCo2) compOptCo2.textContent = `${Math.round(burnout)}%`;
+    
+    const compDiffCo2 = document.getElementById('comp-diff-co2');
+    if (compDiffCo2) {
+        const burnoutDiff = Math.round(80 - burnout);
+        compDiffCo2.textContent = burnoutDiff >= 0 ? `-${burnoutDiff}%` : `+${Math.abs(burnoutDiff)}%`;
+    }
 
-    document.getElementById('comp-opt-water').textContent = `${Math.round(currentState.waterLiters * 30 / 1000 * 10) / 10}k L`;
-    const waterReductionPct = Math.max(0, Math.round((1 - (currentState.waterLiters / BASELINE.waterLiters)) * 100));
-    document.getElementById('comp-diff-water').textContent = `-${waterReductionPct}%`;
+    const compOptWater = document.getElementById('comp-opt-water');
+    if (compOptWater) compOptWater.textContent = `${currentState.studyHours.toFixed(1)} hr`;
+    
+    const compDiffWater = document.getElementById('comp-diff-water');
+    if (compDiffWater) {
+        const focusIncrease = Math.round(((currentState.studyHours - 1) / 1) * 100);
+        compDiffWater.textContent = focusIncrease >= 0 ? `+${focusIncrease}%` : `${focusIncrease}%`;
+    }
 
-    // 5.5 Update AI suggestions cards (under Earth)
-    updateAiRecommendationsList(elecCo2, transportCo2, waterCo2, plasticCo2, foodCo2);
+    // Dynamic AI Coach suggestions cards (under centerpiece)
+    updateAiRecommendationsList();
 }
 
-// 6. TICKER ANIMATION HELPER
+// Ticker Animation
 const activeTickers = {};
-
 function animateTicker(elementId, targetValue) {
     const el = document.getElementById(elementId);
     if (!el) return;
@@ -665,19 +583,16 @@ function animateTicker(elementId, targetValue) {
     const currentValue = parseInt(el.textContent.replace(/,/g, '')) || 0;
     if (currentValue === targetValue) return;
     
-    // Cancel any active animation frame loop on this element to prevent parallel rendering conflicts
     if (activeTickers[elementId]) {
         cancelAnimationFrame(activeTickers[elementId]);
     }
     
-    const duration = 400; // Snappy 400ms duration for better command center reactivity
+    const duration = 400; 
     const startTime = performance.now();
     
     function updateTicker(now) {
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        
-        // Ease out quad
         const easeProgress = progress * (2 - progress);
         const nextValue = Math.round(currentValue + (targetValue - currentValue) * easeProgress);
         
@@ -693,24 +608,18 @@ function animateTicker(elementId, targetValue) {
     activeTickers[elementId] = requestAnimationFrame(updateTicker);
 }
 
-
-
-// 8. CAMPUS LEADERBOARD LIVE UPDATE
+// Department Leaderboard Standing
 function updateLeaderboard() {
     const userScore = currentState.ecoScore;
     const leaderboardList = document.getElementById('leaderboard-list');
+    if (!leaderboardList) return;
     
-    // CS is fixed at 81. Mechanical is 61. 
-    // ECE represents the user's actual department standing score
-    const eceAverage = userScore;
-
     const departments = [
         { name: "Computer Science Dept", score: 81, isUser: false },
-        { name: "ECE Department (You)", score: eceAverage, isUser: true },
+        { name: "ECE Department (You)", score: userScore, isUser: true },
         { name: "Mechanical Dept", score: 61, isUser: false }
     ];
 
-    // Sort departments
     departments.sort((a, b) => b.score - a.score);
 
     leaderboardList.innerHTML = '';
@@ -732,66 +641,54 @@ function updateLeaderboard() {
     });
 }
 
-// 9. DYNAMIC AI RECOMMENDATIONS LIST (Under Earth)
-function updateAiRecommendationsList(elec, transport, water, plastic, food) {
+// AI Recommendations List
+function updateAiRecommendationsList() {
     const container = document.getElementById('insights-container');
+    if (!container) return;
     container.innerHTML = '';
 
     const list = [];
 
-    // Check biggest polluters
-    if (currentState.acHours >= 10) {
+    if (currentState.screenTime >= 8) {
         list.push({
-            icon: 'fa-bolt font-amber',
-            title: 'High AC Emissions Detected',
-            text: `Reducing AC usage to 5 hrs/day saves ₹${Math.round((currentState.acHours - 5) * 1.5 * 30 * 8)}/mo and boosts Eco Score by ${Math.round((currentState.acHours - 5) * 2)} points!`
+            icon: 'fa-display font-amber',
+            title: 'Critical Screen Load',
+            text: `Your ${currentState.screenTime}h screen load decays your cellular tissues and elevates cognitive fatigue. Carry out a Digital Detox!`
         });
     }
 
-    if (currentState.travelMode === 'petrol' && currentState.distance >= 25) {
+    if (currentState.sleepHours < 6) {
         list.push({
-            icon: 'fa-car-side font-cyan',
-            title: 'Heavy Petrol Car Travel',
-            text: 'Switching travel mode to EV or public transit doubles travel efficiency and prevents massive carbon footprints.'
+            icon: 'fa-bed font-cyan',
+            title: 'Acute Rest Deprivation',
+            text: 'Your daily rest hours are below healthy baseline. Regulation to 8 hours daily will instantly boost cellular longevity.'
         });
     }
 
-    if (currentState.waterLiters >= 250 || currentState.waterWastage) {
+    if (currentState.savingsRate < 15) {
         list.push({
-            icon: 'fa-droplet font-blue',
-            title: 'Sub-Optimal Water Habit',
-            text: currentState.waterWastage 
-                ? 'Fixing leaks and shortening shower times lifts Eco Score by 8 points instantly!'
-                : 'Consuming water carefully is essential. Try aiming for 150L daily.'
+            icon: 'fa-indian-rupee-sign font-pink',
+            title: 'Sub-Optimal Wealth Matrix',
+            text: 'Your current financial savings rate is too low. Aim for at least 25% savings to lock career wealth projection targets.'
         });
     }
 
-    if (currentState.plasticBottles >= 15 || currentState.plasticBags) {
+    if (currentState.stressLevel >= 60) {
         list.push({
-            icon: 'fa-recycle font-pink',
-            title: 'High Packaging Impact',
-            text: 'Ditching single-use mineral bottles for a reusable metal flask prevents tons of landfill packaging waste.'
+            icon: 'fa-brain font-red',
+            title: 'Neurological Stress Fatigue',
+            text: 'High cortisol and stress index detected. Apply deep breathing or meditation cycles to regulated neural stability.'
         });
     }
 
-    if (currentState.foodWaste >= 2) {
-        list.push({
-            icon: 'fa-utensils font-emerald',
-            title: 'Food Waste Contributor',
-            text: 'Composting leftovers rather than throwing them to trash stops methane gas formation in local dump yards.'
-        });
-    }
-
-    // Default encouragement
     if (list.length === 0) {
         list.push({
             icon: 'fa-thumbs-up font-green',
-            title: 'Exemplary Environmental Path',
-            text: 'Your current lifestyle choices are outstanding! Continue practicing green habits and encourage others!'
+            title: 'Perfect Chrono Equilibrium',
+            text: 'Your current lifestyle choices are absolutely outstanding! Continue practicing regulated habits and secure your Zen destiny!'
         });
     }
 
-    // Add first 2 to the UI
     list.slice(0, 2).forEach(item => {
         const card = document.createElement('div');
         card.className = 'insight-card';
@@ -806,593 +703,347 @@ function updateAiRecommendationsList(elec, transport, water, plastic, food) {
     });
 }
 
-// 10. CHART.JS INTERFACE MANAGER
+// 6. CHART.JS INTERFACE MANAGER
 function initCharts() {
-    // Chart 1: Doughnut Breakdown
-    const ctxBreakdown = document.getElementById('chart-breakdown').getContext('2d');
-    breakdownChart = new Chart(ctxBreakdown, {
-        type: 'doughnut',
-        data: {
-            labels: ['Electricity', 'Transport', 'Water', 'Plastic', 'Food Waste'],
-            datasets: [{
-                data: [5, 4, 1, 1, 1],
-                backgroundColor: [
-                    '#eab308', // Yellow
-                    '#06b6d4', // Cyan
-                    '#3b82f6', // Blue
-                    '#ec4899', // Pink
-                    '#10b981'  // Emerald
-                ],
-                borderWidth: 2,
-                borderColor: '#0d1425'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 800,
-                easing: 'easeOutQuart'
+    const ctxBreakdown = document.getElementById('chart-breakdown');
+    if (ctxBreakdown && typeof Chart !== 'undefined') {
+        const ctxDoughnut = ctxBreakdown.getContext('2d');
+        breakdownChart = new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Sleep', 'Screen Time', 'Study/Focus', 'Exercise', 'Stress load'],
+                datasets: [{
+                    data: [7, 5, 4, 3, 3],
+                    backgroundColor: [
+                        '#3b82f6', // Blue
+                        '#eab308', // Yellow
+                        '#06b6d4', // Cyan
+                        '#10b981', // Emerald
+                        '#ef4444'  // Red
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#0d1425'
+                }]
             },
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        color: '#9ca3af',
-                        font: { size: 9, family: 'Outfit', weight: '500' },
-                        boxWidth: 8,
-                        padding: 6
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 800, easing: 'easeOutQuart' },
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#9ca3af',
+                            font: { size: 9, family: 'Outfit', weight: '500' },
+                            boxWidth: 8,
+                            padding: 6
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(13, 20, 37, 0.85)',
+                        cornerRadius: 8,
+                        bodyFont: { family: 'Outfit', size: 10 },
+                        titleFont: { family: 'Outfit', size: 11, weight: 'bold' }
                     }
                 },
-                tooltip: {
-                    backgroundColor: 'rgba(13, 20, 37, 0.85)',
-                    titleColor: '#fff',
-                    bodyColor: '#e5e7eb',
-                    borderColor: 'rgba(255, 255, 255, 0.1)',
-                    borderWidth: 1,
-                    cornerRadius: 8,
-                    padding: 8,
-                    bodyFont: { family: 'Outfit', size: 10 },
-                    titleFont: { family: 'Outfit', size: 11, weight: 'bold' }
-                }
-            },
-            cutout: '74%'
-        },
-        plugins: [doughnutCenterTextPlugin]
-    });
+                cutout: '74%'
+            }
+        });
+    }
 
-    // Chart 2: Future Projections
-    const ctxPrediction = document.getElementById('chart-prediction').getContext('2d');
-    
-    // Create beautiful neon linear gradients for backgrounds
-    const greenGrad = ctxPrediction.createLinearGradient(0, 0, 0, 160);
-    greenGrad.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
-    greenGrad.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-    
-    const redGrad = ctxPrediction.createLinearGradient(0, 0, 0, 160);
-    redGrad.addColorStop(0, 'rgba(239, 68, 68, 0.20)');
-    redGrad.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
+    const ctxPrediction = document.getElementById('chart-prediction');
+    if (ctxPrediction && typeof Chart !== 'undefined') {
+        const ctxLine = ctxPrediction.getContext('2d');
+        const greenGrad = ctxLine.createLinearGradient(0, 0, 0, 160);
+        greenGrad.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
+        greenGrad.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        
+        const redGrad = ctxLine.createLinearGradient(0, 0, 0, 160);
+        redGrad.addColorStop(0, 'rgba(239, 68, 68, 0.20)');
+        redGrad.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
 
-    predictionChart = new Chart(ctxPrediction, {
-        type: 'line',
-        data: {
-            labels: ['2026', '2027', '2028', '2029', '2030'],
-            datasets: [
-                {
-                    label: 'Business as Usual',
-                    data: [8.0, 16.0, 24.0, 32.0, 40.0],
-                    borderColor: '#ef4444',
-                    borderWidth: 2.0,
-                    backgroundColor: redGrad,
-                    fill: true,
-                    tension: 0.35, // Curved lines
-                    pointRadius: 2,
-                    pointHoverRadius: 4
-                },
-                {
-                    label: 'Optimized Path',
-                    data: [4.0, 8.0, 12.0, 16.0, 20.0],
-                    borderColor: '#10b981',
-                    borderWidth: 2.5,
-                    backgroundColor: greenGrad,
-                    fill: true,
-                    tension: 0.35, // Curved lines
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: '#10b981',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 1.5
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 800,
-                easing: 'easeOutQuart'
+        predictionChart = new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: ['2025', '2030', '2035', '2040'],
+                datasets: [
+                    {
+                        label: 'Doomscrolling BAU',
+                        data: [35, 24, 14, 8],
+                        borderColor: '#ef4444',
+                        borderWidth: 2.0,
+                        backgroundColor: redGrad,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 2
+                    },
+                    {
+                        label: 'Optimized Path',
+                        data: [72, 70, 68, 65],
+                        borderColor: '#10b981',
+                        borderWidth: 2.5,
+                        backgroundColor: greenGrad,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#ffffff'
+                    }
+                ]
             },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(13, 20, 37, 0.85)',
-                    titleColor: '#fff',
-                    bodyColor: '#e5e7eb',
-                    borderColor: 'rgba(255, 255, 255, 0.1)',
-                    borderWidth: 1,
-                    cornerRadius: 8,
-                    padding: 8,
-                    bodyFont: { family: 'Outfit', size: 10 },
-                    titleFont: { family: 'Outfit', size: 11, weight: 'bold' }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.02)', drawBorder: false },
-                    ticks: { color: '#9ca3af', font: { family: 'Share Tech Mono', size: 9 } }
-                },
-                y: {
-                    grid: { color: 'rgba(255, 255, 255, 0.02)', drawBorder: false },
-                    ticks: { color: '#9ca3af', font: { family: 'Share Tech Mono', size: 9 } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 800, easing: 'easeOutQuart' },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.02)' },
+                        ticks: { color: '#9ca3af', font: { family: 'Share Tech Mono', size: 9 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.02)' },
+                        ticks: { color: '#9ca3af', font: { family: 'Share Tech Mono', size: 9 } }
+                    }
                 }
             }
-        },
-        plugins: [chartShadowPlugin]
-    });
-}
-
-function updateCharts(elec, transport, water, plastic, food, instant = false) {
-    if (!breakdownChart || !predictionChart) return;
-
-    // Update Doughnut data
-    breakdownChart.data.datasets[0].data = [
-        parseFloat(elec.toFixed(2)),
-        parseFloat(transport.toFixed(2)),
-        parseFloat(water.toFixed(2)),
-        parseFloat(plastic.toFixed(2)),
-        parseFloat(food.toFixed(2))
-    ];
-    breakdownChart.update(instant ? 'none' : undefined);
-
-    // Update line graph prediction lines
-    // Baseline daily emissions: 21.82 kg/day
-    // Cumulative tons of CO2 over 5 years (Tons = kg * 365 / 1000)
-    const baseTonsPerYear = (BASELINE.dailyCo2 * 365) / 1000;
-    const currentTonsPerYear = (currentState.dailyCo2 * 365) / 1000;
-
-    let baseCumulative = [];
-    let currentCumulative = [];
-    
-    for (let i = 1; i <= 5; i++) {
-        baseCumulative.push(parseFloat((baseTonsPerYear * i).toFixed(1)));
-        currentCumulative.push(parseFloat((currentTonsPerYear * i).toFixed(1)));
+        });
     }
 
-    predictionChart.data.datasets[0].data = baseCumulative;
-    predictionChart.data.datasets[1].data = currentCumulative;
-    predictionChart.update(instant ? 'none' : undefined);
+    if (window.initHistoryMiniChart) {
+        window.initHistoryMiniChart();
+    }
 }
 
-// 11. HIGH-TECH PROCEDURAL ROTATING EARTH CANVAS
+function updateCharts(instant = false) {
+    if (breakdownChart) {
+        breakdownChart.data.datasets[0].data = [
+            currentState.sleepHours,
+            currentState.screenTime,
+            currentState.studyHours,
+            currentState.exerciseDays,
+            currentState.stressLevel / 10
+        ];
+        breakdownChart.update(instant ? 'none' : undefined);
+    }
+
+    if (predictionChart) {
+        predictionChart.data.datasets[1].data = [
+            calculateVitalityForYear(2025),
+            calculateVitalityForYear(2030),
+            calculateVitalityForYear(2035),
+            calculateVitalityForYear(2040)
+        ];
+        predictionChart.update(instant ? 'none' : undefined);
+    }
+}
+
+// 7. DYNAMIC 2D CANVAS CYBERNETIC AVATAR LOOP
 function initEarthCanvas() {
     const canvas = document.getElementById('earth-canvas');
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Hide default EcoSphere overlays if present
     const crackedOverlay = document.getElementById('earth-cracks');
+    if (crackedOverlay) crackedOverlay.style.opacity = '0';
 
-    // High-fidelity continent coordinates (detailed paths from 0 to 1 relative scale)
-    const landmasses = [
-        // North America
-        [
-            {x: 0.10, y: 0.16}, {x: 0.16, y: 0.13}, {x: 0.24, y: 0.22},
-            {x: 0.28, y: 0.26}, {x: 0.20, y: 0.36}, {x: 0.16, y: 0.38},
-            {x: 0.17, y: 0.44}, {x: 0.11, y: 0.40}, {x: 0.08, y: 0.30}
-        ],
-        // South America
-        [
-            {x: 0.18, y: 0.46}, {x: 0.24, y: 0.50}, {x: 0.27, y: 0.60},
-            {x: 0.21, y: 0.76}, {x: 0.18, y: 0.84}, {x: 0.14, y: 0.74},
-            {x: 0.15, y: 0.62}, {x: 0.13, y: 0.52}
-        ],
-        // Africa
-        [
-            {x: 0.43, y: 0.40}, {x: 0.52, y: 0.38}, {x: 0.56, y: 0.45},
-            {x: 0.54, y: 0.60}, {x: 0.47, y: 0.72}, {x: 0.44, y: 0.66},
-            {x: 0.40, y: 0.58}, {x: 0.39, y: 0.48}
-        ],
-        // Eurasia
-        [
-            {x: 0.38, y: 0.12}, {x: 0.48, y: 0.08}, {x: 0.66, y: 0.11},
-            {x: 0.76, y: 0.22}, {x: 0.70, y: 0.34}, {x: 0.61, y: 0.37},
-            {x: 0.54, y: 0.31}, {x: 0.48, y: 0.35}, {x: 0.42, y: 0.29},
-            {x: 0.35, y: 0.22}
-        ],
-        // Greenland
-        [
-            {x: 0.24, y: 0.06}, {x: 0.32, y: 0.05}, {x: 0.30, y: 0.11},
-            {x: 0.21, y: 0.09}
-        ],
-        // Australia
-        [
-            {x: 0.73, y: 0.62}, {x: 0.82, y: 0.65}, {x: 0.80, y: 0.75},
-            {x: 0.72, y: 0.72}, {x: 0.70, y: 0.66}
-        ],
-        // Asia islands
-        [
-            {x: 0.57, y: 0.33}, {x: 0.61, y: 0.31}, {x: 0.59, y: 0.36}
-        ],
-        [
-            {x: 0.65, y: 0.44}, {x: 0.70, y: 0.41}, {x: 0.68, y: 0.47}
-        ]
-    ];
-
-    // Atmospheric concentric orbital HUD rings (Saturn-tilted)
-    function drawAtmosphericRings(ctx, center, hudColors, delta = 1) {
-        hudRingRotation += 0.003 * delta;
-        
-        // Add dynamic breathing scale to orbits
-        const pulseScale = Math.sin(performance.now() / 850) * 2;
-        const innerRing = `rgba(${hudColors[0]}, ${hudColors[1]}, ${hudColors[2]}, ${hudColors[3]})`;
-        const outerRing = `rgba(${hudColors[0]}, ${hudColors[1]}, ${hudColors[2]}, ${hudColors[4]})`;
-
-        ctx.save();
-        ctx.translate(center, center);
-        ctx.rotate(-0.18); // Tilted layout orbit
-
-        // Inner ring spinning backwards
-        ctx.strokeStyle = innerRing;
-        ctx.lineWidth = 1.0;
-        ctx.setLineDash([4, 12]);
-        ctx.lineDashOffset = -hudRingRotation * 100;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 132 + pulseScale * 0.5, 28 + pulseScale * 0.1, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Main outer glowing HUD orbit track
-        ctx.strokeStyle = outerRing;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([6, 15]);
-        ctx.lineDashOffset = hudRingRotation * 120;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 175 + pulseScale, 40 + pulseScale * 0.2, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.restore();
-    }
-
-    // Swirling atmospheric white clouds (layered 3D counter-rotations with organic parallax)
-    function drawClouds(ctx, center, radius, cloudAlpha) {
-        if (cloudAlpha <= 0.02) return; // Hide clouds in critical alarms
-        
-        const circumference = radius * 2 * Math.PI;
-
-        // Layer 1: High-altitude Northern Clouds (fast speed, rotating right)
-        ctx.save();
-        ctx.globalAlpha = cloudAlpha;
-        ctx.fillStyle = '#ffffff';
-
-        const cloudOffset1 = (earthRotationAngle * 1.3) * circumference;
-        const wave1 = Math.sin(performance.now() / 1800) * 4;
-
-        for (let copy = -1; copy <= 1; copy++) {
-            const shiftX = copy * circumference - cloudOffset1 + center;
-            ctx.beginPath();
-            ctx.arc(shiftX + radius * 0.2, center - radius * 0.25 + wave1, radius * 0.22, 0, Math.PI * 2);
-            ctx.arc(shiftX + radius * 0.5, center - radius * 0.3 + wave1 * 0.7, radius * 0.25, 0, Math.PI * 2);
-            ctx.arc(shiftX + radius * 0.75, center - radius * 0.18 + wave1 * 1.1, radius * 0.16, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        ctx.restore();
-
-        // Layer 2: Lower-altitude Southern Clouds (slower speed, counter-rotating left)
-        ctx.save();
-        ctx.globalAlpha = cloudAlpha * 0.65;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-        
-        const cloudOffset2 = (-earthRotationAngle * 0.7) * circumference;
-        const wave2 = Math.cos(performance.now() / 2500) * 3;
-
-        for (let copy = -1; copy <= 1; copy++) {
-            const shiftX = copy * circumference - cloudOffset2 + center;
-            ctx.beginPath();
-            ctx.arc(shiftX - radius * 0.3, center + radius * 0.35 + wave2, radius * 0.24, 0, Math.PI * 2);
-            ctx.arc(shiftX - radius * 0.05, center + radius * 0.28 + wave2 * 0.5, radius * 0.20, 0, Math.PI * 2);
-            ctx.arc(shiftX + radius * 0.25, center + radius * 0.42 + wave2 * 0.9, radius * 0.16, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        ctx.restore();
-    }
-
-    function drawEarth() {
-        // Calculate frame delta to prevent speedups on high-refresh-rate screens
+    function drawLoop() {
         const now = performance.now();
-        if (!drawEarth.lastTime) drawEarth.lastTime = now;
-        const delta = Math.min(3.0, (now - drawEarth.lastTime) / 16.667); // Capped to avoid huge jumps on tab resume
-        drawEarth.lastTime = now;
+        if (!drawLoop.lastTime) drawLoop.lastTime = now;
+        const delta = Math.min(3.0, (now - drawLoop.lastTime) / 16.667);
+        drawLoop.lastTime = now;
 
-        // Easing interpolation chase (moves smoothly to currentState.ecoScore)
-        interpolatedEcoScore += (currentState.ecoScore - interpolatedEcoScore) * 0.05 * delta;
-        
-        const state = getInterpolatedState(interpolatedEcoScore);
-        
-        // FUTURE EARTH SIMULATION OVERRIDES
-        let simPollution = parseFloat(document.getElementById('input-sim-pollution')?.value || 0);
-        let simDeforestation = parseFloat(document.getElementById('input-sim-deforestation')?.value || 0);
-        let simPlastic = parseFloat(document.getElementById('input-sim-plastic')?.value || 0);
-        let simFossil = parseFloat(document.getElementById('input-sim-fossil')?.value || 0);
-        
-        let maxThreat = Math.max(simPollution, simDeforestation, simPlastic, simFossil) / 100;
-        
-        // Add threat factor based on future simulated year
-        const futureYear = typeof simulatedFutureYear !== 'undefined' ? simulatedFutureYear : 2026;
-        if (futureYear > 2026) {
-            const yearFactor = (futureYear - 2026) / 24;
-            const co2Impact = Math.min(1.0, (currentState.dailyCo2 || 12.2) / 15);
-            maxThreat = Math.min(1.0, maxThreat + yearFactor * co2Impact * 0.65);
-        }
-        
-        if (maxThreat > 0.02) {
-            // Darken oceans to stagnant grey/brown
-            const toxicO1 = [35, 45, 55];
-            const toxicO2 = [20, 25, 30];
-            const toxicO3 = [10, 10, 12];
-            
-            state.ocean = [
-                state.ocean[0].map((v, i) => v + (toxicO1[i] - v) * maxThreat),
-                state.ocean[1].map((v, i) => v + (toxicO2[i] - v) * maxThreat),
-                state.ocean[2].map((v, i) => v + (toxicO3[i] - v) * maxThreat)
-            ];
-            
-            // Deforest terrain to dead ashen grey
-            const toxicLand = [90, 80, 80];
-            state.land = state.land.map((v, i) => v + (toxicLand[i] - v) * maxThreat);
-            
-            // Warnings orange-red atmosphere rim glows
-            const toxicRim = [239, 68, 68, 0.45];
-            state.rim = state.rim.map((v, i) => v + (toxicRim[i] - v) * maxThreat);
-            
-            const toxicHud = [239, 68, 68, 0.1, 0.22];
-            state.hud = state.hud.map((v, i) => v + (toxicHud[i] - v) * maxThreat);
-            
-            // Surface cracks multiply
-            state.cracksOpacity = Math.max(state.cracksOpacity, maxThreat * 0.95);
-            
-            // Atmospheric clouds disintegrate
-            state.cloudAlpha = Math.max(0.0, state.cloudAlpha - maxThreat * 0.5);
-            
-            // Accelerate rotation speed in thermal warning mode
-            state.rotationSpeed = state.rotationSpeed * (1 + maxThreat * 1.5);
-        }
+        const width = canvas.width || 340;
+        const height = canvas.height || 340;
+        const center = width / 2;
 
-        const width = canvas.width;  // 340
-        const height = canvas.height; // 340
-        const radius = 115;            // Earth Sphere Radius scaled up
-        const center = width / 2;     // 170
-
-        ctx.clearRect(0, 0, width, height);
-
-        // 1. Draw tilted holographic HUD rings around the planet
-        drawAtmosphericRings(ctx, center, state.hud, delta);
-
-        // 2. Setup sphere clipping for ocean and landmasses
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(center, center, radius, 0, Math.PI * 2);
-        ctx.clip();
-
-        // 3. Setup dynamic Ocean base gradient
-        let oceanGrad = ctx.createRadialGradient(
-            center - radius * 0.25, center - radius * 0.25, radius * 0.1, 
-            center, center, radius
-        );
-        const o1 = state.ocean[0];
-        const o2 = state.ocean[1];
-        const o3 = state.ocean[2];
-        
-        oceanGrad.addColorStop(0, `rgb(${Math.round(o1[0])}, ${Math.round(o1[1])}, ${Math.round(o1[2])})`);
-        oceanGrad.addColorStop(0.6, `rgb(${Math.round(o2[0])}, ${Math.round(o2[1])}, ${Math.round(o2[2])})`);
-        oceanGrad.addColorStop(1, `rgb(${Math.round(o3[0])}, ${Math.round(o3[1])}, ${Math.round(o3[2])})`);
-
-        ctx.fillStyle = oceanGrad;
-        ctx.fill();
-
-        // 4. Update Earth Rotation Offset (orthographic scroll)
-        earthRotationAngle = (earthRotationAngle + state.rotationSpeed * delta) % 2;
-        
-        const l = state.land;
-        ctx.fillStyle = `rgb(${Math.round(l[0])}, ${Math.round(l[1])}, ${Math.round(l[2])})`;
-
-        const mapWidth = radius * 2 * Math.PI; // Full sphere wrap circumference
-        const scrollX = (earthRotationAngle / 2) * mapWidth;
-
-        // Loop double map textures for endless horizontal rotation
-        for (let copy = -1; copy <= 1; copy++) {
-            const offset = copy * mapWidth - scrollX + center;
-            
-            landmasses.forEach(coords => {
-                let first = true;
-                ctx.beginPath();
-                coords.forEach((pt) => {
-                    // Orthographic spherical coordinate projection
-                    const xMap = pt.x * mapWidth + offset - center;
-                    const angle = xMap / radius;
-                    
-                    // Render coordinates located in the visible hemisphere
-                    if (angle >= -Math.PI / 2 && angle <= Math.PI / 2) {
-                        const xProj = center + radius * Math.sin(angle);
-                        const yFactor = Math.cos(angle);
-                        const yProj = center + (pt.y * 2 * radius - radius) * yFactor;
-
-                        if (first) {
-                            ctx.moveTo(xProj, yProj);
-                            first = false;
-                        } else {
-                            ctx.lineTo(xProj, yProj);
-                        }
-                    } else {
-                        // Break and close the path segment when crossing the sphere border
-                        first = true;
-                    }
-                });
-                ctx.closePath();
-                ctx.fill();
-
-                // Draw real rotating jagged cracks relative to continent maps in unstable states
-                if (state.cracksOpacity > 0.05) {
-                    ctx.strokeStyle = `rgba(0, 0, 0, ${state.cracksOpacity})`;
-                    ctx.lineWidth = 1.6;
-                    ctx.beginPath();
-                    coords.forEach((pt, idx) => {
-                        if (idx % 3 === 0) {
-                            const xMap = pt.x * mapWidth + offset - center;
-                            const angle = xMap / radius;
-                            if (angle >= -Math.PI / 2 && angle <= Math.PI / 2) {
-                                const xProj = center + radius * Math.sin(angle);
-                                const yFactor = Math.cos(angle);
-                                const yProj = center + (pt.y * 2 * radius - radius) * yFactor;
-                                
-                                // Jagged cracks branching
-                                ctx.moveTo(xProj, yProj);
-                                ctx.lineTo(xProj + (idx % 2 === 0 ? 5 : -5), yProj + 8);
-                                ctx.lineTo(xProj + (idx % 2 === 0 ? 10 : -10), yProj + 12);
-                            }
-                        }
-                    });
-                    ctx.stroke();
-                }
-            });
-        }
-
-        // 4.5 Draw 3D Spherical Holographic Wireframe Grid wrapping around the globe
-        ctx.strokeStyle = `rgba(${state.rim[0]}, ${state.rim[1]}, ${state.rim[2]}, 0.12)`;
-        ctx.lineWidth = 0.8;
-        
-        // Draw latitudes
-        for (let lat = -radius; lat <= radius; lat += 24) {
-            ctx.beginPath();
-            const rLat = radius * Math.sqrt(1 - (lat / radius) * (lat / radius));
-            ctx.ellipse(center, center + lat * 0.95, rLat, rLat * 0.16, 0, 0, Math.PI * 2);
-            ctx.stroke();
-        }
-        // Draw longitudes
-        for (let lon = -radius; lon <= radius; lon += 30) {
-            ctx.beginPath();
-            const rLon = radius * Math.sqrt(1 - (lon / radius) * (lon / radius));
-            ctx.ellipse(center + lon * 0.95, center, rLon * 0.16, rLon, 0, 0, Math.PI * 2);
-            ctx.stroke();
-        }
-
-        // 4.6 Draw horizontal planetary CRT scanlines inside the globe
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-        for (let y = center - radius; y < center + radius; y += 4) {
-            ctx.fillRect(center - radius, y, radius * 2, 1.2);
-        }
-
-        // Update cracked overlay div style opacity in sync
-        crackedOverlay.style.opacity = state.cracksOpacity;
-
-        // 5. Overlay rotating clouds
-        drawClouds(ctx, center, radius, state.cloudAlpha);
-
-        // 6. Draw 3D Shading Spherical shadow overlay
-        const shadowGrad = ctx.createRadialGradient(
-            center - radius * 0.25, center - radius * 0.25, radius * 0.15,
-            center, center, radius
-        );
-        shadowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.18)'); // spec specular highlight
-        shadowGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.0)');
-        shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.88)');      // terminator shadow
-        ctx.fillStyle = shadowGrad;
-        ctx.beginPath();
-        ctx.arc(center, center, radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 6.1 Cinematic Volumetric Atmospheric Rim Backlight
-        const rimGrad = ctx.createRadialGradient(
-            center - radius * 0.45, center - radius * 0.45, radius * 0.4,
-            center, center, radius * 1.02
-        );
-        rimGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0)');
-        rimGrad.addColorStop(0.85, `rgba(${state.rim[0]}, ${state.rim[1]}, ${state.rim[2]}, ${state.rim[3]})`);
-        rimGrad.addColorStop(1, 'rgba(255, 255, 255, 0.45)');
-        ctx.fillStyle = rimGrad;
-        ctx.beginPath();
-        ctx.arc(center, center, radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.restore();
-
-        // 7. Spawn and update dynamic environmental particles
-        spawnCanvasParticles(center, radius, interpolatedEcoScore);
-        updateAndDrawParticles(ctx, delta);
-
-        // 8.5 Draw Cyanide Radar Scanning Sweep revolving around the planet with soft radial gradient
-        const sweepAngle = (performance.now() / 1600) % (Math.PI * 2);
-        ctx.save();
-        ctx.translate(center, center);
-        ctx.rotate(sweepAngle);
-        
-        let sweepGrad = ctx.createLinearGradient(0, 0, radius * 1.4, 0);
-        sweepGrad.addColorStop(0, `rgba(${state.rim[0]}, ${state.rim[1]}, ${state.rim[2]}, 0.14)`);
-        sweepGrad.addColorStop(1, `rgba(${state.rim[0]}, ${state.rim[1]}, ${state.rim[2]}, 0)`);
-        
-        ctx.fillStyle = sweepGrad;
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, radius * 1.4, -0.22, 0.22);
-        ctx.closePath();
-        ctx.fill();
-        
-        // High-tech outer scan tick crosshairs
-        ctx.strokeStyle = `rgba(${state.rim[0]}, ${state.rim[1]}, ${state.rim[2]}, 0.25)`;
-        ctx.lineWidth = 1.0;
-        ctx.beginPath();
-        ctx.moveTo(0, -radius * 1.22);
-        ctx.lineTo(0, -radius * 1.34);
-        ctx.moveTo(0, radius * 1.22);
-        ctx.lineTo(0, radius * 1.34);
-        ctx.moveTo(-radius * 1.22, 0);
-        ctx.lineTo(-radius * 1.34, 0);
-        ctx.moveTo(radius * 1.22, 0);
-        ctx.lineTo(radius * 1.34, 0);
-        ctx.stroke();
-        
-        ctx.restore();
-
-        // 8. Draw beautiful volumetric pulsing atmospheric aura directly on Canvas!
-        // Pulsing speed and blur bounds are synced to the score!
-        const pulseSpeed = 0.001 + (100 - interpolatedEcoScore) * 0.00003; // faster speed for danger
-        const pulseFactor = Math.sin(performance.now() * pulseSpeed);
-        const pulseAlpha = pulseFactor * 0.12 + 0.38;
-        const blurDepth = 16 + pulseFactor * 6;
-
-        let auraColor = `rgba(${state.rim[0]}, ${state.rim[1]}, ${state.rim[2]}, ${pulseAlpha * 0.4})`;
-
-        ctx.save();
-        ctx.shadowColor = `rgb(${state.rim[0]}, ${state.rim[1]}, ${state.rim[2]})`;
-        ctx.shadowBlur = blurDepth;
-        ctx.fillStyle = auraColor;
-        ctx.beginPath();
-        ctx.arc(center, center, radius - 1, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-
-        // 9. Queue next frame
-        earthAnimationFrameId = requestAnimationFrame(drawEarth);
+        drawAvatar(ctx, center, width, height, interpolatedEcoScore, delta);
+        earthAnimationFrameId = requestAnimationFrame(drawLoop);
     }
 
-    drawEarth();
+    drawLoop();
 }
 
-// 12. FLOATING AI ASSISTANT CHAT ENGINE
+function drawAvatar(ctx, center, width, height, score, delta = 1) {
+    ctx.clearRect(0, 0, width, height);
+
+    // Easing interpolation chase (moves smoothly to currentState.ecoScore)
+    interpolatedEcoScore += (currentState.ecoScore - interpolatedEcoScore) * 0.05 * delta;
+
+    hudRingRotation += 0.004 * delta;
+    const pulseScale = Math.sin(performance.now() / 650) * 1.5;
+    
+    let glowColor = 'rgba(6, 182, 212, 0.85)'; // cyan
+    let glowRgb = [6, 182, 212];
+    if (interpolatedEcoScore >= 80) {
+        glowColor = 'rgba(16, 185, 129, 0.85)'; // green
+        glowRgb = [16, 185, 129];
+    } else if (interpolatedEcoScore >= 60) {
+        glowColor = 'rgba(6, 182, 212, 0.85)'; // cyan
+        glowRgb = [6, 182, 212];
+    } else if (interpolatedEcoScore >= 40) {
+        glowColor = 'rgba(245, 158, 11, 0.85)'; // amber
+        glowRgb = [245, 158, 11];
+    } else {
+        glowColor = 'rgba(239, 68, 68, 0.85)'; // red
+        glowRgb = [239, 68, 68];
+    }
+
+    // 1. Orbit telemetry rings
+    ctx.save();
+    ctx.translate(center, center);
+    ctx.rotate(-0.12);
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.22)`;
+    ctx.lineWidth = 1.0;
+    ctx.setLineDash([4, 12]);
+    ctx.lineDashOffset = -hudRingRotation * 70;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 115 + pulseScale, 32 + pulseScale * 0.2, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.12)`;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([8, 16]);
+    ctx.lineDashOffset = hudRingRotation * 90;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 145 + pulseScale * 1.5, 48 + pulseScale * 0.35, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Glitch offsets triggered by high burnout risk (>75%)
+    const burnoutRisk = currentState.burnoutRisk || 0;
+    const isGlitching = burnoutRisk > 75 && Math.random() > 0.88;
+
+    ctx.save();
+    if (isGlitching) {
+        ctx.translate((Math.random() - 0.5) * 10, 0); // horizontal CRT jitter
+    }
+
+    // 2. Glowing vector outline humanoid coordinate mappings
+    ctx.strokeStyle = glowColor;
+    ctx.lineWidth = 2.2;
+    ctx.shadowColor = `rgb(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]})`;
+    ctx.shadowBlur = 10;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    // HEAD
+    ctx.beginPath();
+    ctx.arc(center, center - 68, 18, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // NECK
+    ctx.beginPath();
+    ctx.moveTo(center, center - 50);
+    ctx.lineTo(center, center - 40);
+    ctx.stroke();
+
+    // SHOULDERS
+    ctx.beginPath();
+    ctx.moveTo(center - 42, center - 30);
+    ctx.lineTo(center + 42, center - 30);
+    ctx.stroke();
+
+    // ARMS
+    ctx.beginPath();
+    ctx.moveTo(center - 42, center - 30);
+    ctx.lineTo(center - 62, center + 10);
+    ctx.moveTo(center + 42, center - 30);
+    ctx.lineTo(center + 62, center + 10);
+    ctx.stroke();
+
+    // TORSO/CHEST
+    ctx.beginPath();
+    ctx.moveTo(center - 42, center - 30);
+    ctx.lineTo(center - 22, center + 38);
+    ctx.lineTo(center + 22, center + 38);
+    ctx.lineTo(center + 42, center - 30);
+    ctx.closePath();
+    ctx.stroke();
+
+    // LEGS
+    ctx.beginPath();
+    ctx.moveTo(center - 22, center + 38);
+    ctx.lineTo(center - 30, center + 98);
+    ctx.moveTo(center + 22, center + 38);
+    ctx.lineTo(center + 30, center + 98);
+    ctx.stroke();
+
+    // 3. Head Brain Wave Sine Pulse
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(center, center - 68, 18, 0, Math.PI * 2);
+    ctx.clip();
+
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.55)`;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    const frequency = 0.16;
+    const speed = 0.008 * (currentState.stressLevel || 30);
+    const amplitude = 5;
+    const time = performance.now() * speed;
+
+    for (let x = center - 20; x <= center + 20; x++) {
+        const y = center - 68 + Math.sin((x - center) * frequency + time) * amplitude;
+        if (x === center - 20) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // 4. Chest Heart Rate Beats
+    const heartPulseBpm = 60 + (burnoutRisk / 100) * 120;
+    const heartPulsePeriod = 60000 / heartPulseBpm;
+    const heartPulsePhase = (performance.now() % heartPulsePeriod) / heartPulsePeriod;
+    const heartPulseScale = 1 + Math.sin(heartPulsePhase * Math.PI) * 0.45;
+    
+    ctx.fillStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.8)`;
+    ctx.beginPath();
+    ctx.arc(center, center - 12, 5 * heartPulseScale, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, ${Math.max(0, 0.6 - heartPulsePhase)})`;
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    ctx.arc(center, center - 12, 18 * heartPulsePhase, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.restore();
+
+    // 5. Horizontal CRT scanlines
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+    for (let y = 10; y < height - 10; y += 4) {
+        ctx.fillRect(10, y, width - 20, 1.2);
+    }
+
+    // 6. Draw Volumetric Atmospheric Aura Glow
+    ctx.save();
+    ctx.shadowColor = `rgb(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]})`;
+    ctx.shadowBlur = 16;
+    ctx.strokeStyle = `rgba(${glowRgb[0]}, ${glowRgb[1]}, ${glowRgb[2]}, 0.18)`;
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    ctx.arc(center, center, 140, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // 7. Spawn and draw active particles
+    spawnCanvasParticles(center, 120, interpolatedEcoScore);
+    updateAndDrawParticles(ctx, delta);
+}
+
+// 8. FLOATING AI ASSISTANT CHAT ENGINE
 function toggleChat() {
     const chatBox = document.getElementById('ai-chat-box');
+    if (!chatBox) return;
     chatBox.classList.toggle('hidden');
     
-    // Auto scroll chat to bottom when opened
     if (!chatBox.classList.contains('hidden')) {
         setTimeout(() => {
             const chatMessages = document.getElementById('chat-messages');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
         }, 50);
     }
 }
@@ -1403,14 +1054,12 @@ function handleChatKeyPress(event) {
     }
 }
 
-// AI Chat Thinking Indicator functions
 function showThinkingIndicator() {
     const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
     
-    // Check if indicator already exists
     if (document.getElementById('chat-thinking')) return;
 
-    // Trigger glowing voice wave visualizer header
     const wave = document.getElementById('voice-wave-container');
     if (wave) wave.classList.add('voice-wave-active');
 
@@ -1434,30 +1083,32 @@ function hideThinkingIndicator() {
     if (indicator) {
         indicator.remove();
     }
+    const wave = document.getElementById('voice-wave-container');
+    if (wave) wave.classList.remove('voice-wave-active');
 }
 
 function sendMessage() {
     const inputEl = document.getElementById('chat-user-input');
+    if (!inputEl) return;
     const msgText = inputEl.value.trim();
     
     if (msgText === '') return;
 
-    // User Message
     addUserMessage(msgText);
     inputEl.value = '';
 
-    // Show dynamic thinking indicator before responding
     showThinkingIndicator();
     
     setTimeout(() => {
         hideThinkingIndicator();
         const response = getAIResponse(msgText);
         addBotMessage(response);
-    }, 900); // 900ms thinking time
+    }, 900); 
 }
 
 function addUserMessage(text) {
     const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
     
     const msgDiv = document.createElement('div');
     msgDiv.className = 'chat-msg user-msg';
@@ -1469,6 +1120,7 @@ function addUserMessage(text) {
 
 function addBotMessage(text) {
     const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
     
     const msgDiv = document.createElement('div');
     msgDiv.className = 'chat-msg ai-msg';
@@ -1478,7 +1130,6 @@ function addBotMessage(text) {
     msgDiv.appendChild(bubble);
     chatMessages.appendChild(msgDiv);
     
-    // Snappy Character Typewriter effect
     let i = 0;
     let isTag = false;
     let tempText = "";
@@ -1487,7 +1138,6 @@ function addBotMessage(text) {
         if (i < text.length) {
             let char = text.charAt(i);
             
-            // Skip delaying inside HTML markup
             if (char === '<') {
                 isTag = true;
             }
@@ -1499,19 +1149,14 @@ function addBotMessage(text) {
             }
             
             bubble.innerHTML = tempText;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
             i++;
             
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
             if (isTag) {
-                typeChar(); // Skip delay for markup
+                typeChar(); 
             } else {
-                setTimeout(typeChar, 8); // Snappy 8ms key delay
+                setTimeout(typeChar, 10);
             }
-        } else {
-            // Stop voice-wave animations when typewriter is done
-            const wave = document.getElementById('voice-wave-container');
-            if (wave) wave.classList.remove('voice-wave-active');
         }
     }
     
@@ -1522,13 +1167,12 @@ function addBotMessage(text) {
 function askPresetQuestion(type) {
     let questionText = "";
     
-    if (type === 'boost') questionText = "How can I boost my Eco Score?";
-    else if (type === 'transport') questionText = "Analyze my transport emissions.";
-    else if (type === 'forecast') questionText = "Explain my 2030 forecast predictions.";
-    else if (type === 'water') questionText = "Give me quick water conservation tips.";
+    if (type === 'boost') questionText = "How can I avoid 2035 burnout?";
+    else if (type === 'transport') questionText = "Can you analyze my digital screen load?";
+    else if (type === 'forecast') questionText = "Explain my 2035 future life projection.";
+    else if (type === 'water') questionText = "What are your quick dopamine regulation tips?";
 
     addUserMessage(questionText);
-    
     showThinkingIndicator();
     
     setTimeout(() => {
@@ -1544,57 +1188,48 @@ function getAIResponsePreset(type) {
     
     if (type === 'boost') {
         let recommendation = "";
-        if (currentState.acHours >= 6) {
-            recommendation = `Currently, your AC is set to <strong>${currentState.acHours} hours</strong>. Sliding it down to 4 hours daily will add about <strong>+8 points</strong> to your Eco Score!`;
-        } else if (currentState.travelMode === 'petrol' && currentState.distance >= 15) {
-            recommendation = `Your petrol vehicle travel is a major contributor. Switching to public transit or EV will instantly add about <strong>+12 to +15 points</strong>!`;
-        } else if (currentState.waterWastage) {
-            recommendation = `Turning off the tap while brushing and correcting leaky faucets will instantly boost your score by <strong>+8 points</strong>!`;
-        } else if (currentState.plasticBottles >= 10) {
-            recommendation = `Ditching those <strong>${currentState.plasticBottles} single-use bottles</strong> weekly for a metal flask will raise your score by <strong>+6 points</strong>!`;
+        if (currentState.screenTime >= 8) {
+            recommendation = `Currently, your digital screen time is a heavy <strong>${currentState.screenTime} hours</strong>. Sliding it below 4 hours will add about <strong>+12 points</strong> to your Vitality Score!`;
+        } else if (currentState.sleepHours < 6) {
+            recommendation = `Your biological rest is too low. Elevating sleep above 7.5 hours daily will restore cognitive health, adding <strong>+15 points</strong>!`;
+        } else if (currentState.stressLevel >= 50) {
+            recommendation = `Correcting daily neurological stress through breathing/meditation cycles will instantly boost your score by <strong>+10 points</strong>!`;
+        } else if (currentState.savingsRate < 20) {
+            recommendation = `Your savings rate is sub-optimal. Saving at least 40% will secure wealth projections, boosting your rank score by <strong>+8 points</strong>!`;
         } else {
-            recommendation = `You are doing amazingly well with a score of <strong>${scoreVal}</strong>! To get closer to 100, try minimizing food scraps to absolute zero and lowering AC usage completely.`;
+            recommendation = `You are doing exceptionally well with a Vitality Index of <strong>${scoreVal}</strong>! To get closer to 100, try minimizing screen time further and optimizing deep rest.`;
         }
         
-        return `⚡ <strong>Score Optimization Engine Analysis:</strong><br><br>${recommendation}<br><br>Every minor optimization reflects immediately in your annual cash savings ticker!`;
+        return `⚡ <strong>AI Bio-Telemetry Coach Advice:</strong><br><br>${recommendation}<br><br>Every minor habit optimization reflects immediately in your future self metrics!`;
     }
     
     if (type === 'transport') {
-        const factor = TRANSPORT_FACTORS[currentState.travelMode];
-        const transportCo2 = Math.round(currentState.distance * factor * 30);
-        
-        let analysis = `You travel <strong>${currentState.distance} km</strong> daily using <strong>${currentState.travelMode}</strong>. This outputs approximately <strong>${transportCo2} kg of CO₂</strong> monthly.<br><br>`;
-        
-        if (currentState.travelMode === 'petrol') {
-            analysis += `⚠️ <strong>Petrol Cars</strong> have severe impact. By toggling to <strong>Transit</strong> or <strong>EV</strong>, you reduce transport emissions by 75%+, saving thousands of rupees in fuel annually.`;
-        } else if (currentState.travelMode === 'bike') {
-            analysis += `🏍️ <strong>Bikes</strong> are better than cars, but still exhaust greenhouse gases. Try carpooling or taking campus electric buses twice a week to boost your standing.`;
+        let analysis = `You spent <strong>${currentState.screenTime} hours</strong> active on screens and <strong>${currentState.socialMediaTime} hours</strong> doomscrolling daily.<br><br>`;
+        if (currentState.screenTime >= 10) {
+            analysis += `⚠️ <strong>Heavy Digital Load</strong> detected. Screens over 10 hours release excessive neural fatigue, increasing dopaminergic desensitization by 60%+. Try locking your screen after 4 hours.`;
         } else {
-            analysis += `⭐ Excellent choice! Choosing <strong>${currentState.travelMode}</strong> keeps emissions negligible. ECE Department ranks high thanks to conscious citizens like you!`;
+            analysis += `⭐ Outstanding! Your screen time is well regulated, keeping neural pathways healthy and active standing optimal!`;
         }
         return analysis;
     }
     
     if (type === 'forecast') {
-        const annualSavedCo2 = Math.round((BASELINE.dailyCo2 - currentState.dailyCo2) * 365);
-        const saved5Years = (annualSavedCo2 * 5 / 1000).toFixed(1);
-        
-        let prediction = `🔮 <strong>Future Intelligence Forecast (2026 - 2030):</strong><br><br>`;
+        let prediction = `🔮 <strong>Future Life Projection (2025 - 2035):</strong><br><br>`;
         if (scoreVal < 50) {
-            prediction += `⚠️ Continuing with your current profile will lead to <strong>${(BASELINE.dailyCo2 * 365 * 5 / 1000).toFixed(1)} Tons of cumulative CO₂</strong> output by 2030. The charts show a sharp divergence, driving environmental degradation.`;
+            prediction += `⚠️ Continuing with your current habits will lead to a <strong>burnout outcome by 2035</strong>. Cognitive fatigue surge reaches critical levels and financial wealth decays sharply.`;
         } else {
-            prediction += `🟢 By adopting your current green habits, you will prevent <strong>${saved5Years} Tons of greenhouse gases</strong> by 2030 compared to Business as Usual!<br><br>Additionally, you prevent significant resources from depletion, and your cumulative utility savings reach a projected <strong>₹${(Math.round((BASELINE.dailyCo2 - currentState.dailyCo2) * 365 * 10) * 5).toLocaleString()}</strong>!`;
+            prediction += `🟢 By adopting your current disciplined habits, you will prevent biological decay and secure a <strong>Successful Zen Entrepreneur</strong> path by 2035!<br><br>Physical health peaks, cognitive wellness stays stable, and annual savings reach a cumulative <strong>₹${(currentState.savingsRate * 12 * 80 * 10).toLocaleString()}</strong> by 2035!`;
         }
         return prediction;
     }
     
     if (type === 'water') {
-        let waterTip = `💧 <strong>Water Intelligence Insight:</strong><br><br>You currently consume <strong>${currentState.waterLiters} Liters/day</strong>. `;
-        if (currentState.waterWastage) {
-            waterTip += `By turning off water wastage habits in the checkbox, you instantly conserve over <strong>${(BASELINE.dailyWater - currentState.waterLiters) * 365 + 3000} Liters annually</strong>. `;
+        let tips = `🧠 <strong>Dopamine Regulation Insight:</strong><br><br>Doomscrolling for <strong>${currentState.socialMediaTime} hours/day</strong> creates severe neurological stress. `;
+        if (currentState.socialMediaTime >= 4) {
+            tips += `Bypassing social media alerts after 8 PM will instantly restore dopamine receptor densities by up to 25%. `;
         }
-        waterTip += `Try keeping daily showers below 5 minutes, running laundry on full loads only, and harvesting rainwater for campus gardens!`;
-        return waterTip;
+        tips += `Try setting app-limit grids, doing active physical exercise, and sleeping in dark, isolated rooms to maximize recovery!`;
+        return tips;
     }
 }
 
@@ -1604,160 +1239,60 @@ function getAIResponse(msgText) {
     const scoreVal = currentState.ecoScore;
 
     if (text.includes('hello') || text.includes('hi') || text.includes('hey')) {
-        return "Hey there! Ask me any questions about sustainability, your environmental metrics, or click a suggestion chip below for live optimizations!";
+        return "Greetings Agent! Ask me any questions about your future path, biological biometrics, screen load, or click a suggestion chip for instant advice!";
     }
-    if (text.includes('score') || text.includes('eco')) {
-        return `Your current Eco Score is <strong>${scoreVal}/100</strong>. ${scoreVal >= 80 ? 'An excellent score! Keep it up.' : 'You can easily boost this by adjusting AC usage, commuting in an EV, or avoiding single-use plastics.'}`;
+    if (text.includes('score') || text.includes('vitality') || text.includes('eco')) {
+        return `Your current Future Self Vitality Index is <strong>${scoreVal}/100</strong>. ${scoreVal >= 80 ? 'An outstanding score! You are locked for Utopian Success.' : 'You can easily boost this by adjusting sleep, reducing screens, or boosting savings.'}`;
     }
-    if (text.includes('electricity') || text.includes('ac') || text.includes('power')) {
-        return `Your AC runs for <strong>${currentState.acHours} hours</strong>. Each AC hour emits about 1.35kg of CO₂. Consider using high-efficiency fans or closing blinds to reduce AC loads!`;
+    if (text.includes('sleep') || text.includes('rest') || text.includes('tired')) {
+        return `Your sleep duration is set to <strong>${currentState.sleepHours} hours</strong>. Deep rest below 6 hours decays cellular tissues. Try aim for 7.5+ hours!`;
     }
-    if (text.includes('car') || text.includes('petrol') || text.includes('transport') || text.includes('ev') || text.includes('travel')) {
-        return `You commuter distance is <strong>${currentState.distance} km</strong> via <strong>${currentState.travelMode}</strong>. Petrol cars release 180g of CO₂ per km. EV and walking are the best options!`;
+    if (text.includes('screen') || text.includes('social') || text.includes('media') || text.includes('doomscroll')) {
+        return `You spent <strong>${currentState.screenTime}h</strong> on screens and <strong>${currentState.socialMediaTime}h</strong> doomscrolling daily. High screen loads burn out dopamine receptors!`;
     }
-    if (text.includes('water') || text.includes('shower') || text.includes('leak')) {
-        return `Water is vital! Your consumption is <strong>${currentState.waterLiters}L/day</strong>. Shortening showers and repairing tap leakage holds immense conservation power.`;
+    if (text.includes('stress') || text.includes('mental') || text.includes('burnout')) {
+        return `Your Neurological Stress is <strong>${currentState.stressLevel}%</strong>, and Burnout Risk is projected at <strong>${Math.round(currentState.burnoutRisk)}%</strong>. High stress decays your 2035 health exponentially.`;
     }
-    if (text.includes('plastic') || text.includes('bottle') || text.includes('recycle')) {
-        return `You discard <strong>${currentState.plasticBottles} plastic bottles</strong> weekly. Carry a steel bottle! Single-use plastics take 450+ years to disintegrate in soil.`;
-    }
-    if (text.includes('food') || text.includes('waste') || text.includes('leftover')) {
-        return `Food scraps in landfills ferment into methane, a gas 25x more toxic than CO₂. Planning meals and composting will save resources.`;
-    }
-    if (text.includes('saving') || text.includes('rupee') || text.includes('cash') || text.includes('money')) {
-        return `By adjusting these sliders, you are looking at potential savings of <strong>₹${document.getElementById('save-cash').textContent} annually</strong>! Ecology and economy are deeply connected.`;
+    if (text.includes('saving') || text.includes('money') || text.includes('wealth')) {
+        return `Your savings rate is <strong>${currentState.savingsRate}%</strong>. This leads to a cost Cost Avoidance/Savings of <strong>₹${currentState.savingsRate * 1000} annually</strong>. High savings locks Utopian Wealth!`;
     }
 
-    return "Interesting question! My environmental intelligence system highlights that minor changes in daily routines—like reducing AC, using campus transit, and bypassing bottled water—accumulate massive planet-saving results. Try testing a slider and watch the numbers shift!";
+    return "Fascinating query! My chrono-telemetry matrices highlight that minor tweaks in daily loops—like sleeping 1 hour more, bypassing doomscrolling, and savings ₹500 more—accumulate massive destiny-shifting results in 2035. Test a slider and watch your future self visualizer shift!";
 }
 
-// ==========================================================================
-// ECOSPHERE AI - ADVANCED VISUAL PLUGINS & INTERPOLATION ENGINE
-// ==========================================================================
-
-const ANCHORS = {
-    green: {
-        score: 90,
-        ocean: [[0, 180, 216], [0, 119, 182], [3, 4, 94]],
-        land: [16, 185, 129],
-        rim: [16, 185, 129, 0.32],
-        hud: [16, 185, 129, 0.12, 0.35],
-        rotationSpeed: 0.005,
-        cracksOpacity: 0.0,
-        cloudAlpha: 0.24
-    },
-    yellow: {
-        score: 70,
-        ocean: [[10, 147, 150], [0, 95, 115], [10, 47, 53]],
-        land: [132, 204, 22],
-        rim: [6, 182, 212, 0.28],
-        hud: [6, 182, 212, 0.12, 0.3],
-        rotationSpeed: 0.0035,
-        cracksOpacity: 0.0,
-        cloudAlpha: 0.18
-    },
-    orange: {
-        score: 45,
-        ocean: [[74, 85, 104], [45, 55, 72], [26, 32, 44]],
-        land: [180, 83, 9],
-        rim: [245, 158, 11, 0.22],
-        hud: [245, 158, 11, 0.08, 0.2],
-        rotationSpeed: 0.0018,
-        cracksOpacity: 0.25,
-        cloudAlpha: 0.08
-    },
-    red: {
-        score: 20,
-        ocean: [[43, 45, 66], [27, 28, 37], [13, 14, 18]],
-        land: [127, 29, 29],
-        rim: [239, 68, 68, 0.32],
-        hud: [239, 68, 68, 0.05, 0.18],
-        rotationSpeed: 0.0006,
-        cracksOpacity: 0.7,
-        cloudAlpha: 0.0
-    }
-};
-
-function getInterpolatedState(score) {
-    let s1, s2, f;
-    if (score >= 90) {
-        return ANCHORS.green;
-    } else if (score >= 70) {
-        s1 = ANCHORS.yellow;
-        s2 = ANCHORS.green;
-        f = (score - 70) / 20;
-    } else if (score >= 45) {
-        s1 = ANCHORS.orange;
-        s2 = ANCHORS.yellow;
-        f = (score - 45) / 25;
-    } else if (score >= 20) {
-        s1 = ANCHORS.red;
-        s2 = ANCHORS.orange;
-        f = (score - 20) / 25;
-    } else {
-        return ANCHORS.red;
-    }
-
-    const interpolate = (v1, v2) => v1 + (v2 - v1) * f;
-    const interpolateArr = (a1, a2) => a1.map((v, i) => v + (a2[i] - v) * f);
-    
-    return {
-        ocean: [
-            interpolateArr(s1.ocean[0], s2.ocean[0]),
-            interpolateArr(s1.ocean[1], s2.ocean[1]),
-            interpolateArr(s1.ocean[2], s2.ocean[2])
-        ],
-        land: interpolateArr(s1.land, s2.land),
-        rim: interpolateArr(s1.rim, s2.rim),
-        hud: interpolateArr(s1.hud, s2.hud),
-        rotationSpeed: interpolate(s1.rotationSpeed, s2.rotationSpeed),
-        cracksOpacity: interpolate(s1.cracksOpacity, s2.cracksOpacity),
-        cloudAlpha: interpolate(s1.cloudAlpha, s2.cloudAlpha)
-    };
-}
-
-// Capped Dynamic Particle Emitter System (Capped at 35 particles max)
-let activeParticles = [];
-
+// Particle physics emitter
 function spawnCanvasParticles(center, radius, score) {
     const maxParticles = 35;
     if (activeParticles.length >= maxParticles) return;
     
-    // Throttled spawner rate: spawn at most once every 120ms to prevent high refresh rate pile-ups
     const now = performance.now();
     if (!spawnCanvasParticles.lastSpawnTime) spawnCanvasParticles.lastSpawnTime = 0;
     if (now - spawnCanvasParticles.lastSpawnTime < 120) return;
     
-    // Controlled spawn rate: 60% probability per throttling step
     if (Math.random() > 0.6) return;
     spawnCanvasParticles.lastSpawnTime = now;
     
     let type = 'sparkle';
     
-    // Find future simulation threat level
-    let simPollution = parseFloat(document.getElementById('input-sim-pollution')?.value || 0);
-    let simDeforestation = parseFloat(document.getElementById('input-sim-deforestation')?.value || 0);
-    let simPlastic = parseFloat(document.getElementById('input-sim-plastic')?.value || 0);
-    let simFossil = parseFloat(document.getElementById('input-sim-fossil')?.value || 0);
+    let simPollution = currentState.simPollution || 0;
+    let simDeforestation = currentState.simDeforestation || 0;
+    let simPlastic = currentState.simPlastic || 0;
+    let simFossil = currentState.simFossil || 0;
     let maxThreat = Math.max(simPollution, simDeforestation, simPlastic, simFossil) / 100;
     
-    // Add threat factor based on future simulated year
-    const futureYear = typeof simulatedFutureYear !== 'undefined' ? simulatedFutureYear : 2026;
-    if (futureYear > 2026) {
-        const yearFactor = (futureYear - 2026) / 24;
-        const co2Impact = Math.min(1.0, (currentState.dailyCo2 || 12.2) / 15);
-        maxThreat = Math.min(1.0, maxThreat + yearFactor * co2Impact * 0.65);
+    const simulatedYear = currentState.simulatedYear || 2025;
+    if (simulatedYear > 2025) {
+        const yearFactor = (simulatedYear - 2025) / 15;
+        maxThreat = Math.min(1.0, maxThreat + yearFactor * (currentState.stressLevel / 100) * 0.5);
     }
     
     if (maxThreat > 0.05) {
-        // Toxic future simulation particles
         if (Math.random() < maxThreat) {
             type = Math.random() > 0.4 ? 'smoke' : 'ash';
         } else {
             type = 'dust';
         }
     } else {
-        // Standard score-based particles
         if (score >= 80) {
             type = Math.random() > 0.4 ? 'leaf' : 'sparkle';
         } else if (score >= 60) {
@@ -1769,7 +1304,6 @@ function spawnCanvasParticles(center, radius, score) {
         }
     }
     
-    // Spawn bottom area with vertical drift velocity
     activeParticles.push({
         x: center + (Math.random() - 0.5) * radius * 2.2,
         y: 280 + Math.random() * 20,
@@ -1812,8 +1346,6 @@ function updateAndDrawParticles(ctx, delta = 1) {
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size * 0.4, 0, Math.PI * 2);
             ctx.fillStyle = '#06b6d4';
-            ctx.shadowColor = '#06b6d4';
-            ctx.shadowBlur = 6;
             ctx.fill();
         } else if (p.type === 'dust') {
             ctx.beginPath();
@@ -1831,8 +1363,8 @@ function updateAndDrawParticles(ctx, delta = 1) {
             ctx.fill();
         } else if (p.type === 'ash') {
             ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size * 0.3, 0, Math.PI * 2);
-            ctx.fillStyle = '#2d3748';
+            ctx.arc(p.x, p.y, p.size * 0.45, 0, Math.PI * 2);
+            ctx.fillStyle = '#ef4444';
             ctx.fill();
         }
         
@@ -1841,247 +1373,456 @@ function updateAndDrawParticles(ctx, delta = 1) {
     });
 }
 
-// Chart.js Neon Lines Shadow Plugin
-const chartShadowPlugin = {
-    id: 'chartShadow',
-    beforeDatasetDraw: (chart, args) => {
-        const ctx = chart.ctx;
-        ctx.save();
-        ctx.shadowColor = args.meta.dataset.options.borderColor;
-        ctx.shadowBlur = 12;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 4;
-    },
-    afterDatasetDraw: (chart) => {
-        chart.ctx.restore();
-    }
-};
-
-// Chart.js Doughnut Center Dynamic Readout Text Plugin
-const doughnutCenterTextPlugin = {
-    id: 'doughnutCenterText',
-    afterDraw: (chart) => {
-        if (chart.config.type !== 'doughnut') return;
-        const { ctx, chartArea } = chart;
-        if (!chartArea) return;
-        
-        ctx.save();
-        const x = (chartArea.left + chartArea.right) / 2;
-        const y = (chartArea.top + chartArea.bottom) / 2;
-        
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        // Label
-        ctx.font = '700 8px Outfit';
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillText('DAILY CO₂', x, y - 8);
-        
-        // Digital Live Value Ticker
-        ctx.font = '800 14px Share Tech Mono';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(currentState.dailyCo2.toFixed(1) + ' kg', x, y + 8);
-        ctx.restore();
-    }
-};
-
-// Cinematic Background Atmosphere Particle Generator
 function initBackgroundAtmosphere() {
-    const bgContainer = document.querySelector('.app-background');
-    if (!bgContainer) return;
-    
-    for (let i = 0; i < 15; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'bg-atmosphere-particle';
-        
-        const size = Math.random() * 4 + 2; // 2px to 6px
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.left = `${Math.random() * 100}%`;
-        particle.style.top = `${Math.random() * 100}%`;
-        
-        const duration = Math.random() * 30 + 30; // 30s to 60s
-        const delay = Math.random() * -30;
-        particle.style.animation = `bgFloat ${duration}s linear infinite ${delay}s`;
-        
-        const colors = [
-            'rgba(16, 185, 129, 0.08)', // green
-            'rgba(6, 182, 212, 0.08)',  // cyan
-            'rgba(245, 158, 11, 0.05)'   // amber
-        ];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        particle.style.background = color;
-        particle.style.boxShadow = `0 0 12px ${color}`;
-        
-        const driftX = Math.random() * 100 - 50; // -50px to 50px drift
-        particle.style.setProperty('--drift-x', `${driftX}px`);
-        
-        bgContainer.appendChild(particle);
+    // Dynamic pure CSS space / ambient particles
+    console.log("🌌 Chrono atmosphere backgrounds active.");
+}
+
+// Setup onboarding submit interceptor
+function handleProfileSetupSubmit(event) {
+    if (event) event.preventDefault();
+    console.log("💾 ECOSPHERE // Intercepting profile linking protocol...");
+
+    const nameEl = document.getElementById('setup-name');
+    const ageEl = document.getElementById('setup-age');
+    const phoneEl = document.getElementById('setup-phone');
+    const deptEl = document.getElementById('setup-dept');
+    const cityEl = document.getElementById('setup-city');
+    const goalEl = document.getElementById('setup-goal');
+    const genderEl = document.getElementById('setup-gender');
+    const errorBox = document.getElementById('profile-setup-error-box');
+
+    const name = nameEl ? nameEl.value.trim() : "";
+    const age = ageEl ? parseInt(ageEl.value) : NaN;
+    const phone = phoneEl ? phoneEl.value.trim() : "";
+    const dept = deptEl ? deptEl.value : "";
+    const city = cityEl ? cityEl.value.trim() : "";
+    const goal = goalEl ? goalEl.value : "";
+    const gender = genderEl ? genderEl.value : "astronaut";
+
+    if (!name || isNaN(age) || !phone || !dept || !city || !goal || !gender) {
+        if (errorBox) {
+            errorBox.classList.remove('hidden');
+            const errText = document.getElementById('profile-setup-error-text');
+            if (errText) errText.textContent = "ERROR: ALL PROTOCOL FIELDS MANDATORY";
+        }
+        return;
+    }
+
+    if (errorBox) errorBox.classList.add('hidden');
+
+    // Seed state details
+    currentState.name = name;
+    currentState.age = age;
+    currentState.phone = phone;
+    currentState.department = dept;
+    currentState.city = city;
+    currentState.futureGoal = goal;
+    currentState.gender = gender;
+    currentState.profileComplete = true;
+
+    // Dicebear avatar seeding
+    currentState.photoURL = `https://api.dicebear.com/7.x/${gender === 'identicon' ? 'identicon' : 'bottts'}/svg?seed=${encodeURIComponent(name)}`;
+
+    if (typeof currentUserProfile !== 'undefined' && currentUserProfile) {
+        currentUserProfile.profileComplete = true;
+        currentUserProfile.name = name;
+        currentUserProfile.photoURL = currentState.photoURL;
+        currentUserProfile.age = age;
+        currentUserProfile.phone = phone;
+        currentUserProfile.department = dept;
+        currentUserProfile.city = city;
+        currentUserProfile.futureGoal = goal;
+        currentUserProfile.gender = gender;
+    }
+
+    if (window.saveUserDataToCloud) {
+        window.saveUserDataToCloud(currentState);
+    }
+
+    createAchievementParticles();
+
+    const overlay = document.getElementById('profile-setup-overlay');
+    if (overlay) {
+        overlay.style.transition = 'opacity 0.4s ease-out';
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            const appCont = document.querySelector('.app-container');
+            if (appCont) appCont.classList.remove('hidden');
+            updateCalculations(true);
+        }, 400);
     }
 }
 
-// ==========================================================================
-// ECOSPHERE AI - AUTHENTICATION & PERSISTENT DATABASE STORAGE HOOKS
-// ==========================================================================
+// Achievements Check logic
+function checkAchievements() {
+    let unlocked = currentState.achievements || ["first_uplink"];
+    let newlyUnlocked = false;
 
-// Throttled database auto-save trigger to prevent API rate limits
-let autoSaveTimeout = null;
-function triggerAutoSave() {
-    if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
-    autoSaveTimeout = setTimeout(() => {
+    if (currentState.profileComplete && !unlocked.includes("first_uplink")) {
+        unlocked.push("first_uplink");
+        newlyUnlocked = true;
+    }
+
+    if (currentState.screenTime <= 4 && !unlocked.includes("digital_zen")) {
+        unlocked.push("digital_zen");
+        newlyUnlocked = true;
+        createAchievementParticles();
+    }
+
+    if (currentState.sleepHours >= 7.5 && !unlocked.includes("deep_sleep")) {
+        unlocked.push("deep_sleep");
+        newlyUnlocked = true;
+        createAchievementParticles();
+    }
+
+    if (currentState.savingsRate >= 40 && !unlocked.includes("wealth_builder")) {
+        unlocked.push("wealth_builder");
+        newlyUnlocked = true;
+        createAchievementParticles();
+    }
+
+    if (newlyUnlocked) {
+        currentState.achievements = unlocked;
         if (window.saveUserDataToCloud) {
             window.saveUserDataToCloud(currentState);
         }
-    }, 1500); // 1.5 seconds of user input inactivity before triggering Firestore update
+    }
 }
 
-// Auth integration hook: Restore settings from Firestore / Local Storage Sandbox
-function restoreUserSettings(data) {
-    if (!data) return;
+function createAchievementParticles() {
+    console.log("⭐ ACHIEVEMENT UNLOCKED! Particle burst.");
+    for (let i = 0; i < 25; i++) {
+        activeParticles.push({
+            x: 170 + (Math.random() - 0.5) * 120,
+            y: 170 + (Math.random() - 0.5) * 120,
+            vx: (Math.random() - 0.5) * 5,
+            vy: (Math.random() - 0.5) * 5 - 2,
+            size: Math.random() * 4 + 3,
+            alpha: 1.0,
+            life: 1.0,
+            decay: 0.015,
+            angle: Math.random() * Math.PI * 2,
+            spin: 0.05,
+            type: Math.random() > 0.4 ? 'sparkle' : 'leaf'
+        });
+    }
+}
+
+// Sync Agent Dashboard UI
+function updateProfileDashboardUI() {
+    if (!currentState.profileComplete) return;
+
+    const agentNameEl = document.getElementById('dashboard-agent-name');
+    if (agentNameEl) agentNameEl.textContent = currentState.name || "AGENT_NAME";
+
+    const dashAvatar = document.getElementById('dashboard-avatar-img');
+    if (dashAvatar) {
+        dashAvatar.src = currentState.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentState.name)}`;
+    }
+
+    const rankBadge = document.getElementById('dashboard-agent-rank');
+    if (rankBadge) {
+        rankBadge.className = 'badge-role font-mono';
+        let score = currentState.ecoScore || 72;
+        if (score >= 90) {
+            rankBadge.textContent = 'CHRONO TRANSCENDENT';
+            rankBadge.classList.add('rank-emerald');
+        } else if (score >= 80) {
+            rankBadge.textContent = 'TEMPORAL PRODIGY';
+            rankBadge.classList.add('rank-gold');
+        } else if (score >= 60) {
+            rankBadge.textContent = 'STEADY SURVIVOR';
+            rankBadge.classList.add('rank-silver');
+        } else if (score >= 40) {
+            rankBadge.textContent = 'SCREEN ADDICT';
+            rankBadge.classList.add('rank-bronze');
+        } else {
+            rankBadge.textContent = 'BURNOUT VICTIM';
+            rankBadge.classList.add('rank-carbon');
+        }
+    }
+
+    const streakEl = document.getElementById('dashboard-streak-count');
+    if (streakEl) streakEl.textContent = currentState.streakCount || 1;
+
+    const pctText = document.getElementById('profile-completion-val');
+    if (pctText) pctText.textContent = '100%';
     
-    // Merge loaded data to currentState
-    currentState = { ...currentState, ...data };
+    const fillCircle = document.getElementById('completion-fill-circle');
+    if (fillCircle) {
+        fillCircle.style.strokeDashoffset = '0';
+    }
 
-    // Update range elements in the DOM
-    const mappings = [
-        { id: 'input-ac-hours', bubbleId: 'val-ac-hours', val: currentState.acHours },
-        { id: 'input-appliances', bubbleId: 'val-appliances', val: currentState.appliances },
-        { id: 'input-distance', bubbleId: 'val-distance', val: currentState.distance },
-        { id: 'input-water', bubbleId: 'val-water', val: currentState.waterLiters },
-        { id: 'input-plastic', bubbleId: 'val-plastic', val: currentState.plasticBottles }
-    ];
+    // Sync Details List
+    const deptEl = document.getElementById('profile-dept-val');
+    if (deptEl) deptEl.textContent = currentState.department || '-';
+    
+    const cityEl = document.getElementById('profile-city-val');
+    if (cityEl) cityEl.textContent = currentState.city || '-';
+    
+    const goalEl = document.getElementById('profile-goal-val');
+    if (goalEl) goalEl.textContent = currentState.futureGoal || '-';
+    
+    const commuteEl = document.getElementById('profile-commute-val');
+    if (commuteEl) {
+        const genderLabel = { astronaut: 'Astronaut', male: 'Cyber Male', female: 'Cyber Female', identicon: 'Matrix' }[currentState.gender];
+        commuteEl.textContent = genderLabel || '-';
+    }
 
-    mappings.forEach(m => {
-        const el = document.getElementById(m.id);
-        const bubble = document.getElementById(m.bubbleId);
-        if (el) el.value = m.val;
-        if (bubble) bubble.textContent = m.val;
+    // Sync Achievements locking grids
+    const achs = ["first-uplink", "power-saver", "hydration-guard", "zero-plastic"];
+    const achKeys = {
+        "first-uplink": "first_uplink",
+        "power-saver": "digital_zen",
+        "hydration-guard": "deep_sleep",
+        "zero-plastic": "wealth_builder"
+    };
+    
+    let unlockedCount = 0;
+    achs.forEach(a => {
+        const el = document.getElementById(`achievement-${a}`);
+        if (el) {
+            const isUnlocked = currentState.achievements && currentState.achievements.includes(achKeys[a]);
+            if (isUnlocked) {
+                el.classList.remove('locked');
+                el.classList.add('unlocked');
+                unlockedCount++;
+            } else {
+                el.classList.remove('unlocked');
+                el.classList.add('locked');
+            }
+        }
     });
 
-    const foodEl = document.getElementById('input-food-waste');
-    if (foodEl) {
-        foodEl.value = currentState.foodWaste;
-        const foodLbl = document.getElementById('lbl-food-waste');
-        if (foodLbl) foodLbl.textContent = FOOD_WASTE_DATA[currentState.foodWaste].label;
+    const ratioText = document.getElementById('achievements-unlocked-ratio');
+    if (ratioText) {
+        ratioText.textContent = `${unlockedCount}/4 UNLOCKED`;
     }
-
-    const waterWastageEl = document.getElementById('input-water-wastage');
-    if (waterWastageEl) waterWastageEl.checked = currentState.waterWastage;
-
-    const plasticBagsEl = document.getElementById('input-plastic-bags');
-    if (plasticBagsEl) plasticBagsEl.checked = currentState.plasticBags;
-
-    const radioEl = document.getElementById(`mode-${currentState.travelMode}`);
-    if (radioEl) radioEl.checked = true;
-
-    const transportLabel = document.getElementById('val-transport-mode-text');
-    if (transportLabel) {
-        const labelText = {
-            walk: 'Walk/Cycle',
-            ev: 'Electric Veh',
-            transit: 'Public Transit',
-            bike: 'Motorcycle',
-            petrol: 'Petrol Car'
-        }[currentState.travelMode];
-        transportLabel.textContent = labelText;
-    }
-
-    // Recalculate carbon footprints, scores, and re-draw Canvas/Charts instantly
-    updateCalculations(true);
 }
 
-/* ==========================================================================
-   FUTURISTIC COMMAND CENTER INTERACTIVE MODULE CONTROLLERS
-   ========================================================================== */
-
-// 1. Interactive Column Tabs Switching
-function switchColTab(colId, panelId) {
-    console.log("🖥️ ECOSPHERE // Tab switch: " + colId + " -> panel-" + panelId);
+// Profile edit controls
+function toggleProfileEditMode(active) {
+    const editContainer = document.getElementById('dashboard-edit-container');
+    const toggleBtn = document.getElementById('btn-edit-profile-toggle');
+    const staticElements = [
+        document.getElementById('dashboard-name-row'),
+        document.getElementById('profile-details-grid'),
+        document.getElementById('profile-completion-widget')
+    ];
     
-    // Find all tabs inside this col container and clear active state
-    const tabsContainer = document.getElementById(colId + '-tabs');
-    if (tabsContainer) {
-        tabsContainer.querySelectorAll('.col-tab').forEach(tab => tab.classList.remove('active'));
-    }
-    
-    // Set clicked tab active by matching search pattern or children index
-    const clickedTab = Array.from(tabsContainer?.querySelectorAll('.col-tab') || []).find(tab => 
-        tab.getAttribute('onclick').includes(`'${panelId}'`)
-    );
-    if (clickedTab) clickedTab.classList.add('active');
-
-    // Find and hide all panels inside this column scroll area
-    const colCol = document.querySelector('.' + (colId === 'col1' ? 'optimizer' : 'analytics') + '-column');
-    if (colCol) {
-        colCol.querySelectorAll('.col-tab-panel').forEach(panel => panel.classList.add('hidden'));
+    if (active) {
+        if (editContainer) editContainer.classList.remove('hidden');
+        if (toggleBtn) toggleBtn.classList.add('hidden');
+        staticElements.forEach(el => {
+            if (el && el !== editContainer && el !== toggleBtn) {
+                el.style.display = 'none';
+            }
+        });
         
-        // Show target panel
-        const targetPanel = colCol.querySelector('#panel-' + panelId);
-        if (targetPanel) targetPanel.classList.remove('hidden');
-    }
-    
-    // Force recalculations and visual adjustments instantly
-    if (panelId === 'analytics' && historyChart) {
-        setTimeout(() => historyChart.resize(), 100);
+        const editName = document.getElementById('edit-name');
+        if (editName) editName.value = currentState.name || "";
+        
+        const editAge = document.getElementById('edit-age');
+        if (editAge) editAge.value = currentState.age || "";
+        
+        const editPhone = document.getElementById('edit-phone');
+        if (editPhone) editPhone.value = currentState.phone || "";
+        
+        const editCity = document.getElementById('edit-city');
+        if (editCity) editCity.value = currentState.city || "";
+        
+        const previewImg = document.getElementById('edit-avatar-preview-img');
+        if (previewImg) {
+            previewImg.src = currentState.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentState.name || 'EcoAgent')}`;
+        }
+    } else {
+        if (editContainer) editContainer.classList.add('hidden');
+        if (toggleBtn) toggleBtn.classList.remove('hidden');
+        staticElements.forEach(el => {
+            if (el && el !== editContainer && el !== toggleBtn) {
+                el.style.display = '';
+            }
+        });
     }
 }
 
-// 2. Daily Challenges Quest System Evaluator
+function previewEditProfilePic(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 500 * 1024) {
+        alert("File size exceeds 500KB. Please choose a smaller image.");
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewImg = document.getElementById('edit-avatar-preview-img');
+        if (previewImg) {
+            previewImg.src = e.target.result;
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function handleProfileUpdateSubmit(event) {
+    if (event) event.preventDefault();
+    console.log("💾 ECOSPHERE // Saving edited user profile metrics...");
+    
+    const editName = document.getElementById('edit-name');
+    const editAge = document.getElementById('edit-age');
+    const editPhone = document.getElementById('edit-phone');
+    const editCity = document.getElementById('edit-city');
+
+    const name = editName ? editName.value.trim() : "";
+    const age = editAge ? parseInt(editAge.value) : NaN;
+    const phone = editPhone ? editPhone.value.trim() : "";
+    const city = editCity ? editCity.value.trim() : "";
+    
+    currentState.name = name;
+    currentState.age = age;
+    currentState.phone = phone;
+    currentState.city = city;
+    
+    const previewImg = document.getElementById('edit-avatar-preview-img');
+    if (previewImg) {
+        currentState.photoURL = previewImg.src;
+    }
+    
+    if (window.saveUserDataToCloud) {
+        window.saveUserDataToCloud(currentState);
+    }
+    
+    createAchievementParticles();
+    toggleProfileEditMode(false);
+    updateProfileDashboardUI();
+    console.log("🔗 ECOSPHERE // Profile successfully saved.");
+}
+
+// Voice recogniser SpeechRecognition chatbot
+let isListening = false;
+let speechRecognizer = null;
+function toggleVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Web Speech API Voice input is not supported in this browser.");
+        return;
+    }
+
+    const voiceBtn = document.getElementById('chat-voice-btn');
+    if (!voiceBtn) return;
+
+    if (isListening) {
+        if (speechRecognizer) speechRecognizer.stop();
+        isListening = false;
+        voiceBtn.classList.remove('active-mic');
+        return;
+    }
+
+    try {
+        speechRecognizer = new SpeechRecognition();
+        speechRecognizer.continuous = false;
+        speechRecognizer.interimResults = false;
+        speechRecognizer.lang = 'en-US';
+
+        speechRecognizer.onstart = () => {
+            isListening = true;
+            voiceBtn.classList.add('active-mic');
+            showThinkingIndicator();
+        };
+
+        speechRecognizer.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            const inputEl = document.getElementById('chat-user-input');
+            if (inputEl) {
+                inputEl.value = transcript;
+                sendMessage();
+            }
+        };
+
+        speechRecognizer.onerror = (e) => {
+            console.error("Speech Recognition error:", e);
+            isListening = false;
+            voiceBtn.classList.remove('active-mic');
+            hideThinkingIndicator();
+        };
+
+        speechRecognizer.onend = () => {
+            isListening = false;
+            voiceBtn.classList.remove('active-mic');
+            hideThinkingIndicator();
+        };
+
+        speechRecognizer.start();
+    } catch (err) {
+        console.error("Voice input start error:", err);
+        isListening = false;
+        voiceBtn.classList.remove('active-mic');
+    }
+}
+
+// Quest Card unlock mechanics
 function evaluateQuests() {
     if (!document.getElementById('quest-card-ac')) return;
     
-    // Challenge 1: AC hours < 4
-    const acOk = currentState.acHours < 4;
+    // Digital Detox: screenTime <= 4
+    const acOk = currentState.screenTime <= 4;
     const acCard = document.getElementById('quest-card-ac');
     const acBar = document.getElementById('quest-progress-bar-ac');
     const acStatus = document.getElementById('quest-status-ac');
     const acBtn = document.getElementById('btn-claim-ac');
     
-    if (acStatus) acStatus.textContent = currentState.acHours + '/4 hrs';
+    if (acStatus) acStatus.textContent = currentState.screenTime + '/4 hrs';
     if (acBar) {
-        const acPct = Math.min(100, Math.max(0, (4 / currentState.acHours) * 100));
-        acBar.style.width = (acOk ? 100 : acPct) + '%';
+        const acPct = currentState.screenTime <= 4 ? 100 : Math.min(100, Math.max(0, (4 / currentState.screenTime) * 100));
+        acBar.style.width = acPct + '%';
     }
     updateQuestCardState('ac', acOk, acCard, acBtn, 30);
 
-    // Challenge 2: Water wastage unchecked
-    const waterOk = !currentState.waterWastage;
+    // Sleep Recovery: sleepHours >= 7
+    const waterOk = currentState.sleepHours >= 7;
     const waterCard = document.getElementById('quest-card-water');
     const waterBar = document.getElementById('quest-progress-bar-water');
     const waterStatus = document.getElementById('quest-status-water');
     const waterBtn = document.getElementById('btn-claim-water');
     
-    if (waterStatus) waterStatus.textContent = waterOk ? "EFFICIENT" : "WASTING";
-    if (waterBar) waterBar.style.width = (waterOk ? 100 : 0) + '%';
+    if (waterStatus) waterStatus.textContent = currentState.sleepHours + '/7 hrs';
+    if (waterBar) {
+        const waterPct = currentState.sleepHours >= 7 ? 100 : Math.min(100, Math.max(0, (currentState.sleepHours / 7) * 100));
+        waterBar.style.width = waterPct + '%';
+    }
     updateQuestCardState('water', waterOk, waterCard, waterBtn, 25);
 
-    // Challenge 3: Transit walk, ev or transit
-    const transitOk = ['walk', 'ev', 'transit'].includes(currentState.travelMode);
+    // Physical Activity: exerciseDays >= 3
+    const transitOk = currentState.exerciseDays >= 3;
     const transitCard = document.getElementById('quest-card-transit');
     const transitBar = document.getElementById('quest-progress-bar-transit');
     const transitStatus = document.getElementById('quest-status-transit');
     const transitBtn = document.getElementById('btn-claim-transit');
     
-    const transitModeNames = { walk: 'WALK', ev: 'EV', transit: 'TRANSIT', bike: 'BIKE', petrol: 'CAR' };
-    if (transitStatus) transitStatus.textContent = transitModeNames[currentState.travelMode];
-    if (transitBar) transitBar.style.width = (transitOk ? 100 : 0) + '%';
+    if (transitStatus) transitStatus.textContent = currentState.exerciseDays + '/3 days';
+    if (transitBar) {
+        const transitPct = currentState.exerciseDays >= 3 ? 100 : Math.min(100, Math.max(0, (currentState.exerciseDays / 3) * 100));
+        transitBar.style.width = transitPct + '%';
+    }
     updateQuestCardState('transit', transitOk, transitCard, transitBtn, 40);
 
-    // Challenge 4: Plastic bottles == 0
-    const plasticOk = currentState.plasticBottles === 0;
+    // Savings: savingsRate >= 25
+    const plasticOk = currentState.savingsRate >= 25;
     const plasticCard = document.getElementById('quest-card-plastic');
     const plasticBar = document.getElementById('quest-progress-bar-plastic');
     const plasticStatus = document.getElementById('quest-status-plastic');
     const plasticBtn = document.getElementById('btn-claim-plastic');
     
-    if (plasticStatus) plasticStatus.textContent = plasticOk ? "ZERO PLASTIC" : currentState.plasticBottles + " left";
+    if (plasticStatus) plasticStatus.textContent = currentState.savingsRate + '% saved';
     if (plasticBar) {
-        const plasticPct = currentState.plasticBottles === 0 ? 100 : Math.min(100, Math.max(0, (1 - (currentState.plasticBottles / 12)) * 100));
+        const plasticPct = currentState.savingsRate >= 25 ? 100 : Math.min(100, Math.max(0, (currentState.savingsRate / 25) * 100));
         plasticBar.style.width = plasticPct + '%';
     }
     updateQuestCardState('plastic', plasticOk, plasticCard, plasticBtn, 35);
     
-    // Update claimed quests counter
     const claimedCount = currentState.claimedQuests.length;
     const claimedCounter = document.getElementById('challenges-claimed-count');
     if (claimedCounter) claimedCounter.textContent = claimedCount + '/4 DONE';
@@ -2109,41 +1850,30 @@ function updateQuestCardState(id, isMet, card, btn, xpGained) {
     }
 }
 
-// 3. Experience Points Quest XP Claims
 function claimQuestXP(id, xpGained) {
     if (currentState.claimedQuests.includes(id)) return;
     
     console.log("🏅 QUEST COMPLETED // Claimed: " + id + " (+" + xpGained + " XP)");
-    
-    // Add to claimed lists
     currentState.claimedQuests.push(id);
-    
-    // Increment total XP
     currentState.xp += xpGained;
     
-    // Update XP displays
-    updateAvatarXPWidget(true);
-    
-    // Check rank promo level thresholds
+    updateAvatarXPWidget();
     checkAvatarLevelUp();
-    
-    // Refresh quests cards states
     evaluateQuests();
     triggerAutoSave();
     
-    // Celebrate visuals (quest particle explosion sparks!)
-    triggerQuestParticles(id);
+    // quest spark particles
+    triggerQuestParticles();
 }
 
-function triggerQuestParticles(id) {
-    // Spawn 15 colorful green-cyan sparkles orbiting Earth centerpiece cards!
+function triggerQuestParticles() {
     const center = 170;
     for (let i = 0; i < 15; i++) {
         activeParticles.push({
             x: center + (Math.random() - 0.5) * 80,
             y: 170 + (Math.random() - 0.5) * 80,
             vx: (Math.random() - 0.5) * 4.5,
-            vy: (Math.random() - 0.5) * 4.5 - 2, // Slight upward drift
+            vy: (Math.random() - 0.5) * 4.5 - 2, 
             size: Math.random() * 4 + 3,
             alpha: 1.0,
             life: 1.0,
@@ -2155,51 +1885,60 @@ function triggerQuestParticles(id) {
     }
 }
 
-// 4. Bio-Avatar HUD displays synchronization
-function updateAvatarXPWidget(animate = false) {
+// Bio-Avatar Progress
+function updateAvatarXPWidget() {
     const xp = currentState.xp;
     if (!document.getElementById('avatar-level-num')) return;
 
-    // Thresholds: L1: 0-100 XP, L2: 100-300 XP, L3: 300-600 XP, L4: 600+ XP
     let level = 1;
     let xpCurrent = xp;
     let xpNeeded = 100;
-    let title = "CARBON SURVIVOR";
+    let title = "CHRONO SURVIVOR";
     let badgeIcon = '<i class="fa-solid fa-shield-halved badge-level-1 text-shadow-glow"></i>';
     
     if (xp >= 600) {
         level = 4;
         xpCurrent = xp - 600;
         xpNeeded = 10000;
-        title = "GREEN GUARDIAN";
+        title = "COGNITIVE TRANSCENDENT";
         badgeIcon = '<i class="fa-solid fa-crown badge-level-4 text-shadow-glow animate-pulse-slow"></i>';
     } else if (xp >= 300) {
         level = 3;
         xpCurrent = xp - 300;
         xpNeeded = 300;
-        title = "PLANET PROTECTOR";
+        title = "TEMPORAL LEADER";
         badgeIcon = '<i class="fa-solid fa-leaf badge-level-3 text-shadow-glow"></i>';
     } else if (xp >= 100) {
         level = 2;
         xpCurrent = xp - 100;
         xpNeeded = 200;
-        title = "ECO WARRIOR";
+        title = "DISCIPLINE PRODIGY";
         badgeIcon = '<i class="fa-solid fa-seedling badge-level-2 text-shadow-glow"></i>';
     }
     
     currentState.avatarLevel = level;
     
-    document.getElementById('avatar-level-num').textContent = level;
-    document.getElementById('avatar-title').textContent = title;
-    document.getElementById('avatar-badge-icon').innerHTML = badgeIcon;
-    document.getElementById('avatar-xp-current').textContent = xpCurrent;
-    document.getElementById('avatar-xp-next').textContent = xpNeeded === 10000 ? "MAX" : xpNeeded;
+    const lvlNum = document.getElementById('avatar-level-num');
+    if (lvlNum) lvlNum.textContent = level;
     
-    // Update XP Bar width progress
-    const xpPct = xpNeeded === 10000 ? 100 : Math.min(100, Math.max(0, (xpCurrent / xpNeeded) * 100));
-    document.getElementById('avatar-xp-bar').style.width = xpPct + '%';
+    const titleEl = document.getElementById('avatar-title');
+    if (titleEl) titleEl.textContent = title;
     
-    // Update pledge panel buttons disabled state
+    const badgeIconEl = document.getElementById('avatar-badge-icon');
+    if (badgeIconEl) badgeIconEl.innerHTML = badgeIcon;
+    
+    const xpCurrentEl = document.getElementById('avatar-xp-current');
+    if (xpCurrentEl) xpCurrentEl.textContent = xpCurrent;
+    
+    const xpNextEl = document.getElementById('avatar-xp-next');
+    if (xpNextEl) xpNextEl.textContent = xpNeeded === 10000 ? "MAX" : xpNeeded;
+    
+    const xpBar = document.getElementById('avatar-xp-bar');
+    if (xpBar) {
+        const xpPct = xpNeeded === 10000 ? 100 : Math.min(100, Math.max(0, (xpCurrent / xpNeeded) * 100));
+        xpBar.style.width = xpPct + '%';
+    }
+    
     const btn10 = document.getElementById('btn-pledge-10');
     const btnAll = document.getElementById('btn-pledge-all');
     if (btn10) btn10.disabled = xp < 10;
@@ -2217,8 +1956,6 @@ function checkAvatarLevelUp() {
     
     if (targetLevel > checkAvatarLevelUp.lastLevel) {
         console.log("🏆 LEVEL UP! Promoted to Bio-Avatar Level " + targetLevel);
-        
-        // Visual congratulate flash screen overlay
         const flash = document.getElementById('level-up-flash');
         if (flash) {
             flash.classList.remove('hidden');
@@ -2226,29 +1963,13 @@ function checkAvatarLevelUp() {
                 flash.classList.add('hidden');
             }, 1800);
         }
-        
-        // Dynamic centerpiece sparkle bursts
-        for (let i = 0; i < 25; i++) {
-            activeParticles.push({
-                x: 170 + (Math.random() - 0.5) * 120,
-                y: 170 + (Math.random() - 0.5) * 120,
-                vx: (Math.random() - 0.5) * 6,
-                vy: (Math.random() - 0.5) * 6,
-                size: Math.random() * 5 + 3,
-                alpha: 1.0,
-                life: 1.0,
-                decay: 0.015,
-                angle: Math.random() * Math.PI * 2,
-                spin: 0.06,
-                type: Math.random() > 0.3 ? 'sparkle' : 'leaf'
-            });
-        }
+        createAchievementParticles();
     }
     
     checkAvatarLevelUp.lastLevel = targetLevel;
 }
 
-// 5. Smart Campus Department Points Pledges
+// Standings Pledges
 function pledgeXPToDept(amount) {
     let toPledge = 0;
     if (amount === 'all') {
@@ -2260,17 +1981,11 @@ function pledgeXPToDept(amount) {
     if (toPledge <= 0 || currentState.xp < toPledge) return;
     
     console.log("⚡ ECE LEDGER UPLINK // Pledged: " + toPledge + " XP to department standings");
-    
-    // Decrement user XP
     currentState.xp -= toPledge;
-    
-    // Add to user cumulative pledges
     currentState.pledgedPoints += toPledge;
     
-    // Sync Avatar XP elements
-    updateAvatarXPWidget(true);
+    updateAvatarXPWidget();
     
-    // Update Pledges display
     const userTotalPledge = document.getElementById('pledge-user-total');
     if (userTotalPledge) userTotalPledge.textContent = currentState.pledgedPoints + ' XP';
     
@@ -2280,18 +1995,15 @@ function pledgeXPToDept(amount) {
         eceBonus.textContent = '+' + bonusPts + ' pts';
     }
     
-    // Alert feedback bubble
     const feedback = document.getElementById('pledge-feedback-text');
     if (feedback) {
         feedback.classList.remove('hidden');
         setTimeout(() => feedback.classList.add('hidden'), 2200);
     }
     
-    // Recalculate standings and rankings
     updateBattleLeaderboard();
     triggerAutoSave();
     
-    // Cyber glitch shake department row ECE
     const eceRow = document.querySelector('.user-dept-row');
     if (eceRow) {
         eceRow.classList.add('glitch-shake');
@@ -2299,542 +2011,197 @@ function pledgeXPToDept(amount) {
     }
 }
 
+// Battle leader standings
 function updateBattleLeaderboard() {
-    if (!document.getElementById('battle-departments-list')) return;
+    const list = document.getElementById('battle-leaderboard-list');
+    if (!list) return;
 
-    const eceScore = Math.min(100, Math.round(currentState.ecoScore + (currentState.pledgedPoints * 0.1)));
-    const departments = [
-        { name: "COMP_SCIENCE_DEPT", score: 82, id: "cse", isUser: false },
-        { name: "ECE_DEPARTMENT (YOU)", score: eceScore, id: "ece", isUser: true },
-        { name: "MECHANICAL_DEPT", score: 61, id: "mech", isUser: false },
-        { name: "CIVIL_DEPARTMENT", score: 48, id: "civil", isUser: false }
+    const userPledge = currentState.pledgedPoints || 0;
+    
+    const players = [
+        { rank: '🥇 #1', name: 'AGENT_NEO', dept: 'CSE', score: 850, isUser: false },
+        { rank: '🥈 #2', name: 'CHRONOS_01', dept: 'ECE', score: 620, isUser: false },
+        { rank: '🥉 #3', name: `${currentState.name ? currentState.name.toUpperCase().slice(0,10) : 'YOU'} (You)`, dept: 'ECE', score: 100 + userPledge, isUser: true },
+        { rank: '#4', name: 'CYBER_ZEAL', dept: 'MECH', score: 180, isUser: false }
     ];
-    
-    // Sort scores descending
-    departments.sort((a, b) => b.score - a.score);
-    
-    const battleList = document.getElementById('battle-departments-list');
-    if (!battleList) return;
-    
-    battleList.innerHTML = '';
-    
-    departments.forEach((dept, index) => {
+
+    players.sort((a, b) => b.score - a.score);
+
+    list.innerHTML = '';
+    players.forEach((p, idx) => {
         const row = document.createElement('div');
-        row.className = `battle-row ${dept.isUser ? 'user-dept-row' : ''}`;
+        row.className = `battle-row font-mono ${p.isUser ? 'user-battle-row' : ''}`;
         
-        let rankMedal = `#${index + 1}`;
-        if (index === 0) rankMedal = '🥇 #1';
-        else if (index === 1) rankMedal = `🥈 #2`;
-        else if (index === 2) rankMedal = `🥉 #3`;
-        else rankMedal = ` #4`;
-        
+        let rankString = `#${idx + 1}`;
+        if (idx === 0) rankString = '🥇 #1';
+        else if (idx === 1) rankString = '🥈 #2';
+        else if (idx === 2) rankString = '🥉 #3';
+
         row.innerHTML = `
-            <div class="battle-dept-meta">
-                <span class="battle-rank ${dept.isUser ? 'font-cyan' : ''}">${rankMedal}</span>
-                <span class="battle-name ${dept.isUser ? 'font-cyan' : ''}">${dept.name}</span>
-            </div>
-            <div class="battle-progress-wrapper">
-                <div class="battle-progress-fill ${dept.isUser ? 'bg-cyan shadow-cyan animate-pulse-slow' : ''}" style="width: ${dept.score}%;"></div>
-            </div>
-            <span class="battle-score ${dept.isUser ? 'font-cyan' : ''}">${dept.score} pts</span>
+            <div class="comp-cell">${rankString}</div>
+            <div class="comp-cell" style="font-weight:bold;">${p.name}</div>
+            <div class="comp-cell" style="color:var(--color-text-sub);">${p.dept}</div>
+            <div class="comp-cell font-green" style="font-weight:bold;">${p.score} XP</div>
         `;
-        battleList.appendChild(row);
+        list.appendChild(row);
     });
-    
-    // Update ECE specific trackers in Console Card
-    const eceScoreEl = document.getElementById('battle-score-ece');
-    if (eceScoreEl) eceScoreEl.textContent = eceScore + ' pts';
-    const eceProgressEl = document.getElementById('battle-progress-ece');
-    if (eceProgressEl) eceProgressEl.style.width = eceScore + '%';
-    
-    // Dynamic alerts text based on standings
-    const eceIndex = departments.findIndex(d => d.isUser);
-    const alertCard = document.querySelector('.battle-alert-card p');
-    if (alertCard) {
-        if (eceIndex === 0) {
-            alertCard.innerHTML = `🏆 **VICTORY SECURED!** ECE Department is currently at **🥇 Rank #1**! We lead the campus environmental standing matrix. Keep pledging points!`;
-        } else if (eceIndex === 1) {
-            alertCard.innerHTML = `ECE Department is currently at **🥈 Rank #2**. Contribute your earned XP points to ECE standings to boost ECE average score and overtake CS Department!`;
-        } else {
-            alertCard.innerHTML = `ECE Department is currently at **Rank #${eceIndex + 1}**. Contribute your earned XP points to support ECE standings and boost department rankings!`;
-        }
-    }
 }
 
-// 6. Mini Historical Carbon Trend Graph Line Chart
+// Mini-graph history
 let historyChart = null;
 function initHistoryMiniChart() {
     const ctx = document.getElementById('chart-history-mini');
     if (!ctx) return;
-    
     if (typeof Chart === 'undefined') return;
     
-    // Gradient background
     const fillGrad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 80);
-    fillGrad.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
-    fillGrad.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+    fillGrad.addColorStop(0, 'rgba(6, 182, 212, 0.22)');
+    fillGrad.addColorStop(1, 'rgba(6, 182, 212, 0.00)');
     
     historyChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'],
             datasets: [{
-                label: 'Eco Index Trend',
-                data: [34, 45, 54, 72, 80, 92],
-                borderColor: '#10b981',
+                label: 'Vitality Index Trend',
+                data: [35, 42, 55, 68, 72, 85],
+                borderColor: '#06b6d4',
                 borderWidth: 2,
                 backgroundColor: fillGrad,
                 fill: true,
                 tension: 0.4,
                 pointRadius: 2,
-                pointBackgroundColor: '#10b981',
-                pointHoverRadius: 4
+                pointBackgroundColor: '#06b6d4'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(7, 10, 19, 0.95)',
-                    titleFont: { family: 'Outfit', size: 9 },
-                    bodyFont: { family: 'Outfit', size: 9 },
-                    borderColor: 'rgba(16, 185, 129, 0.3)',
-                    borderWidth: 1
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#9ca3af', font: { family: 'Share Tech Mono', size: 8 } }
-                },
-                y: {
-                    min: 0,
-                    max: 100,
-                    grid: { color: 'rgba(255, 255, 255, 0.02)' },
-                    ticks: { color: '#9ca3af', font: { family: 'Share Tech Mono', size: 8 }, stepSize: 25 }
-                }
+                x: { grid: { display: false } },
+                y: { min: 0, max: 100, grid: { color: 'rgba(255, 255, 255, 0.02)' } }
             }
-        },
-        plugins: [chartShadowPlugin]
+        }
     });
 }
 
-// Onboarding submit interceptor
-function handleProfileSetupSubmit(event) {
-    event.preventDefault();
-    console.log("💾 ECOSPHERE // Intercepting profile linking protocol...");
-
-    const name = document.getElementById('setup-name').value.trim();
-    const age = parseInt(document.getElementById('setup-age').value);
-    const phone = document.getElementById('setup-phone').value.trim();
-    const dept = document.getElementById('setup-dept').value;
-    const city = document.getElementById('setup-city').value.trim();
-    const goal = document.getElementById('setup-goal').value;
-    const transport = document.getElementById('setup-transport').value;
-    const errorBox = document.getElementById('profile-setup-error-box');
-
-    if (!name || isNaN(age) || !phone || !dept || !city || !goal || !transport) {
-        if (errorBox) {
-            errorBox.classList.remove('hidden');
-            document.getElementById('profile-setup-error-text').textContent = "ERROR: ALL PROTOCOL FIELDS MANDATORY";
-        }
-        return;
-    }
-
-    if (errorBox) errorBox.classList.add('hidden');
-
-    // Seed state details
-    currentState.name = name;
-    currentState.age = age;
-    currentState.phone = phone;
-    currentState.department = dept;
-    currentState.city = city;
-    currentState.sustainabilityGoal = goal;
-    currentState.transportPreference = transport;
-    currentState.profileComplete = true;
-
-    // Save avatar preview URL if Google or fallback seed
-    const avatarImg = document.getElementById('setup-avatar-img');
-    if (avatarImg) {
-        currentState.photoURL = avatarImg.src;
-    }
-
-    // Auto-award First Uplink achievement
-    if (currentState.achievements && !currentState.achievements.includes("first_uplink")) {
-        currentState.achievements.push("first_uplink");
-    }
-
-    // Synchronize to memory profile session
-    if (typeof currentUserProfile !== 'undefined' && currentUserProfile) {
-        currentUserProfile.profileComplete = true;
-        currentUserProfile.name = name;
-        currentUserProfile.photoURL = currentState.photoURL;
-        currentUserProfile.age = age;
-        currentUserProfile.phone = phone;
-        currentUserProfile.department = dept;
-        currentUserProfile.city = city;
-        currentUserProfile.sustainabilityGoal = goal;
-        currentUserProfile.transportPreference = transport;
-        currentUserProfile.achievements = currentState.achievements;
-    }
-
-    // Force synchronize to cloud database or local sandbox fallback
-    if (window.saveUserDataToCloud) {
-        window.saveUserDataToCloud(currentState);
-    }
-
-    // Celebratory micro-animations
-    createAchievementParticles();
-
-    // Smooth transition
-    const overlay = document.getElementById('profile-setup-overlay');
-    if (overlay) {
-        overlay.style.transition = 'opacity 0.4s ease-out';
-        overlay.style.opacity = '0';
-        setTimeout(() => {
-            overlay.style.display = 'none';
-            // Show main dashboard
-            document.querySelector('.app-container').classList.remove('hidden');
-            // Force recalculations
-            updateCalculations(true);
-        }, 400);
-    }
-}
-
-// Achievements Check logic
-function checkAchievements() {
-    let unlocked = currentState.achievements || ["first_uplink"];
-    let newlyUnlocked = false;
-
-    // 1. FIRST UPLINK (onboarding setup completed)
-    if (currentState.profileComplete && !unlocked.includes("first_uplink")) {
-        unlocked.push("first_uplink");
-        newlyUnlocked = true;
-    }
-
-    // 2. POWER SAVER: AC runtime <= 4 hours
-    if (currentState.acHours <= 4 && !unlocked.includes("power_saver")) {
-        unlocked.push("power_saver");
-        newlyUnlocked = true;
-        createAchievementParticles();
-    }
-
-    // 3. HYDRATION GUARD: Water wastage checked off/false AND water use <= 150 liters
-    if (!currentState.waterWastage && currentState.waterLiters <= 150 && !unlocked.includes("hydration_guard")) {
-        unlocked.push("hydration_guard");
-        newlyUnlocked = true;
-        createAchievementParticles();
-    }
-
-    // 4. PLASTIC WARRIOR: Plastic bottles <= 2 daily
-    if (currentState.plasticBottles <= 2 && !unlocked.includes("zero_plastic")) {
-        unlocked.push("zero_plastic");
-        newlyUnlocked = true;
-        createAchievementParticles();
-    }
-
-    if (newlyUnlocked) {
-        currentState.achievements = unlocked;
+let autoSaveTimeout = null;
+function triggerAutoSave() {
+    if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
         if (window.saveUserDataToCloud) {
             window.saveUserDataToCloud(currentState);
         }
-    }
+    }, 1500); 
 }
 
-// Generate premium leaf/sparkle particle bursts
-function createAchievementParticles() {
-    console.log("⭐ ACHIEVEMENT UNLOCKED! Generating celebratory particle streams...");
-    for (let i = 0; i < 30; i++) {
-        activeParticles.push({
-            x: 170 + (Math.random() - 0.5) * 150,
-            y: 170 + (Math.random() - 0.5) * 150,
-            vx: (Math.random() - 0.5) * 8,
-            vy: (Math.random() - 0.5) * 8,
-            size: Math.random() * 6 + 3,
-            alpha: 1.0,
-            life: 1.0,
-            decay: 0.012,
-            angle: Math.random() * Math.PI * 2,
-            spin: 0.08,
-            type: Math.random() > 0.4 ? 'sparkle' : 'leaf'
-        });
-    }
-}
+function restoreUserSettings(data) {
+    if (!data) return;
+    currentState = { ...currentState, ...data };
 
-// Sync Agent Dashboard UI
-function updateProfileDashboardUI() {
-    if (!currentState.profileComplete) return;
+    const mappings = [
+        { id: 'input-screen-time', bubbleId: 'val-screen-time', val: currentState.screenTime },
+        { id: 'input-social-media', bubbleId: 'val-social-media', val: currentState.socialMediaTime },
+        { id: 'input-sleep-hours', bubbleId: 'val-sleep-hours', val: currentState.sleepHours },
+        { id: 'input-exercise-days', bubbleId: 'val-exercise-days', val: currentState.exerciseDays },
+        { id: 'input-study-hours', bubbleId: 'val-study-hours', val: currentState.studyHours },
+        { id: 'input-savings-rate', bubbleId: 'val-savings-rate', val: currentState.savingsRate },
+        { id: 'input-stress-level', bubbleId: 'val-stress-level', val: currentState.stressLevel }
+    ];
 
-    // Sync Name
-    const agentNameEl = document.getElementById('dashboard-agent-name');
-    if (agentNameEl) agentNameEl.textContent = currentState.name || "AGENT_NAME";
-
-    // Sync Avatar
-    const dashAvatar = document.getElementById('dashboard-avatar-img');
-    if (dashAvatar) {
-        dashAvatar.src = currentState.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentState.name || 'EcoAgent')}`;
-    }
-
-    // Sync Rank based on score
-    const rankBadge = document.getElementById('dashboard-agent-rank');
-    if (rankBadge) {
-        rankBadge.className = 'badge-role font-mono';
-        let score = currentState.ecoScore || 72;
-        if (score >= 90) {
-            rankBadge.textContent = 'EMERALD COMMANDER';
-            rankBadge.classList.add('rank-emerald');
-        } else if (score >= 80) {
-            rankBadge.textContent = 'GOLD SENTINEL';
-            rankBadge.classList.add('rank-gold');
-        } else if (score >= 60) {
-            rankBadge.textContent = 'SILVER GUARDIAN';
-            rankBadge.classList.add('rank-silver');
-        } else if (score >= 40) {
-            rankBadge.textContent = 'BRONZE RANGER';
-            rankBadge.classList.add('rank-bronze');
-        } else {
-            rankBadge.textContent = 'CARBON NOVICE';
-            rankBadge.classList.add('rank-carbon');
-        }
-    }
-
-    // Sync Streak
-    const streakEl = document.getElementById('dashboard-streak-count');
-    if (streakEl) streakEl.textContent = currentState.sustainabilityStreak || 1;
-
-    // Sync Completion Percentage
-    let pct = 100; // Complete since onboarding complete
-    const pctText = document.getElementById('profile-completion-val');
-    if (pctText) pctText.textContent = pct + '%';
-    const fillCircle = document.getElementById('completion-fill-circle');
-    if (fillCircle) {
-        const offset = 251.2 - (251.2 * pct) / 100;
-        fillCircle.style.strokeDashoffset = offset;
-    }
-
-    // Sync Details List
-    const deptEl = document.getElementById('profile-dept-val');
-    if (deptEl) deptEl.textContent = currentState.department || '-';
-    
-    const cityEl = document.getElementById('profile-city-val');
-    if (cityEl) cityEl.textContent = currentState.city || '-';
-    
-    const goalEl = document.getElementById('profile-goal-val');
-    if (goalEl) goalEl.textContent = currentState.sustainabilityGoal || '-';
-    
-    const commuteEl = document.getElementById('profile-commute-val');
-    if (commuteEl) commuteEl.textContent = currentState.transportPreference || '-';
-
-    // Sync Achievements locking grids
-    const achs = ["first-uplink", "power-saver", "hydration-guard", "zero-plastic"];
-    const achKeys = {
-        "first-uplink": "first_uplink",
-        "power-saver": "power_saver",
-        "hydration-guard": "hydration_guard",
-        "zero-plastic": "zero_plastic"
-    };
-    let unlockedCount = 0;
-    achs.forEach(a => {
-        const el = document.getElementById(`achievement-${a}`);
-        if (el) {
-            const isUnlocked = currentState.achievements && currentState.achievements.includes(achKeys[a]);
-            if (isUnlocked) {
-                el.classList.remove('locked');
-                el.classList.add('unlocked');
-                unlockedCount++;
-            } else {
-                el.classList.remove('unlocked');
-                el.classList.add('locked');
-            }
-        }
+    mappings.forEach(m => {
+        const el = document.getElementById(m.id);
+        const bubble = document.getElementById(m.bubbleId);
+        if (el) el.value = m.val;
+        if (bubble) bubble.textContent = m.val;
     });
 
-    const ratioText = document.getElementById('achievements-unlocked-ratio');
-    if (ratioText) {
-        ratioText.textContent = `${unlockedCount}/4 UNLOCKED`;
-    }
-}
-
-// Onboarding & Personalized Profile Properties
-let speechRecognizer = null;
-let isListening = false;
-let simulatedFutureYear = 2026;
-let currentTipIndex = 0;
-
-// Expose functions to window for global access
-window.handleProfileSetupSubmit = handleProfileSetupSubmit;
-window.checkAchievements = checkAchievements;
-window.updateProfileDashboardUI = updateProfileDashboardUI;
-
-// 1. EDITABLE PROFILE HANDLERS
-function toggleProfileEditMode(isEditing) {
-    const editContainer = document.getElementById('profile-edit-container');
-    const toggleBtn = document.getElementById('btn-edit-profile-toggle');
-    const staticElements = document.querySelectorAll('#panel-profile > *:not(.profile-edit-container)');
-    
-    if (isEditing) {
-        if (editContainer) editContainer.classList.remove('hidden');
-        if (toggleBtn) toggleBtn.classList.add('hidden');
-        staticElements.forEach(el => {
-            if (el !== editContainer && el !== toggleBtn) {
-                el.style.display = 'none';
-            }
-        });
-        
-        // Pre-fill inputs with current state values
-        document.getElementById('edit-name').value = currentState.name || "";
-        document.getElementById('edit-age').value = currentState.age || "";
-        document.getElementById('edit-phone').value = currentState.phone || "";
-        document.getElementById('edit-city').value = currentState.city || "";
-        
-        const previewImg = document.getElementById('edit-avatar-preview-img');
-        if (previewImg) {
-            previewImg.src = currentState.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentState.name || 'EcoAgent')}`;
+    const eatingSelect = document.getElementById('input-eating-habit');
+    if (eatingSelect) {
+        eatingSelect.value = currentState.eatingHabit;
+        const dietBadge = document.getElementById('val-diet-status');
+        if (dietBadge) {
+            const dietLabels = ["POOR", "AVERAGE", "GOOD QUALITY", "CLEAN NUTRIENT"];
+            dietBadge.textContent = dietLabels[currentState.eatingHabit] || "GOOD";
         }
-    } else {
-        if (editContainer) editContainer.classList.add('hidden');
-        if (toggleBtn) toggleBtn.classList.remove('hidden');
-        staticElements.forEach(el => {
-            if (el !== editContainer && el !== toggleBtn) {
-                el.style.display = '';
-            }
-        });
     }
-}
 
-function previewEditProfilePic(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    if (file.size > 500 * 1024) {
-        alert("File size exceeds 500KB. Please choose a smaller image.");
-        return;
+    const simPollutionEl = document.getElementById('input-sim-pollution');
+    if (simPollutionEl) {
+        simPollutionEl.value = currentState.simPollution || 0;
+        const bubble = document.getElementById('val-sim-pollution');
+        if (bubble) bubble.textContent = currentState.simPollution || 0;
     }
     
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const previewImg = document.getElementById('edit-avatar-preview-img');
-        if (previewImg) {
-            previewImg.src = e.target.result;
+    const simDeforestEl = document.getElementById('input-sim-deforestation');
+    if (simDeforestEl) {
+        simDeforestEl.value = currentState.simDeforestation || 0;
+        const bubble = document.getElementById('val-sim-deforestation');
+        if (bubble) bubble.textContent = currentState.simDeforestation || 0;
+    }
+
+    const simPlasticEl = document.getElementById('input-sim-plastic');
+    if (simPlasticEl) {
+        simPlasticEl.value = currentState.simPlastic || 0;
+        const bubble = document.getElementById('val-sim-plastic');
+        if (bubble) bubble.textContent = currentState.simPlastic || 0;
+    }
+
+    const simFossilEl = document.getElementById('input-sim-fossil');
+    if (simFossilEl) {
+        simFossilEl.value = currentState.simFossil || 0;
+        const bubble = document.getElementById('val-sim-fossil');
+        if (bubble) bubble.textContent = currentState.simFossil || 0;
+    }
+
+    const simYearEl = document.getElementById('input-sim-year');
+    if (simYearEl) {
+        simYearEl.value = currentState.simulatedYear || 2025;
+        const bubble = document.getElementById('val-sim-year');
+        if (bubble) bubble.textContent = currentState.simulatedYear || 2025;
+        
+        const label = document.getElementById('val-sim-year-label');
+        if (label) {
+            label.textContent = currentState.simulatedYear === 2025 ? "PRESENT (2025)" : `PROJECTED (${currentState.simulatedYear})`;
         }
-    };
-    reader.readAsDataURL(file);
+    }
+
+    updateCalculations(true);
 }
 
-function handleProfileUpdateSubmit(event) {
-    event.preventDefault();
-    console.log("💾 ECOSPHERE // Saving edited user profile metrics...");
+// Dynamic columns tab toggles
+function switchColTab(colId, panelId) {
+    console.log("🖥️ ECOSPHERE // Tab switch: " + colId + " -> panel-" + panelId);
     
-    const name = document.getElementById('edit-name').value.trim();
-    const age = parseInt(document.getElementById('edit-age').value);
-    const phone = document.getElementById('edit-phone').value.trim();
-    const city = document.getElementById('edit-city').value.trim();
-    
-    currentState.name = name;
-    currentState.age = age;
-    currentState.phone = phone;
-    currentState.city = city;
-    
-    const previewImg = document.getElementById('edit-avatar-preview-img');
-    if (previewImg) {
-        currentState.photoURL = previewImg.src;
+    const tabsContainer = document.getElementById(colId + '-tabs');
+    if (tabsContainer) {
+        tabsContainer.querySelectorAll('.col-tab').forEach(tab => tab.classList.remove('active'));
     }
     
-    // Save to database
-    if (window.saveUserDataToCloud) {
-        window.saveUserDataToCloud(currentState);
-    }
-    
-    // Visual celebrate
-    createAchievementParticles();
-    
-    // Exit edit mode
-    toggleProfileEditMode(false);
-    
-    // Sync dashboard
-    updateProfileDashboardUI();
-    
-    // Alert user
-    console.log("🔗 ECOSPHERE // Profile successfully saved.");
-}
+    const clickedTab = Array.from(tabsContainer?.querySelectorAll('.col-tab') || []).find(tab => 
+        tab.getAttribute('onclick').includes(`'${panelId}'`)
+    );
+    if (clickedTab) clickedTab.classList.add('active');
 
-// 2. SPEECH RECOGNITION VOICE CONTROLLER
-function toggleVoiceInput() {
-    const voiceBtn = document.getElementById('chat-voice-btn');
-    if (!voiceBtn) return;
-    
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        alert("Speech Recognition API is not supported in this browser. Try Chrome or Safari.");
-        return;
-    }
-    
-    if (isListening) {
-        if (speechRecognizer) speechRecognizer.stop();
-        isListening = false;
-        voiceBtn.classList.remove('active-mic');
-        console.log("🎤 ECOSPHERE // Speech recognition disabled.");
-        return;
-    }
-    
-    try {
-        speechRecognizer = new SpeechRecognition();
-        speechRecognizer.continuous = false;
-        speechRecognizer.interimResults = false;
-        speechRecognizer.lang = 'en-US';
-        
-        speechRecognizer.onstart = () => {
-            isListening = true;
-            voiceBtn.classList.add('active-mic');
-            console.log("🎤 ECOSPHERE // Speech recognition active... Speak now.");
-        };
-        
-        speechRecognizer.onerror = (e) => {
-            console.error("Speech Recognition Error:", e);
-            isListening = false;
-            voiceBtn.classList.remove('active-mic');
-        };
-        
-        speechRecognizer.onend = () => {
-            isListening = false;
-            voiceBtn.classList.remove('active-mic');
-            console.log("🎤 ECOSPHERE // Speech recognition finalized.");
-        };
-        
-        speechRecognizer.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            console.log("🎤 ECOSPHERE // Speech transcript: " + transcript);
-            const inputField = document.getElementById('chat-user-input');
-            if (inputField) {
-                inputField.value = transcript;
-                setTimeout(() => {
-                    if (window.sendMessage) window.sendMessage();
-                }, 800);
-            }
-        };
-        
-        speechRecognizer.start();
-    } catch (err) {
-        console.error("Voice input start error:", err);
-        isListening = false;
-        voiceBtn.classList.remove('active-mic');
+    const colCol = document.querySelector('.' + (colId === 'col1' ? 'optimizer' : 'analytics') + '-column');
+    if (colCol) {
+        colCol.querySelectorAll('.col-tab-panel').forEach(panel => panel.classList.add('hidden'));
+        const targetPanel = colCol.querySelector('#panel-' + panelId);
+        if (targetPanel) targetPanel.classList.remove('hidden');
     }
 }
 
-// 3. WEEKLY CARBON SAVINGS TARGET MODULE
+// Weekly goals
 function updateWeeklyTargetProgress() {
     if (!currentState.profileComplete) return;
     
-    const dailySaved = Math.max(0, 21.82 - currentState.dailyCo2);
-    const weeklySaved = dailySaved * 7;
-    
-    const target = 50; 
-    const pct = Math.min(100, Math.round((weeklySaved / target) * 100));
-    
-    currentState.weeklySavedCo2 = weeklySaved;
-    
+    // Target is defined as Vitality Index Gain above baseline
+    const gain = Math.max(0, currentState.ecoScore - 35);
+    const progressVal = gain * 7; // cumulative weekly recovery index points
+    const target = 250;
+    const pct = Math.min(100, Math.round((progressVal / target) * 100));
+
     const pctEl = document.getElementById('weekly-goal-pct');
     if (pctEl) pctEl.textContent = `${pct}%`;
     
@@ -2842,7 +2209,7 @@ function updateWeeklyTargetProgress() {
     if (fillBar) fillBar.style.width = `${pct}%`;
     
     const savedEl = document.getElementById('weekly-goal-saved-val');
-    if (savedEl) savedEl.textContent = `${weeklySaved.toFixed(1)} kg`;
+    if (savedEl) savedEl.textContent = `${progressVal.toFixed(1)} pts`;
     
     const claimBtn = document.getElementById('btn-claim-weekly');
     if (claimBtn) {
@@ -2866,16 +2233,13 @@ function claimWeeklyTargetReward() {
     }
     
     createAchievementParticles();
-    
-    if (window.updateAvatarXPWidget) window.updateAvatarXPWidget();
-    if (window.checkAvatarLevelUp) window.checkAvatarLevelUp();
+    updateAvatarXPWidget();
+    checkAvatarLevelUp();
     updateWeeklyTargetProgress();
 }
 
-// 4. DUEL STANDINGS & CHALLENGE BROADCAST
 function sendFriendChallenge(opponent) {
     console.log("⚔️ ECOSPHERE // Sending challenge duel request to: " + opponent);
-    
     const feedback = document.getElementById('challenge-feedback-text');
     if (feedback) {
         feedback.textContent = `DUEL_ESTABLISHED // Challenge transmitted to ${opponent}. +10 XP awarded!`;
@@ -2886,77 +2250,57 @@ function sendFriendChallenge(opponent) {
     }
     
     currentState.xp = (currentState.xp || 40) + 10;
-    
     if (window.saveUserDataToCloud) {
         window.saveUserDataToCloud(currentState);
     }
-    
-    createAchievementParticles();
-    
-    if (window.updateAvatarXPWidget) window.updateAvatarXPWidget();
-    if (window.checkAvatarLevelUp) window.checkAvatarLevelUp();
+    updateAvatarXPWidget();
+    checkAvatarLevelUp();
+    updateBattleLeaderboard();
 }
 
-// 5. CLIMATE NEWS CAROUSEL
-function moveCarousel(direction) {
-    const slides = document.querySelectorAll('.carousel-slide');
+// Carousel slides
+let currentCarouselIndex = 0;
+function moveCarousel(dir) {
+    const slides = document.querySelectorAll('.awareness-slide');
     if (slides.length === 0) return;
     
-    slides[currentTipIndex].classList.remove('active');
-    currentTipIndex = (currentTipIndex + direction + slides.length) % slides.length;
-    slides[currentTipIndex].classList.add('active');
+    slides[currentCarouselIndex].classList.remove('active');
+    
+    currentCarouselIndex = (currentCarouselIndex + dir + slides.length) % slides.length;
+    slides[currentCarouselIndex].classList.add('active');
 }
 
-// 6. FUTURE simulation 2050 estimation
+setInterval(() => {
+    moveCarousel(1);
+}, 8000);
+
 function updateFutureSimulationYear(year) {
-    simulatedFutureYear = parseInt(year);
-    document.getElementById('val-sim-year').textContent = simulatedFutureYear;
+    currentState.simulatedYear = parseInt(year);
     
-    const label = document.getElementById('val-sim-year-label');
-    if (label) {
-        if (simulatedFutureYear === 2026) {
-            label.textContent = "PRESENT (2026)";
-            label.className = "opt-badge font-mono font-red";
-        } else if (simulatedFutureYear <= 2035) {
-            label.textContent = `WARMING (${simulatedFutureYear})`;
-            label.className = "opt-badge font-mono font-red animate-pulse";
-        } else if (simulatedFutureYear <= 2045) {
-            label.textContent = `CRITICAL (${simulatedFutureYear})`;
-            label.className = "opt-badge font-mono font-red animate-flash";
-        } else {
-            label.textContent = `DECAY STAGE (${simulatedFutureYear})`;
-            label.className = "opt-badge font-mono font-red animate-flash";
-        }
+    const simYearVal = document.getElementById('val-sim-year');
+    if (simYearVal) simYearVal.textContent = year;
+    
+    const simYearLabel = document.getElementById('val-sim-year-label');
+    if (simYearLabel) {
+        simYearLabel.textContent = year === 2025 ? "PRESENT (2025)" : `PROJECTED (${year})`;
     }
     
     updateCalculations(true);
 }
 
-// 7. MOBILE APP-LIKE TRANSITIONS
 function switchMobilePane(paneId) {
-    console.log("📱 ECOSPHERE // Mobile pane active: " + paneId);
-    
-    const cols = {
-        home: document.querySelector('.centerpiece-column'),
-        optimize: document.querySelector('.optimizer-column'),
-        intel: document.querySelector('.analytics-column'),
-        profile: document.querySelector('.analytics-column')
-    };
-    
-    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.getElementById(`nav-pane-${paneId}`);
-    if (activeBtn) activeBtn.classList.add('active');
-    
-    Object.values(cols).forEach(c => {
-        if (c) c.classList.remove('mobile-visible');
+    const panes = ['home', 'projections', 'profile'];
+    panes.forEach(p => {
+        const tabBtn = document.getElementById(`tab-mob-${p}`);
+        if (tabBtn) tabBtn.classList.remove('active');
     });
     
-    const targetCol = cols[paneId];
-    if (targetCol) {
-        targetCol.classList.add('mobile-visible');
-    }
-    
-    if (paneId === 'intel') {
+    const activeTab = document.getElementById(`tab-mob-${paneId}`);
+    if (activeTab) activeTab.classList.add('active');
+
+    if (paneId === 'home') {
+        switchColTab('col3', 'challenges');
+    } else if (paneId === 'projections') {
         switchColTab('col3', 'analytics');
     } else if (paneId === 'profile') {
         switchColTab('col3', 'profile');
@@ -2976,40 +2320,42 @@ function generatePdfReport() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        const PRIMARY_COLOR = [16, 185, 129];   
-        const SECONDARY_COLOR = [6, 182, 212];  
+        const PRIMARY_COLOR = [6, 182, 212];   // Cyan
+        const SECONDARY_COLOR = [16, 185, 129]; // Green
         const TEXT_COLOR = [17, 24, 39];        
         const GRAY_COLOR = [107, 114, 128];     
         
-        doc.setFillColor(15, 23, 42); 
-        doc.rect(0, 0, 210, 40, "F");
+        // Header card background
+        doc.setFillColor(9, 13, 22); 
+        doc.rect(0, 0, 210, 42, "F");
         
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(22);
         doc.setTextColor(255, 255, 255);
-        doc.text("ECOSPHERE AI", 15, 20);
+        doc.text("FUTURE SELF SIMULATOR", 15, 22);
         
         doc.setFont("Courier", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(...SECONDARY_COLOR);
-        doc.text("SECURE_SYSTEM_INTELLIGENCE // ENVIRONMENTAL_ANALYSIS", 15, 30);
+        doc.setFontSize(9);
+        doc.setTextColor(...PRIMARY_COLOR);
+        doc.text("SECURE_BIOMETRIC_CHRONO_TELEMETRY // PROJECTION_2035", 15, 32);
         
         doc.setFont("Helvetica", "normal");
         doc.setTextColor(...GRAY_COLOR);
         doc.setFontSize(9);
         const today = new Date().toLocaleDateString();
-        doc.text(`REPORT_DATE: ${today}`, 150, 20);
-        doc.text(`AGENT_ID: ${currentState.name ? currentState.name.toUpperCase().replace(/\s+/g, '_') : 'ECO_AGENT_01'}`, 150, 26);
-        doc.text("SYS_STATUS: VERIFIED", 150, 32);
+        doc.text(`REPORT_DATE: ${today}`, 150, 18);
+        doc.text(`AGENT_ID: ${currentState.name ? currentState.name.toUpperCase().replace(/\s+/g, '_') : 'CHRONO_AGENT_01'}`, 150, 24);
+        doc.text("SYS_STATUS: CRYPTO_VERIFIED", 150, 30);
         
+        // 1. Habit telemetry
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(14);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("1. HABIT Telemetry & Carbon Analysis", 15, 55);
+        doc.text("1. Daily Lifestyle Habits & Telemetry", 15, 56);
         
         doc.setDrawColor(...PRIMARY_COLOR);
         doc.setLineWidth(0.5);
-        doc.line(15, 58, 195, 58);
+        doc.line(15, 59, 195, 59);
         
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(10);
@@ -3023,10 +2369,10 @@ function generatePdfReport() {
             doc.setFont("Helvetica", "normal");
             doc.text(val, 70, y);
             doc.setTextColor(...GRAY_COLOR);
-            doc.text(`(Baseline: ${baselineVal})`, 110, y);
+            doc.text(`(Baseline: ${baselineVal})`, 112, y);
             
-            if (rating.includes("Good") || rating.includes("Excellent") || rating.includes("Zero")) {
-                doc.setTextColor(...PRIMARY_COLOR);
+            if (rating.includes("Optimal") || rating.includes("Healthy") || rating.includes("Regulated")) {
+                doc.setTextColor(...SECONDARY_COLOR);
             } else {
                 doc.setTextColor(239, 68, 68); 
             }
@@ -3035,44 +2381,46 @@ function generatePdfReport() {
             y += rowHeight;
         };
         
-        addMetricRow("Air Conditioning Runtime", `${currentState.acHours} Hours/Day`, "18 Hours", currentState.acHours <= 4 ? "Excellent" : "Heavy Load");
-        addMetricRow("Household Appliances", `${currentState.appliances} Appliances`, "12 Appliances", currentState.appliances <= 6 ? "Good Opt" : "Heavy Load");
-        addMetricRow("Transportation Mode", currentState.travelMode.toUpperCase(), "PETROL CAR", currentState.travelMode === "walk" ? "Zero Carbon" : "Fossil Fuel");
-        addMetricRow("Daily Distance Commuted", `${currentState.distance} km`, "65 km", currentState.distance <= 15 ? "Low Impact" : "High Distance");
-        addMetricRow("Domestic Water Usage", `${currentState.waterLiters} Liters/Day`, "360 Liters", currentState.waterLiters <= 150 ? "Water Saving" : "Excessive");
-        addMetricRow("Water Wastage Habits", currentState.waterWastage ? "ACTIVE WASTE" : "ZERO WASTE", "ACTIVE", currentState.waterWastage ? "Critical Alert" : "Eco Safe");
-        addMetricRow("Single-Use Plastic", `${currentState.plasticBottles} Bottles/Week`, "25 Bottles", currentState.plasticBottles <= 2 ? "Zero Plastic" : "Heavy Plastic");
+        addMetricRow("Daily Sleep Recovery", `${currentState.sleepHours} Hours/Day`, "4.5 Hours", currentState.sleepHours >= 7.5 ? "Optimal Rest" : "Deprived");
+        addMetricRow("Active Screen load", `${currentState.screenTime} Hours/Day`, "12 Hours", currentState.screenTime <= 4 ? "Regulated" : "Heavy Load");
+        addMetricRow("Doomscrolling Media", `${currentState.socialMediaTime} Hours/Day`, "6 Hours", currentState.socialMediaTime <= 2 ? "Healthy" : "Addicted");
+        addMetricRow("Productive Focus Hours", `${currentState.studyHours} Hours/Day`, "1.0 Hour", currentState.studyHours >= 6 ? "High Focus" : "Distracted");
+        addMetricRow("Physical Activity", `${currentState.exerciseDays} Days/Week`, "0 Days", currentState.exerciseDays >= 3 ? "Optimal Active" : "Stagnant");
+        addMetricRow("Financial Savings Ratio", `${currentState.savingsRate}% Savings`, "5%", currentState.savingsRate >= 35 ? "Wealth Builder" : "Unstable");
+        addMetricRow("Neurological Stress", `${currentState.stressLevel}% Index`, "80%", currentState.stressLevel <= 30 ? "Optimal Zen" : "High Cortisol");
         
         y += 5;
         
+        // Vitality score box
         doc.setFillColor(243, 244, 246); 
         doc.rect(15, y, 180, 24, "F");
         
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(11);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("TOTAL DAILY EMISSIONS ANALYSIS", 20, y + 8);
+        doc.text("FUTURE LIFE VITALITY INDEX (SCORE)", 20, y + 8);
         
         doc.setFontSize(16);
-        doc.setTextColor(239, 68, 68);
-        doc.text(`${currentState.dailyCo2.toFixed(2)} kg CO2`, 20, y + 18);
+        doc.setTextColor(...PRIMARY_COLOR);
+        doc.text(`${currentState.ecoScore} / 100`, 20, y + 18);
         
-        const pctReduction = Math.max(0, Math.round(((21.82 - currentState.dailyCo2) / 21.82) * 100));
+        const improvement = Math.max(0, currentState.ecoScore - 35);
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(11);
-        doc.setTextColor(...PRIMARY_COLOR);
-        doc.text(`-${pctReduction}% SAVINGS`, 110, y + 8);
+        doc.setTextColor(...SECONDARY_COLOR);
+        doc.text(`+${improvement} PTS ACCELERATION`, 110, y + 8);
         doc.setFont("Helvetica", "normal");
-        doc.setFontSize(9);
+        doc.setFontSize(8.5);
         doc.setTextColor(...GRAY_COLOR);
-        doc.text("Compared to alarmist baseline emissions (21.82 kg CO2)", 110, y + 16);
+        doc.text("Improvement compared to poor baseline habits (35 Index)", 110, y + 16);
         
         y += 36;
         
+        // 2. Projections
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(14);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("2. Resource & Projections Intel", 15, y);
+        doc.text("2. 2035 Biometric & Lifepath Forecasts", 15, y);
         
         doc.setDrawColor(...SECONDARY_COLOR);
         doc.line(15, y + 3, 195, y + 3);
@@ -3082,35 +2430,35 @@ function generatePdfReport() {
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(10);
         
-        const energyUnits = (currentState.acHours * 1.45) + (currentState.appliances * 0.95);
-        const estimatedBill = Math.round(energyUnits * 30 * 8.5);
-        const baselineBill = Math.round(((8 * 1.45) + (6 * 0.95)) * 30 * 8.5);
-        const billSavings = Math.max(0, baselineBill - estimatedBill);
-        
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("Projected Monthly Energy Units Consumption:", 15, y);
+        doc.text("Projected 2035 Physical Health Index:", 15, y);
         doc.setFont("Helvetica", "bold");
-        doc.text(`${energyUnits.toFixed(1)} kWh`, 110, y);
+        doc.text(`${Math.round(currentState.physicalHealth)}%`, 115, y);
         
         y += rowHeight;
         doc.setFont("Helvetica", "normal");
-        doc.text("Estimated Monthly Electricity Bill:", 15, y);
+        doc.text("Projected 2035 Mental Wellness Index:", 15, y);
         doc.setFont("Helvetica", "bold");
-        doc.text(`INR ${estimatedBill.toLocaleString()}`, 110, y);
+        doc.text(`${Math.round(currentState.mentalWellness)}%`, 115, y);
         
         y += rowHeight;
         doc.setFont("Helvetica", "normal");
-        doc.text("Monthly Utility Cost Avoidance:", 15, y);
+        doc.text("Simulated 2035 Chronic Burnout Risk:", 15, y);
         doc.setFont("Helvetica", "bold");
-        doc.setTextColor(...PRIMARY_COLOR);
-        doc.text(`INR ${billSavings.toLocaleString()} Saved`, 110, y);
+        if (currentState.burnoutRisk > 70) {
+            doc.setTextColor(239, 68, 68);
+        } else {
+            doc.setTextColor(...SECONDARY_COLOR);
+        }
+        doc.text(`${Math.round(currentState.burnoutRisk)}% (Max Target: <40%)`, 115, y);
         
         y += 16;
         
+        // 3. AI recommendations
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(14);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text("3. Actionable AI Carbon Reduction Advice", 15, y);
+        doc.text("3. Actionable AI Lifestyle Adjustments", 15, y);
         
         doc.setDrawColor(...PRIMARY_COLOR);
         doc.line(15, y + 3, 195, y + 3);
@@ -3129,38 +2477,39 @@ function generatePdfReport() {
             y += rowHeight - 1;
         };
         
-        if (currentState.acHours > 4) {
-            addAdvicePoint("AC Optimisation", "Consider limiting runtime below 4 hrs or cooling at 24C to avoid up to 5.4kg daily CO2.");
+        if (currentState.screenTime > 4) {
+            addAdvicePoint("Screen Limitation", "Regulate screen use below 4h daily to boost vitality score by up to 12 pts.");
         } else {
-            addAdvicePoint("AC Optimisation", "AC metrics outstanding! Your cooling habits protect scope 1 grid loads effectively.");
+            addAdvicePoint("Screen Limitation", "Excellent digital detox hygiene! Dopamine receptors levels healthy.");
         }
         
-        if (currentState.travelMode === "petrol" || currentState.travelMode === "diesel") {
-            addAdvicePoint("Transit Transition", "Your fossil fuel commuting causes high emissions. Switch to EV or public transit to save 14 points.");
+        if (currentState.sleepHours < 7.5) {
+            addAdvicePoint("Sleep Regulation", "Raise daily rest to 8h to recover cellular aging and prevent cognitive depletion.");
         } else {
-            addAdvicePoint("Transit Transition", "Stunning commuter efficiency! Active walk/EV mode locks your carbon baseline.");
+            addAdvicePoint("Sleep Regulation", "Stunning rest patterns maintained! Tissues are regenerating efficiently.");
         }
         
-        if (currentState.waterLiters > 150 || currentState.waterWastage) {
-            addAdvicePoint("Hydration Habits", "Mitigate water leakage and cap domestic flow below 150 liters/day to unlock Hydration Guard.");
+        if (currentState.savingsRate < 25) {
+            addAdvicePoint("Savings Allocation", "Curb excess expenses to save at least 25% monthly, securing wealth index goals.");
         } else {
-            addAdvicePoint("Hydration Habits", "Superior water stewardship active. Leakage prevention matrices verified.");
+            addAdvicePoint("Savings Allocation", "Excellent discipline active! Future savings assets are compounding exponentially.");
         }
         
-        if (currentState.plasticBottles > 2) {
-            addAdvicePoint("Plastic Warrior", "Curb single-use plastic bottle units and utilize steel containers to slash 3.6kg weekly microplastics.");
+        if (currentState.stressLevel >= 40) {
+            addAdvicePoint("Neurological Zen", "Adopt evening screen blockers and deep breathing to reduce cortisol stress fatigue.");
         } else {
-            addAdvicePoint("Plastic Warrior", "Brilliant plastic-free profile! Zero single-use waste vectors detected.");
+            addAdvicePoint("Neurological Zen", "Remarkable stress regulation verified! Neural baseline in complete harmony.");
         }
         
-        doc.setFillColor(15, 23, 42); 
+        // Footer card
+        doc.setFillColor(9, 13, 22); 
         doc.rect(0, 280, 210, 17, "F");
         doc.setFont("Courier", "bold");
         doc.setFontSize(8);
         doc.setTextColor(...GRAY_COLOR);
-        doc.text("ECOSPHERE AI COMMAND CLIENT // SECURE PORTAL REPORT VERIFIED", 15, 290);
+        doc.text("FUTURE SELF SIMULATOR COMMAND CLIENT // SECURE PORTAL COMPILER REPORT", 15, 290);
         
-        const filename = `EcoSphere_Report_${currentState.name ? currentState.name.replace(/\s+/g, '_') : 'Agent'}.pdf`;
+        const filename = `FutureSelf_Report_${currentState.name ? currentState.name.replace(/\s+/g, '_') : 'Agent'}.pdf`;
         doc.save(filename);
         
         console.log("💾 ECOSPHERE // PDF downloaded successfully!");
@@ -3171,29 +2520,7 @@ function generatePdfReport() {
     }
 }
 
-// Auto-rotate news slides every 8 seconds
-setInterval(() => {
-    moveCarousel(1);
-}, 8000);
-
-// Initialize mobile panes view automatically
-window.addEventListener('load', () => {
-    if (window.innerWidth <= 768) {
-        switchMobilePane('home');
-    }
-});
-
-// Update calculations when year is changed
-const originalUpdateCalculations = window.updateCalculations;
-window.updateCalculations = function(instant) {
-    if (typeof originalUpdateCalculations === 'function') {
-        originalUpdateCalculations(instant);
-    }
-    
-    // Inject weekly goal progression evaluation
-    updateWeeklyTargetProgress();
-};
-
+// Expose all callback hooks to index.html and auth.js
 window.toggleProfileEditMode = toggleProfileEditMode;
 window.previewEditProfilePic = previewEditProfilePic;
 window.handleProfileUpdateSubmit = handleProfileUpdateSubmit;
@@ -3206,3 +2533,21 @@ window.updateFutureSimulationYear = updateFutureSimulationYear;
 window.switchMobilePane = switchMobilePane;
 window.generatePdfReport = generatePdfReport;
 
+// Bind Setup Form globally
+window.handleProfileSetupSubmit = handleProfileSetupSubmit;
+window.checkAchievements = checkAchievements;
+window.updateProfileDashboardUI = updateProfileDashboardUI;
+window.updateAvatarXPWidget = updateAvatarXPWidget;
+window.checkAvatarLevelUp = checkAvatarLevelUp;
+window.evaluateQuests = evaluateQuests;
+window.updateBattleLeaderboard = updateBattleLeaderboard;
+window.pledgeXPToDept = pledgeXPToDept;
+window.askPresetQuestion = askPresetQuestion;
+window.initHistoryMiniChart = initHistoryMiniChart;
+window.applyPreset = applyPreset;
+window.setFormInputs = setFormInputs;
+window.updateCalculations = updateCalculations;
+window.restoreUserSettings = restoreUserSettings;
+window.toggleChat = toggleChat;
+window.handleChatKeyPress = handleChatKeyPress;
+window.sendMessage = sendMessage;
